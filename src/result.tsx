@@ -1,9 +1,3 @@
-// Denne fila skrives av Claude Code hver gang en prompt kjøres, og forrige
-// kjøring blir overskrevet. Alt over markørlinja er metadata; alt under er
-// selve den genererte koden (det er den designeren kopierer).
-
-export const prompt = "Sett opp tabellen fra Excel-arket med forslag til nye fagområder for alle studier og kurs ved BI";
-
 // --- generert kode ---
 import { Fragment, useState } from "react";
 import { Badge, Search, Selectfield } from "@bi-digital/react";
