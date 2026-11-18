@@ -10,9 +10,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@bi-digital/css": "0.12.3",
-    "@bi-digital/icons": "0.12.3",
-    "@bi-digital/react": "0.12.3",
+    "@bi-digital/css": "0.13.4",
+    "@bi-digital/icons": "0.13.4",
+    "@bi-digital/react": "0.13.4",
     "react": "19.2.8",
     "react-dom": "19.2.8"
   },

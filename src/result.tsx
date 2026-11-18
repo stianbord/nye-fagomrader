@@ -1,12 +1,14 @@
 // --- generert kode ---
-import { Fragment, useState } from "react";
-import { Badge, Search, Selectfield } from "@bi-digital/react";
+import { Fragment, useEffect, useRef, useState } from "react";
+import { Button, Link, Badge, Search, Selectfield } from "@bi-digital/react";
+import { ChevronLeftIcon, ChevronRightIcon } from "@bi-digital/icons";
 
 type Status =
   | "Uendret"
   | "Endret navn på fagområde"
   | "1 fagområde prioritert"
   | "Manglet fagområde"
+  | "Lagt til ekstra fagområde"
   | "Flyttet til nytt fagområde"
   | "Fagområde fjernet";
 type Row = [
@@ -37,7 +39,7 @@ const rows: Row[] = [
   ["Finans, økonomi og regnskap", ["Manglet fagområde"], "Bærekraft i kreditt og utlån for bedriftsrådgivere", "Bachelorkurs", "–", "Strategi, innovasjon og bærekraft", "Finans, økonomi og regnskap › Bærekraftig finans; Strategi, innovasjon og bærekraft › Bærekraft", "Handler om finans og investering, med bærekraft som tema.", true, "Finansnæringen", false],
   ["Finans, økonomi og regnskap", ["1 fagområde prioritert"], "Bærekraft og finans", "Bachelorkurs", "Finans, økonomi og styring; Strategi, innovasjon og bærekraft", "Strategi, innovasjon og bærekraft", "Finans, økonomi og regnskap › Bærekraftig finans; Strategi, innovasjon og bærekraft › Bærekraft", "Handler om finans og investering, med bærekraft som tema.", true, "Finansnæringen", true],
   ["Finans, økonomi og regnskap", ["Manglet fagområde"], "Bærekraftig finans", "Bachelorkurs", "–", "Strategi, innovasjon og bærekraft", "Finans, økonomi og regnskap › Bærekraftig finans; Strategi, innovasjon og bærekraft › Bærekraft", "Handler om finans og investering, med bærekraft som tema.", true, "Finansnæringen", false],
-  ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Digital økonomistyring", "Bachelorkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Økonomistyring", "Handler om bedriftsøkonomi, budsjett og beslutningsstøtte, eller er en bred økonomiutdanning.", false, "–", true],
+  ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Digital økonomistyring", "Bachelorkurs", "Finans, økonomi og styring", "KI, digitalisering og analytics", "Finans, økonomi og regnskap › Økonomistyring; KI, digitalisering og analytics › Digital transformasjon", "Handler om bedriftsøkonomi, budsjett og beslutningsstøtte, eller er en bred økonomiutdanning.", false, "–", true],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Finans", "Bachelorkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Finans og investering", "Handler om finans, investering, bank eller finansnæringen.", false, "–", true],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Finans og økonomi", "Bachelorkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Finans og investering", "Handler om finans, investering, bank eller finansnæringen.", false, "–", true],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Finansiell analyse og verdsettelse", "Bachelorkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Finans og investering", "Handler om finans, investering, bank eller finansnæringen.", false, "–", true],
@@ -50,23 +52,23 @@ const rows: Row[] = [
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Matematikk for økonomer", "Bachelorkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Samfunnsøkonomi", "Handler om økonomisk teori og samfunnsøkonomi.", false, "–", true],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Matematisk analyse", "Bachelorkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Samfunnsøkonomi", "Handler om økonomisk teori og samfunnsøkonomi.", false, "–", true],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Personlig økonomi", "Bachelorkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Finans og investering", "Handler om finans, investering, bank eller finansnæringen.", false, "–", true],
-  ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Prestasjonsstyring", "Bachelorkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Økonomistyring", "Handler om bedriftsøkonomi, budsjett og beslutningsstøtte, eller er en bred økonomiutdanning.", false, "–", true],
+  ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Prestasjonsstyring", "Bachelorkurs", "Finans, økonomi og styring", "Ledelse", "Finans, økonomi og regnskap › Økonomistyring; Ledelse › Strategisk ledelse", "Handler om budsjett, nøkkeltall og oppfølging av økonomisk resultat, derfor Økonomistyring. Styring av enheter og resultater er også et lederansvar, så Ledelse er ekstra fagområde.", false, "–", true],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Regnskapsføring i næring", "Bachelorkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om regnskap, bokføring eller revisjon.", false, "–", true],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Samfunnsøkonomi I", "Bachelorkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Samfunnsøkonomi", "Handler om økonomisk teori og samfunnsøkonomi.", false, "–", true],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Samfunnsøkonomi II", "Bachelorkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Samfunnsøkonomi", "Handler om økonomisk teori og samfunnsøkonomi.", false, "–", true],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Strategisk økonomistyring", "Bachelorkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Økonomistyring", "Handler om bedriftsøkonomi, budsjett og beslutningsstøtte, eller er en bred økonomiutdanning.", false, "–", true],
-  ["Finans, økonomi og regnskap", ["1 fagområde prioritert", "Fagområde fjernet"], "Styrekompetanse", "Bachelorkurs", "Finans, økonomi og styring; Organisasjonsutvikling og Human Resource Management", "–", "Finans, økonomi og regnskap › Bedriftsøkonomi", "Handler om styrearbeid, eierstyring og governance.", false, "–", false],
+  ["Finans, økonomi og regnskap", ["1 fagområde prioritert", "Fagområde fjernet"], "Styrekompetanse", "Bachelorkurs", "Finans, økonomi og styring; Organisasjonsutvikling og Human Resource Management", "Ledelse; Strategi, innovasjon og bærekraft; Juss, skatt og eiendom", "Finans, økonomi og regnskap › Bedriftsøkonomi; Ledelse › Strategisk ledelse; Strategi, innovasjon og bærekraft › Strategi; Juss, skatt og eiendom › Forretningsjus og rettsvitenskap", "Handler om styrearbeid, eierstyring og governance.", false, "–", false],
   ["Finans, økonomi og regnskap", ["1 fagområde prioritert", "Fagområde fjernet"], "Business", "Master", "Finans, økonomi og styring; Ledelse; Markedsføring, kommunikasjon og kultur; Organisasjonsutvikling og Human Resource Management; Eiendom, varehandel og forretningsjus; Strategi, innovasjon og bærekraft", "Markedsføring, kommunikasjon og kultur; Strategi, innovasjon og bærekraft; Ledelse; HR og organisasjonsutvikling", "Finans, økonomi og regnskap › Bedriftsøkonomi; Markedsføring, kommunikasjon og kultur › Markedsføring; Strategi, innovasjon og bærekraft › Strategi; Ledelse › Generell ledelse og lederutdanning; HR og organisasjonsutvikling › HR og personalledelse", "Handler om bedriftsøkonomi, budsjett og beslutningsstøtte, eller er en bred økonomiutdanning.", false, "–", false],
   ["Finans, økonomi og regnskap", ["1 fagområde prioritert"], "Bærekraft og finans", "Master", "Finans, økonomi og styring; Strategi, innovasjon og bærekraft", "Strategi, innovasjon og bærekraft", "Finans, økonomi og regnskap › Bærekraftig finans; Strategi, innovasjon og bærekraft › Bærekraft", "Handler om finans og investering, med bærekraft som tema.", true, "–", false],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Finans", "Master", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Finans og investering", "Handler om finans, investering, bank eller finansnæringen.", false, "–", false],
   ["Finans, økonomi og regnskap", ["1 fagområde prioritert", "Fagområde fjernet"], "Major in Accounting and Business Control", "Master", "Finans, økonomi og styring; Strategi, innovasjon og bærekraft", "–", "Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om regnskap, bokføring eller revisjon.", false, "–", false],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Major in Economics", "Master", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Samfunnsøkonomi", "Handler om økonomisk teori og samfunnsøkonomi.", false, "–", false],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Major in Finance", "Master", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Finans og investering", "Handler om finans, investering, bank eller finansnæringen.", false, "–", false],
-  ["Finans, økonomi og regnskap", ["1 fagområde prioritert", "Fagområde fjernet"], "Quantitative Finance", "Master", "Finans, økonomi og styring; Digitalisering og Analytics", "–", "Finans, økonomi og regnskap › Finans og investering", "Handler om finans, investering, bank eller finansnæringen.", false, "–", false],
+  ["Finans, økonomi og regnskap", ["1 fagområde prioritert", "Fagområde fjernet"], "Quantitative Finance", "Master", "Finans, økonomi og styring; Digitalisering og Analytics", "KI, digitalisering og analytics", "Finans, økonomi og regnskap › Finans og investering; KI, digitalisering og analytics › Data science og analytics", "Handler om finans, investering, bank eller finansnæringen.", false, "–", false],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Regnskap og revisjon", "Master", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om regnskap, bokføring eller revisjon.", false, "–", false],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Regnskap og revisjon +1-modellen", "Master", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om regnskap, bokføring eller revisjon.", false, "–", false],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Anvendt økonomi", "Masterkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Samfunnsøkonomi", "Handler om økonomisk teori og samfunnsøkonomi.", false, "–", false],
-  ["Finans, økonomi og regnskap", ["1 fagområde prioritert", "Fagområde fjernet"], "Det verdiskapende styret", "Masterkurs", "Finans, økonomi og styring; Strategi, innovasjon og bærekraft", "–", "Finans, økonomi og regnskap › Bedriftsøkonomi", "Handler om styrearbeid, eierstyring og governance.", false, "–", false],
+  ["Finans, økonomi og regnskap", ["1 fagområde prioritert", "Fagområde fjernet"], "Det verdiskapende styret", "Masterkurs", "Finans, økonomi og styring; Strategi, innovasjon og bærekraft", "Ledelse; Strategi, innovasjon og bærekraft; Juss, skatt og eiendom", "Finans, økonomi og regnskap › Bedriftsøkonomi; Ledelse › Strategisk ledelse; Strategi, innovasjon og bærekraft › Strategi; Juss, skatt og eiendom › Forretningsjus og rettsvitenskap", "Handler om styrearbeid, eierstyring og governance.", false, "–", false],
   ["Finans, økonomi og regnskap", ["1 fagområde prioritert"], "Finansiell strategi", "Masterkurs", "Finans, økonomi og styring; Strategi, innovasjon og bærekraft", "Strategi, innovasjon og bærekraft", "Finans, økonomi og regnskap › Finans og investering; Strategi, innovasjon og bærekraft › Strategi", "Handler om finans, investering, bank eller finansnæringen.", false, "–", false],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Global økonomi", "Masterkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Samfunnsøkonomi", "Handler om økonomisk teori og samfunnsøkonomi.", false, "–", false],
   ["Juss, skatt og eiendom", ["1 fagområde prioritert", "Fagområde fjernet"], "Governance: Risikostyring, compliance og internrevisjon", "Masterkurs", "Eiendom, varehandel og forretningsjus; Finans, økonomi og styring; Strategi, innovasjon og bærekraft", "Finans, økonomi og regnskap", "Juss, skatt og eiendom › Compliance; Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om risikostyring, compliance og internrevisjon.", false, "–", false],
@@ -78,10 +80,10 @@ const rows: Row[] = [
   ["Finans, økonomi og regnskap", ["Manglet fagområde"], "Samfunnsøkonomi", "PhD", "–", "–", "Finans, økonomi og regnskap › Samfunnsøkonomi", "Handler om økonomisk teori og samfunnsøkonomi.", false, "–", false],
   ["Finans, økonomi og regnskap", ["Manglet fagområde"], "Qualifying Year at American College of Norway", "–", "–", "–", "Finans, økonomi og regnskap › Bedriftsøkonomi", "Handler om bedriftsøkonomi, budsjett og beslutningsstøtte, eller er en bred økonomiutdanning.", false, "–", false],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Bærekraftig økonomisk utvikling", "Bachelorkurs", "Finans, økonomi og styring", "Strategi, innovasjon og bærekraft", "Finans, økonomi og regnskap › Samfunnsøkonomi; Strategi, innovasjon og bærekraft › Bærekraft", "Makroøkonomi (vekst, statsfinanser) med bærekraft som perspektiv.", false, "–", true],
-  ["Finans, økonomi og regnskap", ["Flyttet til nytt fagområde"], "Marked, kriser og bærekraft", "Bachelorkurs", "Strategi, innovasjon og bærekraft", "Strategi, innovasjon og bærekraft", "Finans, økonomi og regnskap › Samfunnsøkonomi; Strategi, innovasjon og bærekraft › Bærekraft", "Innsikt i markedsøkonomi som økonomisk system.", false, "–", true],
+  ["Finans, økonomi og regnskap", ["Lagt til ekstra fagområde"], "Marked, kriser og bærekraft", "Bachelorkurs", "Strategi, innovasjon og bærekraft", "Strategi, innovasjon og bærekraft", "Finans, økonomi og regnskap › Samfunnsøkonomi; Strategi, innovasjon og bærekraft › Bærekraft", "Innsikt i markedsøkonomi som økonomisk system.", false, "–", true],
   ["Helse, skole og barnehage", ["Flyttet til nytt fagområde", "Fagområde fjernet"], "Grunnkurs i ledelse og kvalitet i helse- og omsorgstjenesten", "Bachelor", "Offentlig sektor; Organisasjonsutvikling og Human Resource Management", "Ledelse", "Helse, skole og barnehage › Helse; Ledelse › Helse-, skole- og barnehageledelse", "Rettet mot ledere og fagfolk i helsetjenesten.", false, "Helse og omsorg", false],
   ["Helse, skole og barnehage", ["Flyttet til nytt fagområde"], "Helseledelse, kvalitet og utvikling", "Bachelorkurs", "Offentlig sektor", "Ledelse", "Helse, skole og barnehage › Helse; Ledelse › Helse-, skole- og barnehageledelse", "Rettet mot ledere og fagfolk i helsetjenesten.", false, "Helse og omsorg", false],
-  ["Helse, skole og barnehage", ["Flyttet til nytt fagområde"], "Ledelse av tjenesteutvikling og innovasjonsprosesser i helsetjenesten", "Bachelorkurs", "Strategi, innovasjon og bærekraft", "Strategi, innovasjon og bærekraft; Ledelse", "Helse, skole og barnehage › Helse; Strategi, innovasjon og bærekraft › Innovasjon og entreprenørskap; Ledelse › Helse-, skole- og barnehageledelse", "Rettet mot ledere og fagfolk i helsetjenesten.", false, "Helse og omsorg", false],
+  ["Helse, skole og barnehage", ["Lagt til ekstra fagområde"], "Ledelse av tjenesteutvikling og innovasjonsprosesser i helsetjenesten", "Bachelorkurs", "Strategi, innovasjon og bærekraft", "Strategi, innovasjon og bærekraft; Ledelse", "Helse, skole og barnehage › Helse; Strategi, innovasjon og bærekraft › Innovasjon og entreprenørskap; Ledelse › Helse-, skole- og barnehageledelse", "Rettet mot ledere og fagfolk i helsetjenesten.", false, "Helse og omsorg", false],
   ["Helse, skole og barnehage", ["Flyttet til nytt fagområde"], "Helseledelse", "Masterkurs", "Offentlig sektor", "Ledelse", "Helse, skole og barnehage › Helse; Ledelse › Helse-, skole- og barnehageledelse", "Rettet mot ledere og fagfolk i helsetjenesten.", false, "Helse og omsorg", false],
   ["Helse, skole og barnehage", ["Flyttet til nytt fagområde"], "Ledelse av profesjonsfellesskap og læreplanarbeid", "Masterkurs", "Offentlig sektor", "Ledelse", "Helse, skole og barnehage › Skole og barnehage; Ledelse › Helse-, skole- og barnehageledelse", "Rettet mot ledere i skole og barnehage.", false, "Skole og barnehage", false],
   ["Helse, skole og barnehage", ["Flyttet til nytt fagområde"], "Ledelse av utviklings- og endringsarbeid", "Masterkurs", "Offentlig sektor", "HR og organisasjonsutvikling; Ledelse", "Helse, skole og barnehage › Skole og barnehage; HR og organisasjonsutvikling › Endringsledelse; Ledelse › Helse-, skole- og barnehageledelse", "Rettet mot skole- og barnehageledere (kursbeskrivelsen).", false, "Skole og barnehage", false],
@@ -93,31 +95,31 @@ const rows: Row[] = [
   ["Helse, skole og barnehage", ["Flyttet til nytt fagområde"], "Pedagogisk ledelse og læringsmiljø i barnehagen", "Masterkurs", "Offentlig sektor", "Ledelse", "Helse, skole og barnehage › Skole og barnehage; Ledelse › Helse-, skole- og barnehageledelse", "Rettet mot ledere i skole og barnehage.", false, "Skole og barnehage", false],
   ["Helse, skole og barnehage", ["Flyttet til nytt fagområde"], "Utdanningsledelse og strategisk utvikling", "Masterkurs", "Offentlig sektor", "Ledelse; Strategi, innovasjon og bærekraft", "Helse, skole og barnehage › Skole og barnehage; Ledelse › Helse-, skole- og barnehageledelse; Strategi, innovasjon og bærekraft › Strategi", "Rettet mot ledere i skole og barnehage.", false, "Skole og barnehage", false],
   ["HR og organisasjonsutvikling", ["1 fagområde prioritert"], "Motivasjon og selvledelse", "Bachelor", "Ledelse; Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › Arbeidsmiljø; Ledelse › Lederferdigheter og kommunikasjon", "Handler om arbeidsmiljø, trivsel og arbeidsglede.", false, "–", false],
-  ["HR og organisasjonsutvikling", ["1 fagområde prioritert"], "Organisasjonspsykologi, HR og ledelse", "Bachelor", "Ledelse; Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › Organisasjonspsykologi; Ledelse › Team-, medarbeider- og endringsledelse", "Handler om organisasjonspsykologi og atferd i organisasjoner.", false, "–", false],
-  ["HR og organisasjonsutvikling", ["1 fagområde prioritert"], "Arbeidsglede i praksis", "Bachelorkurs", "Ledelse; Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › Arbeidsmiljø; Ledelse › Team-, medarbeider- og endringsledelse", "Handler om arbeidsmiljø, trivsel og arbeidsglede.", false, "–", false],
+  ["HR og organisasjonsutvikling", ["1 fagområde prioritert"], "Organisasjonspsykologi, HR og ledelse", "Bachelor", "Ledelse; Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › Organisasjonspsykologi; Ledelse › Teamledelse og prestasjon", "Handler om organisasjonspsykologi og atferd i organisasjoner.", false, "–", false],
+  ["HR og organisasjonsutvikling", ["1 fagområde prioritert"], "Arbeidsglede i praksis", "Bachelorkurs", "Ledelse; Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › Arbeidsmiljø; Ledelse › Medarbeiderledelse og arbeidsmiljø", "Handler om arbeidsmiljø, trivsel og arbeidsglede.", false, "–", false],
   ["Strategi, innovasjon og bærekraft", ["Flyttet til nytt fagområde"], "Consulting - Verktøy og teknikker", "Bachelorkurs", "Finans, økonomi og styring", "–", "Strategi, innovasjon og bærekraft › Strategi", "Konsulentverktøy og problemløsning, nær strategi- og analysefaget.", false, "–", true],
-  ["HR og organisasjonsutvikling", ["1 fagområde prioritert"], "Endringsledelse i praksis", "Bachelorkurs", "Ledelse; Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › Endringsledelse; Ledelse › Team-, medarbeider- og endringsledelse", "Handler om endring i organisasjoner og rådgivning.", false, "–", false],
+  ["HR og organisasjonsutvikling", ["1 fagområde prioritert"], "Endringsledelse i praksis", "Bachelorkurs", "Ledelse; Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › Endringsledelse; Ledelse › Endringsledelse", "Handler om endring i organisasjoner og rådgivning.", false, "–", false],
   ["HR og organisasjonsutvikling", ["Manglet fagområde"], "HR og personalledelse", "Bachelorkurs", "–", "Ledelse", "HR og organisasjonsutvikling › HR og personalledelse; Ledelse › Generell ledelse og lederutdanning", "Handler om HR og personalarbeid.", false, "–", false],
-  ["HR og organisasjonsutvikling", ["1 fagområde prioritert"], "HRM og arbeidsrett", "Bachelorkurs", "Ledelse; Organisasjonsutvikling og Human Resource Management", "Juss, skatt og eiendom; Ledelse", "HR og organisasjonsutvikling › HR og personalledelse; Juss, skatt og eiendom › Arbeidsrett; Ledelse › Team-, medarbeider- og endringsledelse", "Handler om HR og personalarbeid.", false, "–", false],
-  ["HR og organisasjonsutvikling", ["1 fagområde prioritert"], "HRM", "Bachelorkurs", "Ledelse; Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › HR og personalledelse; Ledelse › Team-, medarbeider- og endringsledelse", "Handler om HR og personalarbeid.", false, "–", false],
-  ["HR og organisasjonsutvikling", ["Flyttet til nytt fagområde"], "Ledelse og endring", "Bachelorkurs", "Ledelse", "Ledelse", "HR og organisasjonsutvikling › Endringsledelse; Ledelse › Team-, medarbeider- og endringsledelse", "Handler om endring i organisasjoner og rådgivning.", false, "–", false],
-  ["HR og organisasjonsutvikling", ["Flyttet til nytt fagområde"], "Organisasjonsatferd og ledelse", "Bachelorkurs", "Markedsføring, kommunikasjon og kultur", "Ledelse", "HR og organisasjonsutvikling › Organisasjonspsykologi; Ledelse › Team-, medarbeider- og endringsledelse", "Handler om organisasjonspsykologi og atferd i organisasjoner.", false, "–", true],
-  ["HR og organisasjonsutvikling", ["Endret navn på fagområde"], "Praktisk HR og ledelse", "Bachelorkurs", "Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › HR og personalledelse; Ledelse › Team-, medarbeider- og endringsledelse", "Handler om HR og personalarbeid.", false, "–", false],
-  ["HR og organisasjonsutvikling", ["Endret navn på fagområde"], "Prestasjoner og arbeidsglede", "Bachelorkurs", "Organisasjonsutvikling og Human Resource Management", "–", "HR og organisasjonsutvikling › Arbeidsmiljø", "Handler om arbeidsmiljø, trivsel og arbeidsglede.", false, "–", false],
-  ["HR og organisasjonsutvikling", ["Flyttet til nytt fagområde"], "Rekruttering og onboarding", "Bachelorkurs", "Ledelse", "–", "HR og organisasjonsutvikling › HR og personalledelse", "Handler om HR og personalarbeid.", false, "–", false],
+  ["HR og organisasjonsutvikling", ["1 fagområde prioritert"], "HRM og arbeidsrett", "Bachelorkurs", "Ledelse; Organisasjonsutvikling og Human Resource Management", "Juss, skatt og eiendom; Ledelse", "HR og organisasjonsutvikling › HR og personalledelse; Juss, skatt og eiendom › Arbeidsrett; Ledelse › Medarbeiderledelse og arbeidsmiljø", "Handler om HR og personalarbeid.", false, "–", false],
+  ["HR og organisasjonsutvikling", ["1 fagområde prioritert"], "HRM", "Bachelorkurs", "Ledelse; Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › HR og personalledelse; Ledelse › Medarbeiderledelse og arbeidsmiljø", "Handler om HR og personalarbeid.", false, "–", false],
+  ["HR og organisasjonsutvikling", ["Lagt til ekstra fagområde"], "Ledelse og endring", "Bachelorkurs", "Ledelse", "Ledelse", "HR og organisasjonsutvikling › Endringsledelse; Ledelse › Endringsledelse", "Handler om endring i organisasjoner og rådgivning.", false, "–", false],
+  ["HR og organisasjonsutvikling", ["Flyttet til nytt fagområde"], "Organisasjonsatferd og ledelse", "Bachelorkurs", "Markedsføring, kommunikasjon og kultur", "Ledelse", "HR og organisasjonsutvikling › Organisasjonspsykologi; Ledelse › Teamledelse og prestasjon", "Handler om organisasjonspsykologi og atferd i organisasjoner.", false, "–", true],
+  ["HR og organisasjonsutvikling", ["Endret navn på fagområde"], "Praktisk HR og ledelse", "Bachelorkurs", "Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › HR og personalledelse; Ledelse › Medarbeiderledelse og arbeidsmiljø", "Handler om HR og personalarbeid.", false, "–", false],
+  ["HR og organisasjonsutvikling", ["Endret navn på fagområde"], "Prestasjoner og arbeidsglede", "Bachelorkurs", "Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › Arbeidsmiljø; Ledelse › Teamledelse og prestasjon", "Handler om arbeidsmiljø, trivsel og arbeidsglede.", false, "–", false],
+  ["HR og organisasjonsutvikling", ["Lagt til ekstra fagområde"], "Rekruttering og onboarding", "Bachelorkurs", "Ledelse", "Ledelse", "HR og organisasjonsutvikling › HR og personalledelse; Ledelse › Medarbeiderledelse og arbeidsmiljø", "Handler om HR og personalarbeid.", false, "–", false],
   ["HR og organisasjonsutvikling", ["Endret navn på fagområde"], "Kunstig intelligent organisasjonspsykologi", "Master", "Organisasjonsutvikling og Human Resource Management", "KI, digitalisering og analytics", "HR og organisasjonsutvikling › Organisasjonspsykologi; KI, digitalisering og analytics › KI", "Handler om organisasjonspsykologi og atferd i organisasjoner.", false, "–", false],
-  ["HR og organisasjonsutvikling", ["1 fagområde prioritert"], "Leadership and Organisational Psychology", "Master", "Ledelse; Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › Organisasjonspsykologi; Ledelse › Team-, medarbeider- og endringsledelse", "Handler om organisasjonspsykologi og atferd i organisasjoner.", true, "–", false],
-  ["HR og organisasjonsutvikling", ["Endret navn på fagområde"], "Arbeidsglede og livskvalitet", "Masterkurs", "Organisasjonsutvikling og Human Resource Management", "–", "HR og organisasjonsutvikling › Arbeidsmiljø", "Handler om arbeidsmiljø, trivsel og arbeidsglede.", false, "–", false],
-  ["HR og organisasjonsutvikling", ["1 fagområde prioritert", "Fagområde fjernet"], "Consulting", "Masterkurs", "Ledelse; Prosjektledelse; Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › Endringsledelse; Ledelse › Team-, medarbeider- og endringsledelse", "Rådgivning og endring i organisasjoner, med ledelsesteori.", false, "–", false],
-  ["HR og organisasjonsutvikling", ["1 fagområde prioritert"], "Endringsledelse", "Masterkurs", "Ledelse; Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › Endringsledelse; Ledelse › Team-, medarbeider- og endringsledelse", "Handler om endring i organisasjoner og rådgivning.", false, "–", false],
-  ["HR og organisasjonsutvikling", ["Endret navn på fagområde"], "HMS i et ledelsesperspektiv", "Masterkurs", "Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › Arbeidsmiljø; Ledelse › Team-, medarbeider- og endringsledelse", "Handler om arbeidsmiljø, trivsel og arbeidsglede.", false, "–", false],
-  ["HR og organisasjonsutvikling", ["1 fagområde prioritert"], "HRM", "Masterkurs", "Ledelse; Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › HR og personalledelse; Ledelse › Team-, medarbeider- og endringsledelse", "Handler om HR og personalarbeid.", false, "–", false],
-  ["HR og organisasjonsutvikling", ["1 fagområde prioritert"], "Helsefremmende ledelse", "Bachelorkurs", "Ledelse; Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › Arbeidsmiljø; Ledelse › Team-, medarbeider- og endringsledelse", "Handler om helsefremmende arbeidsmiljø og sykefravær generelt, ikke ledelse i helsesektoren (kursbeskrivelsen).", false, "–", false],
-  ["HR og organisasjonsutvikling", ["1 fagområde prioritert"], "Samspill og ledelse", "Masterkurs", "Ledelse; Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › Organisasjonspsykologi; Ledelse › Team-, medarbeider- og endringsledelse", "Bygger på organisasjonspsykologi og gruppedynamikk.", false, "–", false],
-  ["HR og organisasjonsutvikling", ["1 fagområde prioritert"], "Ytringsklima og ledelse", "Masterkurs", "Ledelse; Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › Arbeidsmiljø; Ledelse › Team-, medarbeider- og endringsledelse", "Handler om psykologisk trygghet og ytringsklima i organisasjoner. Flyttet fra Ledelse, siden temaet er arbeidsmiljøet mer enn lederrollen.", true, "–", false],
-  ["Juss, skatt og eiendom", ["Endret navn på fagområde"], "Eiendomsmegling, jus og økonomi", "Bachelor", "Eiendom, varehandel og forretningsjus", "–", "Juss, skatt og eiendom › Eiendomsmegling", "Handler om eiendomsmegling og eiendomsjus.", false, "Eiendom", false],
-  ["Juss, skatt og eiendom", ["Flyttet til nytt fagområde"], "Forretningsjus og økonomi", "Bachelor", "Finans, økonomi og styring", "–", "Juss, skatt og eiendom › Forretningsjus og rettsvitenskap", "Jus er hovedtemaet.", false, "–", false],
-  ["Juss, skatt og eiendom", ["Flyttet til nytt fagområde"], "Personvern og GDPR", "Bachelor", "Finans, økonomi og styring", "–", "Juss, skatt og eiendom › Compliance", "Handler om etterlevelse av regelverk som hvitvasking, personvern og digital regulering.", false, "–", false],
+  ["HR og organisasjonsutvikling", ["1 fagområde prioritert"], "Leadership and Organisational Psychology", "Master", "Ledelse; Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › Organisasjonspsykologi; Ledelse › Teamledelse og prestasjon", "Handler om organisasjonspsykologi og atferd i organisasjoner.", true, "–", false],
+  ["HR og organisasjonsutvikling", ["Endret navn på fagområde"], "Arbeidsglede og livskvalitet", "Masterkurs", "Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › Arbeidsmiljø; Ledelse › Medarbeiderledelse og arbeidsmiljø", "Handler om arbeidsmiljø, trivsel og arbeidsglede.", false, "–", false],
+  ["HR og organisasjonsutvikling", ["1 fagområde prioritert", "Fagområde fjernet"], "Consulting", "Masterkurs", "Ledelse; Prosjektledelse; Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › Endringsledelse; Ledelse › Endringsledelse", "Rådgivning og endring i organisasjoner, med ledelsesteori.", false, "–", false],
+  ["HR og organisasjonsutvikling", ["1 fagområde prioritert"], "Endringsledelse", "Masterkurs", "Ledelse; Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › Endringsledelse; Ledelse › Endringsledelse", "Handler om endring i organisasjoner og rådgivning.", false, "–", false],
+  ["HR og organisasjonsutvikling", ["Endret navn på fagområde"], "HMS i et ledelsesperspektiv", "Masterkurs", "Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › Arbeidsmiljø; Ledelse › Medarbeiderledelse og arbeidsmiljø", "Handler om arbeidsmiljø, trivsel og arbeidsglede.", false, "–", false],
+  ["HR og organisasjonsutvikling", ["1 fagområde prioritert"], "HRM", "Masterkurs", "Ledelse; Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › HR og personalledelse; Ledelse › Medarbeiderledelse og arbeidsmiljø", "Handler om HR og personalarbeid.", false, "–", false],
+  ["HR og organisasjonsutvikling", ["1 fagområde prioritert"], "Helsefremmende ledelse", "Bachelorkurs", "Ledelse; Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › Arbeidsmiljø; Ledelse › Medarbeiderledelse og arbeidsmiljø", "Handler om helsefremmende arbeidsmiljø og sykefravær generelt, ikke ledelse i helsesektoren (kursbeskrivelsen).", false, "–", false],
+  ["HR og organisasjonsutvikling", ["1 fagområde prioritert"], "Samspill og ledelse", "Masterkurs", "Ledelse; Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › Organisasjonspsykologi; Ledelse › Teamledelse og prestasjon", "Bygger på organisasjonspsykologi og gruppedynamikk.", false, "–", false],
+  ["HR og organisasjonsutvikling", ["1 fagområde prioritert"], "Ytringsklima og ledelse", "Masterkurs", "Ledelse; Organisasjonsutvikling og Human Resource Management", "Ledelse", "HR og organisasjonsutvikling › Arbeidsmiljø; Ledelse › Medarbeiderledelse og arbeidsmiljø", "Handler om psykologisk trygghet og ytringsklima i organisasjoner. Flyttet fra Ledelse, siden temaet er arbeidsmiljøet mer enn lederrollen.", true, "–", false],
+  ["Juss, skatt og eiendom", ["Endret navn på fagområde"], "Eiendomsmegling, jus og økonomi", "Bachelor", "Eiendom, varehandel og forretningsjus", "Finans, økonomi og regnskap", "Juss, skatt og eiendom › Eiendomsmegling; Finans, økonomi og regnskap › Bedriftsøkonomi", "Handler om eiendomsmegling og eiendomsjus.", false, "Eiendom", false],
+  ["Juss, skatt og eiendom", ["Lagt til ekstra fagområde"], "Forretningsjus og økonomi", "Bachelor", "Finans, økonomi og styring", "Finans, økonomi og regnskap", "Juss, skatt og eiendom › Forretningsjus og rettsvitenskap; Finans, økonomi og regnskap › Bedriftsøkonomi", "Jus er hovedtemaet.", false, "–", false],
+  ["Juss, skatt og eiendom", ["Flyttet til nytt fagområde"], "Personvern og GDPR", "Bachelor", "Finans, økonomi og styring", "KI, digitalisering og analytics", "Juss, skatt og eiendom › Compliance; KI, digitalisering og analytics › Ansvarlig KI og personvern", "Handler om etterlevelse av regelverk som hvitvasking, personvern og digital regulering.", false, "–", false],
   ["Juss, skatt og eiendom", ["Endret navn på fagområde"], "Rettsvitenskap", "Bachelor", "Eiendom, varehandel og forretningsjus", "–", "Juss, skatt og eiendom › Forretningsjus og rettsvitenskap", "Jus er hovedtemaet.", false, "–", false],
   ["Juss, skatt og eiendom", ["Manglet fagområde"], "Arbeidsrett: Lover og regulering", "Bachelorkurs", "–", "–", "Juss, skatt og eiendom › Arbeidsrett", "Handler om arbeidsrettslige regler.", false, "–", false],
   ["Juss, skatt og eiendom", ["1 fagområde prioritert"], "Arbeidsrett: Omstilling og nedbemanning", "Bachelorkurs", "Eiendom, varehandel og forretningsjus; Organisasjonsutvikling og Human Resource Management", "HR og organisasjonsutvikling", "Juss, skatt og eiendom › Arbeidsrett; HR og organisasjonsutvikling › HR og personalledelse", "Handler om arbeidsrettslige regler.", false, "–", false],
@@ -125,33 +127,33 @@ const rows: Row[] = [
   ["Juss, skatt og eiendom", ["1 fagområde prioritert", "Fagområde fjernet"], "Forretningsjus", "Bachelorkurs", "Eiendom, varehandel og forretningsjus; Finans, økonomi og styring", "–", "Juss, skatt og eiendom › Forretningsjus og rettsvitenskap", "Jus er hovedtemaet.", false, "–", true],
   ["Juss, skatt og eiendom", ["Endret navn på fagområde"], "Jus og eiendomsmegling", "Bachelorkurs", "Eiendom, varehandel og forretningsjus", "–", "Juss, skatt og eiendom › Eiendomsmegling", "Handler om eiendomsmegling og eiendomsjus.", false, "Eiendom", false],
   ["Juss, skatt og eiendom", ["Manglet fagområde"], "Økonomisk kriminalitet i finansnæringen", "Bachelorkurs", "–", "Finans, økonomi og regnskap", "Juss, skatt og eiendom › Compliance; Finans, økonomi og regnskap › Finansiell kriminalitet og compliance", "Handler om etterlevelse av regelverk som hvitvasking, personvern og digital regulering.", false, "Finansnæringen", false],
-  ["Juss, skatt og eiendom", ["1 fagområde prioritert", "Fagområde fjernet"], "Forretningsjus og økonomi", "Master", "Eiendom, varehandel og forretningsjus; Finans, økonomi og styring", "–", "Juss, skatt og eiendom › Forretningsjus og rettsvitenskap", "Jus er hovedtemaet.", false, "–", false],
+  ["Juss, skatt og eiendom", ["1 fagområde prioritert", "Fagområde fjernet"], "Forretningsjus og økonomi", "Master", "Eiendom, varehandel og forretningsjus; Finans, økonomi og styring", "Finans, økonomi og regnskap", "Juss, skatt og eiendom › Forretningsjus og rettsvitenskap; Finans, økonomi og regnskap › Bedriftsøkonomi", "Jus er hovedtemaet.", false, "–", false],
   ["Juss, skatt og eiendom", ["Endret navn på fagområde"], "Rettsvitenskap", "Master", "Eiendom, varehandel og forretningsjus", "–", "Juss, skatt og eiendom › Forretningsjus og rettsvitenskap", "Jus er hovedtemaet.", false, "–", false],
   ["Juss, skatt og eiendom", ["1 fagområde prioritert"], "Arbeidsrett og arbeidsliv", "Masterkurs", "Eiendom, varehandel og forretningsjus; Organisasjonsutvikling og Human Resource Management", "HR og organisasjonsutvikling", "Juss, skatt og eiendom › Arbeidsrett; HR og organisasjonsutvikling › HR og personalledelse", "Handler om arbeidsrettslige regler.", false, "–", false],
   ["Helse, skole og barnehage", ["Flyttet til nytt fagområde"], "Juss for ledere", "Masterkurs", "Offentlig sektor", "Juss, skatt og eiendom; Ledelse", "Helse, skole og barnehage › Skole og barnehage; Juss, skatt og eiendom › Arbeidsrett; Ledelse › Helse-, skole- og barnehageledelse", "Rettet mot ledere i skole og barnehage, med arbeidsrettslig vekt.", false, "Skole og barnehage", false],
   ["Juss, skatt og eiendom", ["Manglet fagområde"], "Regelverk og risikoer", "Kurs uten studiepoeng", "–", "Finans, økonomi og regnskap", "Juss, skatt og eiendom › Compliance; Finans, økonomi og regnskap › Finansiell kriminalitet og compliance", "Handler om etterlevelse av regelverk som hvitvasking, personvern og digital regulering.", false, "Finansnæringen", true],
   ["Juss, skatt og eiendom", ["Manglet fagområde"], "Rettslige rammebetingelser", "Kurs uten studiepoeng", "–", "Strategi, innovasjon og bærekraft", "Juss, skatt og eiendom › Compliance; Strategi, innovasjon og bærekraft › Bærekraft", "Handler om etterlevelse av regelverk som hvitvasking, personvern og digital regulering.", false, "Finansnæringen", true],
-  ["Juss, skatt og eiendom", ["Flyttet til nytt fagområde"], "Skatt og avgift", "Bachelorkurs", "Finans, økonomi og styring", "Finans, økonomi og regnskap", "Juss, skatt og eiendom › Skatt og avgift; Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om skatte- og avgiftsregler.", false, "–", true],
+  ["Juss, skatt og eiendom", ["Lagt til ekstra fagområde"], "Skatt og avgift", "Bachelorkurs", "Finans, økonomi og styring", "Finans, økonomi og regnskap", "Juss, skatt og eiendom › Skatt og avgift; Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om skatte- og avgiftsregler.", false, "–", true],
   ["Juss, skatt og eiendom", ["Flyttet til nytt fagområde"], "Master of Management med spesialisering i skatte- og avgiftsrett", "Master", "Finans, økonomi og styring", "Ledelse", "Juss, skatt og eiendom › Skatt og avgift; Ledelse › Generell ledelse og lederutdanning", "Handler om skatte- og avgiftsregler.", false, "–", false],
-  ["Juss, skatt og eiendom", ["Flyttet til nytt fagområde"], "Merverdiavgift II", "Master", "Finans, økonomi og styring; Offentlig sektor", "Finans, økonomi og regnskap", "Juss, skatt og eiendom › Skatt og avgift; Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om skatte- og avgiftsregler.", false, "–", false],
-  ["Juss, skatt og eiendom", ["Flyttet til nytt fagområde"], "Internasjonal skatterett", "Masterkurs", "Finans, økonomi og styring; Offentlig sektor", "Finans, økonomi og regnskap", "Juss, skatt og eiendom › Skatt og avgift; Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om skatte- og avgiftsregler.", false, "–", false],
-  ["Juss, skatt og eiendom", ["Flyttet til nytt fagområde"], "Internprising", "Masterkurs", "Finans, økonomi og styring; Offentlig sektor", "Finans, økonomi og regnskap", "Juss, skatt og eiendom › Skatt og avgift; Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om skatte- og avgiftsregler.", false, "–", false],
-  ["Juss, skatt og eiendom", ["Flyttet til nytt fagområde"], "Merverdiavgift", "Masterkurs", "Finans, økonomi og styring; Offentlig sektor", "Finans, økonomi og regnskap", "Juss, skatt og eiendom › Skatt og avgift; Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om skatte- og avgiftsregler.", false, "–", false],
-  ["Juss, skatt og eiendom", ["Flyttet til nytt fagområde"], "Selskaps- og næringsbeskatning I", "Masterkurs", "Finans, økonomi og styring; Offentlig sektor", "Finans, økonomi og regnskap", "Juss, skatt og eiendom › Skatt og avgift; Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om skatte- og avgiftsregler.", false, "–", false],
-  ["Juss, skatt og eiendom", ["Flyttet til nytt fagområde"], "Skatteprosess", "Masterkurs", "Finans, økonomi og styring; Offentlig sektor", "Finans, økonomi og regnskap", "Juss, skatt og eiendom › Skatt og avgift; Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om skatte- og avgiftsregler.", false, "–", false],
-  ["Juss, skatt og eiendom", ["Flyttet til nytt fagområde"], "Digital Compliance", "Bachelorkurs", "Finans, økonomi og styring; Digitalisering og Analytics", "KI, digitalisering og analytics", "Juss, skatt og eiendom › Compliance; KI, digitalisering og analytics › Digital transformasjon", "Handler om lover og forskrifter (GDPR, IT-kontrakter, opphavsrett), ikke finansiell styring.", false, "–", false],
+  ["Juss, skatt og eiendom", ["Lagt til ekstra fagområde"], "Merverdiavgift II", "Master", "Finans, økonomi og styring; Offentlig sektor", "Finans, økonomi og regnskap", "Juss, skatt og eiendom › Skatt og avgift; Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om skatte- og avgiftsregler.", false, "–", false],
+  ["Juss, skatt og eiendom", ["Lagt til ekstra fagområde"], "Internasjonal skatterett", "Masterkurs", "Finans, økonomi og styring; Offentlig sektor", "Finans, økonomi og regnskap", "Juss, skatt og eiendom › Skatt og avgift; Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om skatte- og avgiftsregler.", false, "–", false],
+  ["Juss, skatt og eiendom", ["Lagt til ekstra fagområde"], "Internprising", "Masterkurs", "Finans, økonomi og styring; Offentlig sektor", "Finans, økonomi og regnskap", "Juss, skatt og eiendom › Skatt og avgift; Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om skatte- og avgiftsregler.", false, "–", false],
+  ["Juss, skatt og eiendom", ["Lagt til ekstra fagområde"], "Merverdiavgift", "Masterkurs", "Finans, økonomi og styring; Offentlig sektor", "Finans, økonomi og regnskap", "Juss, skatt og eiendom › Skatt og avgift; Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om skatte- og avgiftsregler.", false, "–", false],
+  ["Juss, skatt og eiendom", ["Lagt til ekstra fagområde"], "Selskaps- og næringsbeskatning I", "Masterkurs", "Finans, økonomi og styring; Offentlig sektor", "Finans, økonomi og regnskap", "Juss, skatt og eiendom › Skatt og avgift; Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om skatte- og avgiftsregler.", false, "–", false],
+  ["Juss, skatt og eiendom", ["Lagt til ekstra fagområde"], "Skatteprosess", "Masterkurs", "Finans, økonomi og styring; Offentlig sektor", "Finans, økonomi og regnskap", "Juss, skatt og eiendom › Skatt og avgift; Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om skatte- og avgiftsregler.", false, "–", false],
+  ["Juss, skatt og eiendom", ["Lagt til ekstra fagområde"], "Digital Compliance", "Bachelorkurs", "Finans, økonomi og styring; Digitalisering og Analytics", "KI, digitalisering og analytics", "Juss, skatt og eiendom › Compliance; KI, digitalisering og analytics › Digital transformasjon", "Handler om lover og forskrifter (GDPR, IT-kontrakter, opphavsrett), ikke finansiell styring.", false, "–", false],
   ["Juss, skatt og eiendom", ["Manglet fagområde"], "Risikobasert tilnærming", "Kurs uten studiepoeng", "–", "Finans, økonomi og regnskap", "Juss, skatt og eiendom › Compliance; Finans, økonomi og regnskap › Finansiell kriminalitet og compliance", "Handler om hvitvaskingsloven og compliance. Flyttet fra Finans, og søsterkurs ligger i Juss.", false, "Finansnæringen", false],
   ["Juss, skatt og eiendom", ["Manglet fagområde"], "Utvalgte praktiske problemstillinger", "Årsenhet", "–", "Finans, økonomi og regnskap", "Juss, skatt og eiendom › Compliance; Finans, økonomi og regnskap › Finansiell kriminalitet og compliance", "Handler om hvitvaskingsloven, taushetsplikt og tilsyn.", false, "Finansnæringen", false],
-  ["Juss, skatt og eiendom", ["Flyttet til nytt fagområde"], "Markedsrett og etikk", "Bachelorkurs", "Finans, økonomi og styring; Markedsføring, kommunikasjon og kultur", "Markedsføring, kommunikasjon og kultur", "Juss, skatt og eiendom › Forretningsjus og rettsvitenskap; Markedsføring, kommunikasjon og kultur › Markedsføring", "Juridisk rammeverk (avtalerett, kjøpsrett, markedsføringsloven).", false, "–", true],
+  ["Juss, skatt og eiendom", ["Lagt til ekstra fagområde"], "Markedsrett og etikk", "Bachelorkurs", "Finans, økonomi og styring; Markedsføring, kommunikasjon og kultur", "Markedsføring, kommunikasjon og kultur", "Juss, skatt og eiendom › Forretningsjus og rettsvitenskap; Markedsføring, kommunikasjon og kultur › Markedsføring", "Juridisk rammeverk (avtalerett, kjøpsrett, markedsføringsloven).", false, "–", true],
   ["KI, digitalisering og analytics", ["Endret navn på fagområde"], "Bachelor of Data Science for Business", "Bachelor", "Digitalisering og Analytics", "–", "KI, digitalisering og analytics › Data science og analytics", "Handler om dataanalyse, data science og maskinlæring.", false, "–", false],
   ["KI, digitalisering og analytics", ["1 fagområde prioritert", "Fagområde fjernet"], "Digital Business", "Bachelor", "Finans, økonomi og styring; Digitalisering og Analytics; Internasjonal Business", "–", "KI, digitalisering og analytics › Digital transformasjon", "Handler om digitalisering og digital transformasjon.", false, "–", false],
   ["KI, digitalisering og analytics", ["Manglet fagområde"], "AI i finansnæringen", "Bachelorkurs", "–", "Finans, økonomi og regnskap", "KI, digitalisering og analytics › KI; Finans, økonomi og regnskap › Fintech", "Handler om kunstig intelligens, maskinlæring og bruken av dem.", true, "Finansnæringen", false],
   ["KI, digitalisering og analytics", ["Manglet fagområde"], "Bachelor digital transformasjon", "Bachelorkurs", "–", "Finans, økonomi og regnskap", "KI, digitalisering og analytics › Digital transformasjon; Finans, økonomi og regnskap › Fintech", "Handler om digitalisering og digital transformasjon.", false, "Finansnæringen", false],
   ["KI, digitalisering og analytics", ["Flyttet til nytt fagområde"], "Kunstig intelligens for økt produktivitet", "Bachelorkurs", "Ledelse", "–", "KI, digitalisering og analytics › KI", "Handler om kunstig intelligens, maskinlæring og bruken av dem.", false, "–", false],
   ["KI, digitalisering og analytics", ["Endret navn på fagområde"], "Kunstig intelligens i praksis", "Bachelorkurs", "Digitalisering og Analytics", "–", "KI, digitalisering og analytics › KI", "Handler om kunstig intelligens, maskinlæring og bruken av dem.", false, "–", false],
-  ["Markedsføring, kommunikasjon og kultur", ["Flyttet til nytt fagområde"], "Kvalitativ metode: Dypere innsikt", "Bachelorkurs", "Digitalisering og Analytics", "KI, digitalisering og analytics", "Markedsføring, kommunikasjon og kultur › Kunde- og markedsinnsikt; KI, digitalisering og analytics › Statistikk og metode", "Metodekurs for innsikt i kunder og marked.", false, "–", true],
+  ["Markedsføring, kommunikasjon og kultur", ["Lagt til ekstra fagområde"], "Kvalitativ metode: Dypere innsikt", "Bachelorkurs", "Digitalisering og Analytics", "KI, digitalisering og analytics", "Markedsføring, kommunikasjon og kultur › Kunde- og markedsinnsikt; KI, digitalisering og analytics › Statistikk og metode", "Metodekurs for innsikt i kunder og marked.", false, "–", true],
   ["KI, digitalisering og analytics", ["Manglet fagområde"], "Maskinlæring og anvendelser i finansnæringen", "Bachelorkurs", "–", "Finans, økonomi og regnskap", "KI, digitalisering og analytics › KI; Finans, økonomi og regnskap › Fintech", "Handler om kunstig intelligens, maskinlæring og bruken av dem.", true, "Finansnæringen", false],
-  ["Markedsføring, kommunikasjon og kultur", ["Flyttet til nytt fagområde"], "Metode og innsikt", "Bachelorkurs", "Digitalisering og Analytics", "KI, digitalisering og analytics", "Markedsføring, kommunikasjon og kultur › Kunde- og markedsinnsikt; KI, digitalisering og analytics › Statistikk og metode", "Metodekurs for innsikt i kunder og marked.", false, "–", true],
+  ["Markedsføring, kommunikasjon og kultur", ["Lagt til ekstra fagområde"], "Metode og innsikt", "Bachelorkurs", "Digitalisering og Analytics", "KI, digitalisering og analytics", "Markedsføring, kommunikasjon og kultur › Kunde- og markedsinnsikt; KI, digitalisering og analytics › Statistikk og metode", "Metodekurs for innsikt i kunder og marked.", false, "–", true],
   ["KI, digitalisering og analytics", ["1 fagområde prioritert", "Fagområde fjernet"], "Metode og statistisk dataanalyse", "Bachelorkurs", "Finans, økonomi og styring; Digitalisering og Analytics", "–", "KI, digitalisering og analytics › Statistikk og metode", "Handler om statistikk og forskningsmetode.", false, "–", true],
   ["KI, digitalisering og analytics", ["1 fagområde prioritert", "Fagområde fjernet"], "Statistikk", "Bachelorkurs", "Finans, økonomi og styring; Digitalisering og Analytics", "–", "KI, digitalisering og analytics › Statistikk og metode", "Handler om statistikk og forskningsmetode.", false, "–", true],
   ["KI, digitalisering og analytics", ["1 fagområde prioritert"], "Statistikk for økonomer", "Bachelorkurs", "Finans, økonomi og styring; Digitalisering og Analytics", "Finans, økonomi og regnskap", "KI, digitalisering og analytics › Statistikk og metode; Finans, økonomi og regnskap › Samfunnsøkonomi", "Handler om statistikk og forskningsmetode.", false, "–", true],
@@ -164,15 +166,15 @@ const rows: Row[] = [
   ["KI, digitalisering og analytics", ["Endret navn på fagområde"], "Digitalisering, personvern og kunstig intelligens", "Masterkurs", "Digitalisering og Analytics", "Juss, skatt og eiendom", "KI, digitalisering og analytics › Ansvarlig KI og personvern; Juss, skatt og eiendom › Compliance", "Handler om etikk, regulering og personvern i KI.", true, "–", false],
   ["KI, digitalisering og analytics", ["1 fagområde prioritert", "Fagområde fjernet"], "Generative AI for Business", "Masterkurs", "Strategi, innovasjon og bærekraft; Digitalisering og Analytics", "–", "KI, digitalisering og analytics › KI", "Handler om kunstig intelligens, maskinlæring og bruken av dem.", false, "–", false],
   ["KI, digitalisering og analytics", ["Manglet fagområde"], "Master digital transformasjon", "Masterkurs", "–", "–", "KI, digitalisering og analytics › Digital transformasjon", "Handler om digitalisering og digital transformasjon.", false, "Finansnæringen", false],
-  ["KI, digitalisering og analytics", ["1 fagområde prioritert", "Fagområde fjernet"], "Responsible AI Leadership", "Masterkurs", "Eiendom, varehandel og forretningsjus; Finans, økonomi og styring; Digitalisering og Analytics", "Ledelse", "KI, digitalisering og analytics › Ansvarlig KI og personvern; Ledelse › Generell ledelse og lederutdanning", "Handler om etikk, regulering og personvern i KI.", true, "–", false],
+  ["KI, digitalisering og analytics", ["1 fagområde prioritert", "Fagområde fjernet"], "Responsible AI Leadership", "Masterkurs", "Eiendom, varehandel og forretningsjus; Finans, økonomi og styring; Digitalisering og Analytics", "Ledelse; Juss, skatt og eiendom", "KI, digitalisering og analytics › Ansvarlig KI og personvern; Ledelse › Generell ledelse og lederutdanning; Juss, skatt og eiendom › Compliance", "Handler om etikk, regulering og personvern i KI.", true, "–", false],
   ["KI, digitalisering og analytics", ["Manglet fagområde"], "Digital transformasjon i finansnæringen", "Kurs uten studiepoeng", "–", "Finans, økonomi og regnskap", "KI, digitalisering og analytics › Digital transformasjon; Finans, økonomi og regnskap › Fintech", "Handler om digitalisering og digital transformasjon.", false, "Finansnæringen", true],
   ["KI, digitalisering og analytics", ["Manglet fagområde"], "Grunnleggende teknologiforståelse", "Kurs uten studiepoeng", "–", "Finans, økonomi og regnskap", "KI, digitalisering og analytics › KI; Finans, økonomi og regnskap › Fintech", "Innholdet er maskinlæring og AI, anvendt i finansnæringen.", true, "Finansnæringen", false],
-  ["KI, digitalisering og analytics", ["Manglet fagområde"], "Etikk og regulering i AI", "Årsenhet", "–", "–", "KI, digitalisering og analytics › Ansvarlig KI og personvern", "Handler om etikk, regulering og personvern i KI.", true, "Finansnæringen", false],
+  ["KI, digitalisering og analytics", ["Manglet fagområde"], "Etikk og regulering i AI", "Årsenhet", "–", "Juss, skatt og eiendom", "KI, digitalisering og analytics › Ansvarlig KI og personvern; Juss, skatt og eiendom › Compliance", "Handler om etikk, regulering og personvern i KI.", true, "Finansnæringen", false],
   ["KI, digitalisering og analytics", ["Endret navn på fagområde"], "Prototyping med KI", "Årsenhet", "Digitalisering og Analytics", "–", "KI, digitalisering og analytics › KI", "Handler om kunstig intelligens, maskinlæring og bruken av dem.", false, "–", false],
   ["KI, digitalisering og analytics", ["Manglet fagområde"], "Data and Decision Science", "PhD", "–", "–", "KI, digitalisering og analytics › Data science og analytics", "Handler om dataanalyse, data science og maskinlæring.", false, "–", false],
-  ["Ledelse", ["1 fagområde prioritert"], "Effektive team", "Bachelorkurs", "Ledelse; Organisasjonsutvikling og Human Resource Management", "HR og organisasjonsutvikling", "Ledelse › Team-, medarbeider- og endringsledelse; HR og organisasjonsutvikling › Organisasjonspsykologi", "Handler om team, tillit og konflikthåndtering på arbeidsplassen. Flyttet fra HR og organisasjonsutvikling, siden team og prestasjon nå eies av Ledelse.", true, "–", false],
+  ["Ledelse", ["1 fagområde prioritert"], "Effektive team", "Bachelorkurs", "Ledelse; Organisasjonsutvikling og Human Resource Management", "HR og organisasjonsutvikling", "Ledelse › Teamledelse og prestasjon; HR og organisasjonsutvikling › Organisasjonspsykologi", "Handler om team, tillit og konflikthåndtering på arbeidsplassen. Flyttet fra HR og organisasjonsutvikling, siden team og prestasjon nå eies av Ledelse.", true, "–", false],
   ["Ledelse", ["1 fagområde prioritert", "Fagområde fjernet"], "Forhandling og forhandlingsteknikk", "Bachelorkurs", "Ledelse; Organisasjonsutvikling og Human Resource Management", "–", "Ledelse › Lederferdigheter og kommunikasjon", "Handler om forhandling som lederferdighet. Flyttet fra HR og organisasjonsutvikling, siden påvirkning og forhandling nå eies av Ledelse.", true, "–", false],
-  ["Ledelse", ["1 fagområde prioritert"], "Prestasjonsledelse", "Bachelorkurs", "Ledelse; Organisasjonsutvikling og Human Resource Management", "HR og organisasjonsutvikling", "Ledelse › Team-, medarbeider- og endringsledelse; HR og organisasjonsutvikling › HR og personalledelse", "Handler om å motivere og utvikle medarbeidere med styrkebasert ledelse. Flyttet fra HR og organisasjonsutvikling, siden team og prestasjon nå eies av Ledelse.", true, "–", false],
+  ["Ledelse", ["1 fagområde prioritert"], "Prestasjonsledelse", "Bachelorkurs", "Ledelse; Organisasjonsutvikling og Human Resource Management", "HR og organisasjonsutvikling", "Ledelse › Teamledelse og prestasjon; HR og organisasjonsutvikling › HR og personalledelse", "Handler om å motivere og utvikle medarbeidere med styrkebasert ledelse. Flyttet fra HR og organisasjonsutvikling, siden team og prestasjon nå eies av Ledelse.", true, "–", false],
   ["Ledelse", ["Uendret"], "Bachelor in Management", "Bachelor", "Ledelse", "–", "Ledelse › Generell ledelse og lederutdanning", "Handler om lederskap og lederrollen.", false, "–", false],
   ["Ledelse", ["Flyttet til nytt fagområde"], "Effektiv og bærekraftig prosjektpraksis", "Bachelorkurs", "Prosjektledelse", "Strategi, innovasjon og bærekraft", "Ledelse › Prosjektledelse; Strategi, innovasjon og bærekraft › Bærekraft", "Handler om prosjektpraksis.", false, "–", false],
   ["Ledelse", ["Uendret"], "Grunnutdanning i ledelse", "Bachelorkurs", "Ledelse", "–", "Ledelse › Generell ledelse og lederutdanning", "Handler om lederskap og lederrollen.", true, "–", false],
@@ -186,14 +188,14 @@ const rows: Row[] = [
   ["Ledelse", ["1 fagområde prioritert"], "Prosjektlederskap, prosjektteam og smidighet", "Bachelorkurs", "Ledelse; Prosjektledelse", "–", "Ledelse › Prosjektledelse", "Handler om å lede prosjekter.", false, "–", false],
   ["Ledelse", ["1 fagområde prioritert"], "Verdiskapende prosjektledelse", "Bachelorkurs", "Ledelse; Prosjektledelse", "–", "Ledelse › Prosjektledelse", "Handler om å lede prosjekter.", false, "–", false],
   ["Ledelse", ["1 fagområde prioritert", "Fagområde fjernet"], "Executive MBA", "Master", "Ledelse; Strategi, innovasjon og bærekraft; Internasjonal Business", "Strategi, innovasjon og bærekraft; Finans, økonomi og regnskap", "Ledelse › Generell ledelse og lederutdanning; Strategi, innovasjon og bærekraft › Strategi; Finans, økonomi og regnskap › Bedriftsøkonomi", "Handler om lederskap og lederrollen.", false, "–", false],
-  ["Finans, økonomi og regnskap", ["Flyttet til nytt fagområde"], "Major in Leadership, Change and Analytics", "Master", "Ledelse; Organisasjonsutvikling og Human Resource Management", "Ledelse; HR og organisasjonsutvikling; KI, digitalisering og analytics", "Finans, økonomi og regnskap › Bedriftsøkonomi; Ledelse › Team-, medarbeider- og endringsledelse; HR og organisasjonsutvikling › Endringsledelse; KI, digitalisering og analytics › Data science og analytics", "Major i Master in Business, plassert sammen med selve graden og Siviløkonom.", true, "–", false],
+  ["Finans, økonomi og regnskap", ["Lagt til ekstra fagområde"], "Major in Leadership, Change and Analytics", "Master", "Ledelse; Organisasjonsutvikling og Human Resource Management", "Ledelse; HR og organisasjonsutvikling; KI, digitalisering og analytics", "Finans, økonomi og regnskap › Bedriftsøkonomi; Ledelse › Endringsledelse; HR og organisasjonsutvikling › Endringsledelse; KI, digitalisering og analytics › Data science og analytics", "Major i Master in Business, plassert sammen med selve graden og Siviløkonom.", true, "–", false],
   ["Ledelse", ["Uendret"], "Master of Management", "Master", "Ledelse", "Strategi, innovasjon og bærekraft; Finans, økonomi og regnskap", "Ledelse › Generell ledelse og lederutdanning; Strategi, innovasjon og bærekraft › Strategi; Finans, økonomi og regnskap › Bedriftsøkonomi", "Handler om lederskap og lederrollen.", false, "–", false],
   ["Ledelse", ["1 fagområde prioritert", "Fagområde fjernet"], "Effektiv ledelse, påvirkning og innflytelse", "Masterkurs", "Ledelse; Organisasjonsutvikling og Human Resource Management", "–", "Ledelse › Lederferdigheter og kommunikasjon", "Handler om lederens kommunikasjon, påvirkning og forhandling.", false, "–", false],
   ["Ledelse", ["1 fagområde prioritert", "Fagområde fjernet"], "Ledelse; makt og mening", "Masterkurs", "Ledelse; Prosjektledelse", "–", "Ledelse › Lederferdigheter og kommunikasjon", "Handler om lederskap og lederrollen.", false, "–", false],
   ["Ledelse", ["1 fagområde prioritert"], "Lederskap i uforutsigbare omgivelser", "Masterkurs", "Ledelse; Organisasjonsutvikling og Human Resource Management", "HR og organisasjonsutvikling", "Ledelse › Lederferdigheter og kommunikasjon; HR og organisasjonsutvikling › Endringsledelse", "Handler om lederskap og lederrollen.", false, "–", false],
-  ["Ledelse", ["Uendret"], "Prestasjoner og utviklingsledelse", "Masterkurs", "Ledelse", "HR og organisasjonsutvikling", "Ledelse › Team-, medarbeider- og endringsledelse; HR og organisasjonsutvikling › HR og personalledelse", "Handler om å lede team og prestasjoner.", false, "–", false],
+  ["Ledelse", ["Uendret"], "Prestasjoner og utviklingsledelse", "Masterkurs", "Ledelse", "HR og organisasjonsutvikling", "Ledelse › Teamledelse og prestasjon; HR og organisasjonsutvikling › HR og personalledelse", "Handler om å lede team og prestasjoner.", false, "–", false],
   ["Ledelse", ["Manglet fagområde"], "Prosjektledelse", "Masterkurs", "–", "–", "Ledelse › Prosjektledelse", "Handler om å lede prosjekter.", false, "–", false],
-  ["Ledelse", ["Uendret"], "Teamledelse", "Masterkurs", "Ledelse", "HR og organisasjonsutvikling", "Ledelse › Team-, medarbeider- og endringsledelse; HR og organisasjonsutvikling › Organisasjonspsykologi", "Handler om å lede team og prestasjoner.", false, "–", false],
+  ["Ledelse", ["Uendret"], "Teamledelse", "Masterkurs", "Ledelse", "HR og organisasjonsutvikling", "Ledelse › Teamledelse og prestasjon; HR og organisasjonsutvikling › Organisasjonspsykologi", "Handler om å lede team og prestasjoner.", false, "–", false],
   ["Ledelse", ["1 fagområde prioritert"], "Tilstedeværende ledelse", "Masterkurs", "Ledelse; Organisasjonsutvikling og Human Resource Management", "HR og organisasjonsutvikling", "Ledelse › Lederferdigheter og kommunikasjon; HR og organisasjonsutvikling › Organisasjonspsykologi", "Handler om lederskap og lederrollen.", false, "–", false],
   ["Ledelse", ["Uendret"], "Årsenhet i ledelse", "Årsenhet", "Ledelse", "–", "Ledelse › Generell ledelse og lederutdanning", "Handler om lederskap og lederrollen.", false, "–", false],
   ["Ledelse", ["1 fagområde prioritert"], "Ledelse og organisasjon", "PhD", "Ledelse; Organisasjonsutvikling og Human Resource Management", "HR og organisasjonsutvikling", "Ledelse › Generell ledelse og lederutdanning; HR og organisasjonsutvikling › Organisasjonspsykologi", "Handler om lederskap og lederrollen.", false, "–", false],
@@ -203,30 +205,30 @@ const rows: Row[] = [
   ["Helse, skole og barnehage", ["Flyttet til nytt fagområde"], "Ledelse av tjenesteutvikling", "Masterkurs", "Offentlig sektor", "Ledelse", "Helse, skole og barnehage › Helse; Ledelse › Helse-, skole- og barnehageledelse", "Ledelse av tjenesteutvikling i helsesektoren.", false, "Helse og omsorg", false],
   ["Ledelse", ["1 fagområde prioritert", "Fagområde fjernet"], "Kommunikasjon for ledere og organisasjoner", "Bachelorkurs", "Ledelse; Markedsføring, kommunikasjon og kultur; Organisasjonsutvikling og Human Resource Management", "Markedsføring, kommunikasjon og kultur", "Ledelse › Lederferdigheter og kommunikasjon; Markedsføring, kommunikasjon og kultur › Kommunikasjon", "Handler om kommunikasjon for ledere og organisasjoner. Flyttet fra Markedsføring, kommunikasjon og kultur, siden Ledelse eier kommunikasjon for ledere.", true, "–", true],
   ["Ledelse", ["1 fagområde prioritert", "Fagområde fjernet"], "Muntlig gjennomslag for ledere", "Bachelorkurs", "Ledelse; Markedsføring, kommunikasjon og kultur; Organisasjonsutvikling og Human Resource Management", "Markedsføring, kommunikasjon og kultur", "Ledelse › Lederferdigheter og kommunikasjon; Markedsføring, kommunikasjon og kultur › Kommunikasjon", "Handler om muntlig gjennomslag og kommunikasjon for ledere. Flyttet fra Markedsføring, kommunikasjon og kultur, siden Ledelse eier kommunikasjon for ledere.", true, "–", false],
-  ["Ledelse", ["Flyttet til nytt fagområde"], "Retorikk, kommunikasjon og ledelse", "Bachelorkurs", "Markedsføring, kommunikasjon og kultur", "Markedsføring, kommunikasjon og kultur", "Ledelse › Lederferdigheter og kommunikasjon; Markedsføring, kommunikasjon og kultur › Kommunikasjon", "Handler om retorikk og kommunikasjon i lederrollen. Flyttet fra Markedsføring, kommunikasjon og kultur, siden Ledelse eier kommunikasjon for ledere.", true, "–", false],
-  ["Markedsføring, kommunikasjon og kultur", ["Manglet fagområde"], "Bachelor i markedsføringsledelse, 3. studieår", "–", "–", "–", "Markedsføring, kommunikasjon og kultur › Markedsføring", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", true, "–", false],
+  ["Ledelse", ["Lagt til ekstra fagområde"], "Retorikk, kommunikasjon og ledelse", "Bachelorkurs", "Markedsføring, kommunikasjon og kultur", "Markedsføring, kommunikasjon og kultur", "Ledelse › Lederferdigheter og kommunikasjon; Markedsføring, kommunikasjon og kultur › Kommunikasjon", "Handler om retorikk og kommunikasjon i lederrollen. Flyttet fra Markedsføring, kommunikasjon og kultur, siden Ledelse eier kommunikasjon for ledere.", true, "–", false],
+  ["Markedsføring, kommunikasjon og kultur", ["Manglet fagområde"], "Bachelor i markedsføringsledelse, 3. studieår", "–", "–", "Ledelse", "Markedsføring, kommunikasjon og kultur › Markedsføring; Ledelse › Generell ledelse og lederutdanning", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", true, "–", false],
   ["Markedsføring, kommunikasjon og kultur", ["Manglet fagområde"], "Markedskandidat", "–", "–", "–", "Markedsføring, kommunikasjon og kultur › Markedsføring", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", true, "–", false],
-  ["Markedsføring, kommunikasjon og kultur", ["Uendret"], "Digital kommunikasjon og markedsføring", "Bachelor", "Markedsføring, kommunikasjon og kultur", "–", "Markedsføring, kommunikasjon og kultur › Markedsføring", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", true, "–", false],
-  ["Markedsføring, kommunikasjon og kultur", ["Uendret"], "Markedsføringsledelse", "Bachelor", "Markedsføring, kommunikasjon og kultur", "–", "Markedsføring, kommunikasjon og kultur › Markedsføring", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", true, "–", false],
-  ["Markedsføring, kommunikasjon og kultur", ["Flyttet til nytt fagområde"], "Markedsøkonomi", "Bachelor/Årsenhet", "Finans, økonomi og styring", "Finans, økonomi og regnskap", "Markedsføring, kommunikasjon og kultur › Markedsføring; Finans, økonomi og regnskap › Samfunnsøkonomi", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", true, "–", true],
+  ["Markedsføring, kommunikasjon og kultur", ["Uendret"], "Digital kommunikasjon og markedsføring", "Bachelor", "Markedsføring, kommunikasjon og kultur", "KI, digitalisering og analytics", "Markedsføring, kommunikasjon og kultur › Markedsføring; KI, digitalisering og analytics › Digital transformasjon", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", true, "–", false],
+  ["Markedsføring, kommunikasjon og kultur", ["Uendret"], "Markedsføringsledelse", "Bachelor", "Markedsføring, kommunikasjon og kultur", "Ledelse", "Markedsføring, kommunikasjon og kultur › Markedsføring; Ledelse › Generell ledelse og lederutdanning", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", true, "–", false],
+  ["Markedsføring, kommunikasjon og kultur", ["Lagt til ekstra fagområde"], "Markedsøkonomi", "Bachelor/Årsenhet", "Finans, økonomi og styring", "Finans, økonomi og regnskap", "Markedsføring, kommunikasjon og kultur › Markedsføring; Finans, økonomi og regnskap › Samfunnsøkonomi", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", true, "–", true],
   ["Markedsføring, kommunikasjon og kultur", ["1 fagområde prioritert", "Fagområde fjernet"], "Business Communication: Culture and Ethics", "Bachelorkurs", "Markedsføring, kommunikasjon og kultur; Internasjonal Business", "–", "Markedsføring, kommunikasjon og kultur › Kultur og internasjonal business", "Handler om kultur eller har internasjonal vinkling.", false, "–", true],
-  ["Markedsføring, kommunikasjon og kultur", ["Uendret"], "Digital Marketing Management", "Bachelorkurs", "Markedsføring, kommunikasjon og kultur", "–", "Markedsføring, kommunikasjon og kultur › Markedsføring", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", false, "–", false],
+  ["Markedsføring, kommunikasjon og kultur", ["Uendret"], "Digital Marketing Management", "Bachelorkurs", "Markedsføring, kommunikasjon og kultur", "KI, digitalisering og analytics; Ledelse", "Markedsføring, kommunikasjon og kultur › Markedsføring; KI, digitalisering og analytics › Digital transformasjon; Ledelse › Generell ledelse og lederutdanning", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", false, "–", false],
   ["Markedsføring, kommunikasjon og kultur", ["Uendret"], "Digital Marketing Tools and AI", "Bachelorkurs", "Markedsføring, kommunikasjon og kultur", "KI, digitalisering og analytics", "Markedsføring, kommunikasjon og kultur › Markedsføring; KI, digitalisering og analytics › KI", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", false, "–", true],
   ["Markedsføring, kommunikasjon og kultur", ["Uendret"], "Forbrukerpsykologi", "Bachelorkurs", "Markedsføring, kommunikasjon og kultur", "–", "Markedsføring, kommunikasjon og kultur › Kunde- og markedsinnsikt", "Handler om markedsinnsikt: kunder, forbrukeratferd og markedsanalyse.", false, "–", true],
-  ["Markedsføring, kommunikasjon og kultur", ["Uendret"], "KI i markedsføring", "Bachelorkurs", "Markedsføring, kommunikasjon og kultur", "–", "Markedsføring, kommunikasjon og kultur › Markedsføring", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", false, "–", true],
+  ["Markedsføring, kommunikasjon og kultur", ["Uendret"], "KI i markedsføring", "Bachelorkurs", "Markedsføring, kommunikasjon og kultur", "KI, digitalisering og analytics", "Markedsføring, kommunikasjon og kultur › Markedsføring; KI, digitalisering og analytics › KI", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", false, "–", true],
   ["Markedsføring, kommunikasjon og kultur", ["Uendret"], "Kunderelasjoner på bedriftsmarkedet", "Bachelorkurs", "Markedsføring, kommunikasjon og kultur", "–", "Markedsføring, kommunikasjon og kultur › Kunde- og markedsinnsikt", "Handler om markedsinnsikt: kunder, forbrukeratferd og markedsanalyse.", false, "–", true],
   ["Markedsføring, kommunikasjon og kultur", ["Uendret"], "Markedsføring", "Bachelorkurs", "Markedsføring, kommunikasjon og kultur", "–", "Markedsføring, kommunikasjon og kultur › Markedsføring", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", false, "–", true],
   ["Markedsføring, kommunikasjon og kultur", ["Uendret"], "Markedsføring og kunderelasjoner", "Bachelorkurs", "Markedsføring, kommunikasjon og kultur", "–", "Markedsføring, kommunikasjon og kultur › Kunde- og markedsinnsikt", "Handler om markedsinnsikt: kunder, forbrukeratferd og markedsanalyse.", false, "–", true],
-  ["Markedsføring, kommunikasjon og kultur", ["1 fagområde prioritert", "Fagområde fjernet"], "Markedsføringsledelse og strategi", "Bachelorkurs", "Finans, økonomi og styring; Markedsføring, kommunikasjon og kultur; Strategi, innovasjon og bærekraft", "Strategi, innovasjon og bærekraft", "Markedsføring, kommunikasjon og kultur › Markedsføring; Strategi, innovasjon og bærekraft › Strategi", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", true, "–", false],
-  ["Markedsføring, kommunikasjon og kultur", ["Uendret"], "Markedsføringsledelse og strategi", "Bachelorkurs", "Markedsføring, kommunikasjon og kultur", "Strategi, innovasjon og bærekraft", "Markedsføring, kommunikasjon og kultur › Markedsføring; Strategi, innovasjon og bærekraft › Strategi", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", true, "–", true],
+  ["Markedsføring, kommunikasjon og kultur", ["1 fagområde prioritert", "Fagområde fjernet"], "Markedsføringsledelse og strategi", "Bachelorkurs", "Finans, økonomi og styring; Markedsføring, kommunikasjon og kultur; Strategi, innovasjon og bærekraft", "Strategi, innovasjon og bærekraft; Ledelse", "Markedsføring, kommunikasjon og kultur › Markedsføring; Strategi, innovasjon og bærekraft › Strategi; Ledelse › Strategisk ledelse", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", true, "–", false],
+  ["Markedsføring, kommunikasjon og kultur", ["Uendret"], "Markedsføringsledelse og strategi", "Bachelorkurs", "Markedsføring, kommunikasjon og kultur", "Strategi, innovasjon og bærekraft; Ledelse", "Markedsføring, kommunikasjon og kultur › Markedsføring; Strategi, innovasjon og bærekraft › Strategi; Ledelse › Strategisk ledelse", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", true, "–", true],
   ["Markedsføring, kommunikasjon og kultur", ["1 fagområde prioritert"], "Marketing Analytics", "Bachelorkurs", "Markedsføring, kommunikasjon og kultur; Digitalisering og Analytics", "KI, digitalisering og analytics", "Markedsføring, kommunikasjon og kultur › Kunde- og markedsinnsikt; KI, digitalisering og analytics › Data science og analytics", "Handler om markedsinnsikt: kunder, forbrukeratferd og markedsanalyse.", true, "–", true],
   ["Markedsføring, kommunikasjon og kultur", ["1 fagområde prioritert", "Fagområde fjernet"], "Marketing Communication", "Bachelorkurs", "Markedsføring, kommunikasjon og kultur; Strategi, innovasjon og bærekraft", "–", "Markedsføring, kommunikasjon og kultur › Kommunikasjon", "Handler om kommunikasjon, retorikk og presentasjon.", false, "–", true],
-  ["Markedsføring, kommunikasjon og kultur", ["1 fagområde prioritert", "Fagområde fjernet"], "Merkevareledelse", "Bachelorkurs", "Markedsføring, kommunikasjon og kultur; Strategi, innovasjon og bærekraft", "–", "Markedsføring, kommunikasjon og kultur › Markedsføring", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", false, "–", true],
+  ["Markedsføring, kommunikasjon og kultur", ["1 fagområde prioritert", "Fagområde fjernet"], "Merkevareledelse", "Bachelorkurs", "Markedsføring, kommunikasjon og kultur; Strategi, innovasjon og bærekraft", "Ledelse", "Markedsføring, kommunikasjon og kultur › Markedsføring; Ledelse › Generell ledelse og lederutdanning", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", false, "–", true],
   ["Markedsføring, kommunikasjon og kultur", ["Uendret"], "BI–Luiss Joint Master in Marketing", "Master", "Markedsføring, kommunikasjon og kultur", "–", "Markedsføring, kommunikasjon og kultur › Markedsføring", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", true, "–", false],
   ["Markedsføring, kommunikasjon og kultur", ["1 fagområde prioritert", "Fagområde fjernet"], "Business Communication", "Master", "Ledelse; Markedsføring, kommunikasjon og kultur; Digitalisering og Analytics", "–", "Markedsføring, kommunikasjon og kultur › Kommunikasjon", "Handler om kommunikasjon, retorikk og presentasjon.", false, "–", false],
-  ["Finans, økonomi og regnskap", ["Flyttet til nytt fagområde"], "Major in Marketing", "Master", "Markedsføring, kommunikasjon og kultur", "Markedsføring, kommunikasjon og kultur", "Finans, økonomi og regnskap › Bedriftsøkonomi; Markedsføring, kommunikasjon og kultur › Markedsføring", "Major i Master in Business, plassert sammen med selve graden og Siviløkonom.", true, "–", false],
-  ["Markedsføring, kommunikasjon og kultur", ["Uendret"], "Strategic Marketing Management", "Master", "Markedsføring, kommunikasjon og kultur", "Strategi, innovasjon og bærekraft", "Markedsføring, kommunikasjon og kultur › Markedsføring; Strategi, innovasjon og bærekraft › Strategi", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", true, "–", false],
-  ["Markedsføring, kommunikasjon og kultur", ["Flyttet til nytt fagområde"], "Customer and Market analytics", "Masterkurs", "Digitalisering og Analytics", "KI, digitalisering og analytics", "Markedsføring, kommunikasjon og kultur › Kunde- og markedsinnsikt; KI, digitalisering og analytics › Data science og analytics", "Handler om markedsinnsikt: kunder, forbrukeratferd og markedsanalyse.", true, "–", false],
+  ["Finans, økonomi og regnskap", ["Lagt til ekstra fagområde"], "Major in Marketing", "Master", "Markedsføring, kommunikasjon og kultur", "Markedsføring, kommunikasjon og kultur", "Finans, økonomi og regnskap › Bedriftsøkonomi; Markedsføring, kommunikasjon og kultur › Markedsføring", "Major i Master in Business, plassert sammen med selve graden og Siviløkonom.", true, "–", false],
+  ["Markedsføring, kommunikasjon og kultur", ["Uendret"], "Strategic Marketing Management", "Master", "Markedsføring, kommunikasjon og kultur", "Strategi, innovasjon og bærekraft; Ledelse", "Markedsføring, kommunikasjon og kultur › Markedsføring; Strategi, innovasjon og bærekraft › Strategi; Ledelse › Strategisk ledelse", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", true, "–", false],
+  ["Markedsføring, kommunikasjon og kultur", ["Lagt til ekstra fagområde"], "Customer and Market analytics", "Masterkurs", "Digitalisering og Analytics", "KI, digitalisering og analytics", "Markedsføring, kommunikasjon og kultur › Kunde- og markedsinnsikt; KI, digitalisering og analytics › Data science og analytics", "Handler om markedsinnsikt: kunder, forbrukeratferd og markedsanalyse.", true, "–", false],
   ["Markedsføring, kommunikasjon og kultur", ["1 fagområde prioritert", "Fagområde fjernet"], "Markedsstrategi - innsikt, posisjonering og vekst", "Masterkurs", "Markedsføring, kommunikasjon og kultur; Strategi, innovasjon og bærekraft; Digitalisering og Analytics", "Strategi, innovasjon og bærekraft", "Markedsføring, kommunikasjon og kultur › Markedsføring; Strategi, innovasjon og bærekraft › Strategi", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", true, "–", false],
   ["Markedsføring, kommunikasjon og kultur", ["Uendret"], "Strategisk historiefortelling", "Masterkurs", "Markedsføring, kommunikasjon og kultur", "–", "Markedsføring, kommunikasjon og kultur › Kommunikasjon", "Handler om kommunikasjon, retorikk og presentasjon.", false, "–", false],
   ["Markedsføring, kommunikasjon og kultur", ["1 fagområde prioritert", "Fagområde fjernet"], "Strategisk kommunikasjon", "Masterkurs", "Markedsføring, kommunikasjon og kultur; Strategi, innovasjon og bærekraft", "–", "Markedsføring, kommunikasjon og kultur › Kommunikasjon", "Handler om kommunikasjon, retorikk og presentasjon.", false, "–", false],
@@ -236,9 +238,9 @@ const rows: Row[] = [
   ["Markedsføring, kommunikasjon og kultur", ["Uendret"], "Summer School at BI", "Bachelor", "Markedsføring, kommunikasjon og kultur", "–", "Markedsføring, kommunikasjon og kultur › Kultur og internasjonal business", "Handler om kultur eller har internasjonal vinkling.", false, "–", false],
   ["Markedsføring, kommunikasjon og kultur", ["Manglet fagområde"], "Kulturforståelse, forhandlinger og etisk refleksjon", "Masterkurs", "–", "Sikkerhet og beredskap", "Markedsføring, kommunikasjon og kultur › Kultur og internasjonal business; Sikkerhet og beredskap › Sikkerhetsledelse og cybersikkerhet", "Handler om kultur eller har internasjonal vinkling.", false, "–", false],
   ["Sikkerhet og beredskap", ["Manglet fagområde"], "Topplederkurs i geopolitisk risikohåndtering", "–", "–", "Ledelse", "Sikkerhet og beredskap › Beredskap og krisehåndtering; Ledelse › Sikkerhets- og beredskapsledelse", "Handler om beredskap, krisehåndtering og risiko.", false, "–", false],
-  ["Sikkerhet og beredskap", ["Flyttet til nytt fagområde"], "Sikkerhetsledelse", "Bachelorkurs", "Ledelse; Offentlig sektor", "Ledelse", "Sikkerhet og beredskap › Sikkerhetsledelse og cybersikkerhet; Ledelse › Sikkerhets- og beredskapsledelse", "Handler om sikkerhetsledelse og digital sikkerhet.", false, "–", false],
-  ["Sikkerhet og beredskap", ["Flyttet til nytt fagområde", "Fagområde fjernet"], "Sikkerhetsledelse", "Master", "Ledelse; Offentlig sektor; Strategi, innovasjon og bærekraft", "Ledelse", "Sikkerhet og beredskap › Sikkerhetsledelse og cybersikkerhet; Ledelse › Sikkerhets- og beredskapsledelse", "Handler om sikkerhetsledelse og digital sikkerhet.", false, "–", false],
-  ["Sikkerhet og beredskap", ["Flyttet til nytt fagområde"], "Digital sikkerhet for ledere", "Masterkurs", "Offentlig sektor; Digitalisering og Analytics", "KI, digitalisering og analytics; Ledelse", "Sikkerhet og beredskap › Sikkerhetsledelse og cybersikkerhet; KI, digitalisering og analytics › Digital transformasjon; Ledelse › Sikkerhets- og beredskapsledelse", "Handler om sikkerhetsledelse og digital sikkerhet.", true, "–", false],
+  ["Sikkerhet og beredskap", ["Lagt til ekstra fagområde"], "Sikkerhetsledelse", "Bachelorkurs", "Ledelse; Offentlig sektor", "Ledelse", "Sikkerhet og beredskap › Sikkerhetsledelse og cybersikkerhet; Ledelse › Sikkerhets- og beredskapsledelse", "Handler om sikkerhetsledelse og digital sikkerhet.", false, "–", false],
+  ["Sikkerhet og beredskap", ["Lagt til ekstra fagområde", "Fagområde fjernet"], "Sikkerhetsledelse", "Master", "Ledelse; Offentlig sektor; Strategi, innovasjon og bærekraft", "Ledelse", "Sikkerhet og beredskap › Sikkerhetsledelse og cybersikkerhet; Ledelse › Sikkerhets- og beredskapsledelse", "Handler om sikkerhetsledelse og digital sikkerhet.", false, "–", false],
+  ["Sikkerhet og beredskap", ["Lagt til ekstra fagområde"], "Digital sikkerhet for ledere", "Masterkurs", "Offentlig sektor; Digitalisering og Analytics", "KI, digitalisering og analytics; Ledelse", "Sikkerhet og beredskap › Sikkerhetsledelse og cybersikkerhet; KI, digitalisering og analytics › Digital transformasjon; Ledelse › Sikkerhets- og beredskapsledelse", "Handler om sikkerhetsledelse og digital sikkerhet.", true, "–", false],
   ["Sikkerhet og beredskap", ["Flyttet til nytt fagområde", "Fagområde fjernet"], "Organisering for det uventede", "Masterkurs", "Offentlig sektor; Organisasjonsutvikling og Human Resource Management", "–", "Sikkerhet og beredskap › Beredskap og krisehåndtering", "Handler om beredskap og krisehåndtering.", false, "–", false],
   ["Sikkerhet og beredskap", ["Flyttet til nytt fagområde", "Fagområde fjernet"], "Sikkerhetsledelse og konflikthåndtering", "Masterkurs", "Offentlig sektor; Organisasjonsutvikling og Human Resource Management", "Ledelse", "Sikkerhet og beredskap › Beredskap og krisehåndtering; Ledelse › Sikkerhets- og beredskapsledelse", "Handler om beredskap, krisehåndtering og risiko.", true, "–", false],
   ["Sikkerhet og beredskap", ["Manglet fagområde"], "Terrorisme og terrorbekjempelse", "Masterkurs", "–", "–", "Sikkerhet og beredskap › Beredskap og krisehåndtering", "Handler om beredskap, krisehåndtering og risiko.", false, "–", false],
@@ -248,14 +250,14 @@ const rows: Row[] = [
   ["Strategi, innovasjon og bærekraft", ["1 fagområde prioritert", "Fagområde fjernet"], "Bærekraftig risikostyring", "Bachelorkurs", "Ledelse; Strategi, innovasjon og bærekraft; Organisasjonsutvikling og Human Resource Management", "Finans, økonomi og regnskap", "Strategi, innovasjon og bærekraft › Bærekraft; Finans, økonomi og regnskap › Bærekraftig finans", "Handler om bærekraft, ESG og rapportering i virksomheter.", false, "–", false],
   ["Strategi, innovasjon og bærekraft", ["1 fagområde prioritert", "Fagområde fjernet"], "Designdrevet innovasjon", "Bachelorkurs", "Markedsføring, kommunikasjon og kultur; Strategi, innovasjon og bærekraft", "–", "Strategi, innovasjon og bærekraft › Innovasjon og entreprenørskap", "Handler om innovasjon, entreprenørskap eller forretningsutvikling.", false, "–", true],
   ["Strategi, innovasjon og bærekraft", ["1 fagområde prioritert"], "Forretningsmodeller og ESG-risiko", "Bachelorkurs", "Finans, økonomi og styring; Strategi, innovasjon og bærekraft", "Finans, økonomi og regnskap", "Strategi, innovasjon og bærekraft › Bærekraft; Finans, økonomi og regnskap › Bærekraftig finans", "Handler om bærekraft, ESG og rapportering i virksomheter.", false, "Finansnæringen", true],
-  ["Ledelse", ["Flyttet til nytt fagområde"], "Executive Master of Management in Energy", "Master", "Strategi, innovasjon og bærekraft; Internasjonal Business", "Strategi, innovasjon og bærekraft", "Ledelse › Strategisk ledelse; Strategi, innovasjon og bærekraft › Strategi", "Lederstudium i energibransjen.", false, "Energi", false],
+  ["Ledelse", ["Lagt til ekstra fagområde"], "Executive Master of Management in Energy", "Master", "Strategi, innovasjon og bærekraft; Internasjonal Business", "Strategi, innovasjon og bærekraft", "Ledelse › Strategisk ledelse; Strategi, innovasjon og bærekraft › Strategi", "Lederstudium i energibransjen.", false, "Energi", false],
   ["Strategi, innovasjon og bærekraft", ["Uendret"], "Innovation and Entrepreneurship", "Master", "Strategi, innovasjon og bærekraft", "Finans, økonomi og regnskap", "Strategi, innovasjon og bærekraft › Innovasjon og entreprenørskap; Finans, økonomi og regnskap › Bedriftsøkonomi", "Handler om innovasjon, entreprenørskap eller forretningsutvikling.", false, "–", false],
-  ["Finans, økonomi og regnskap", ["Flyttet til nytt fagområde"], "Major in Strategy", "Master", "Strategi, innovasjon og bærekraft", "Strategi, innovasjon og bærekraft", "Finans, økonomi og regnskap › Bedriftsøkonomi; Strategi, innovasjon og bærekraft › Strategi", "Major i Master in Business, plassert sammen med selve graden og Siviløkonom.", true, "–", false],
+  ["Finans, økonomi og regnskap", ["Lagt til ekstra fagområde"], "Major in Strategy", "Master", "Strategi, innovasjon og bærekraft", "Strategi, innovasjon og bærekraft", "Finans, økonomi og regnskap › Bedriftsøkonomi; Strategi, innovasjon og bærekraft › Strategi", "Major i Master in Business, plassert sammen med selve graden og Siviløkonom.", true, "–", false],
   ["Strategi, innovasjon og bærekraft", ["Uendret"], "Bærekraft 2.0: Globale trender, strategiske valg og lederatferd", "Masterkurs", "Strategi, innovasjon og bærekraft", "Ledelse", "Strategi, innovasjon og bærekraft › Bærekraft; Ledelse › Strategisk ledelse", "Handler om bærekraft, ESG og rapportering i virksomheter.", false, "–", false],
   ["Strategi, innovasjon og bærekraft", ["Uendret"], "Grønn vekst og konkurransekraft", "Masterkurs", "Strategi, innovasjon og bærekraft", "–", "Strategi, innovasjon og bærekraft › Bærekraft", "Handler om bærekraft, ESG og rapportering i virksomheter.", false, "–", false],
   ["Strategi, innovasjon og bærekraft", ["1 fagområde prioritert"], "KI, innovasjon og forretningsmodeller", "Masterkurs", "Strategi, innovasjon og bærekraft; Digitalisering og Analytics", "KI, digitalisering og analytics", "Strategi, innovasjon og bærekraft › Innovasjon og entreprenørskap; KI, digitalisering og analytics › KI", "Handler om innovasjon, entreprenørskap eller forretningsutvikling.", false, "–", false],
   ["Strategi, innovasjon og bærekraft", ["1 fagområde prioritert"], "Strategisk forretningsutvikling med KI", "Masterkurs", "Strategi, innovasjon og bærekraft; Digitalisering og Analytics", "KI, digitalisering og analytics", "Strategi, innovasjon og bærekraft › Innovasjon og entreprenørskap; KI, digitalisering og analytics › KI", "Handler om innovasjon, entreprenørskap eller forretningsutvikling.", false, "–", false],
-  ["Ledelse", ["Flyttet til nytt fagområde"], "Strategisk ledelse", "Masterkurs", "Strategi, innovasjon og bærekraft", "Strategi, innovasjon og bærekraft", "Ledelse › Strategisk ledelse; Strategi, innovasjon og bærekraft › Strategi", "Handler om strategi og strategisk ledelse av virksomheter.", false, "–", false],
+  ["Ledelse", ["Lagt til ekstra fagområde"], "Strategisk ledelse", "Masterkurs", "Strategi, innovasjon og bærekraft", "Strategi, innovasjon og bærekraft", "Ledelse › Strategisk ledelse; Strategi, innovasjon og bærekraft › Strategi", "Handler om strategi og strategisk ledelse av virksomheter.", false, "–", false],
   ["Strategi, innovasjon og bærekraft", ["Manglet fagområde"], "Vesentlighetsanalyse", "Årsenhet", "–", "Finans, økonomi og regnskap", "Strategi, innovasjon og bærekraft › Bærekraft; Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om bærekraft, ESG og rapportering i virksomheter.", false, "Finansnæringen", false],
   ["Strategi, innovasjon og bærekraft", ["Uendret"], "Strategi, entreprenørskap og innovasjon", "PhD", "Strategi, innovasjon og bærekraft", "–", "Strategi, innovasjon og bærekraft › Innovasjon og entreprenørskap", "Handler om innovasjon, entreprenørskap eller forretningsutvikling.", false, "–", false],
   ["Finans, økonomi og regnskap", ["1 fagområde prioritert", "Fagområde fjernet"], "Logistikk og bærekraftige forsyningskjeder", "Bachelorkurs", "Finans, økonomi og styring; Markedsføring, kommunikasjon og kultur", "Strategi, innovasjon og bærekraft", "Finans, økonomi og regnskap › Logistikk og forsyningskjeder; Strategi, innovasjon og bærekraft › Bærekraft", "Handler om logistikk og forsyningskjeder.", false, "–", true],
@@ -264,12 +266,13 @@ const rows: Row[] = [
 ];
 
 const statusStyle: Record<Status, { background: string; text: string }> = {
-  Uendret: { background: "#efeff1", text: "#52525b" },
-  "Endret navn på fagområde": { background: "#dff3f0", text: "#1b6a5f" },
-  "1 fagområde prioritert": { background: "#e0ebf5", text: "#00467f" },
-  "Manglet fagområde": { background: "#f0e6f4", text: "#5e3a70" },
-  "Flyttet til nytt fagområde": { background: "#fbeadb", text: "#8a4a0a" },
-  "Fagområde fjernet": { background: "#f9e1ea", text: "#8a1040" },
+  Uendret: { background: "var(--bi-neutral-10)", text: "var(--bi-neutral-70)" },
+  "Endret navn på fagområde": { background: "var(--bi-neutral-10)", text: "var(--bi-neutral-70)" },
+  "1 fagområde prioritert": { background: "var(--bi-primary-5)", text: "var(--bi-primary-80)" },
+  "Manglet fagområde": { background: "var(--bi-info-5)", text: "var(--bi-info-80)" },
+  "Lagt til ekstra fagområde": { background: "var(--bi-success-5)", text: "var(--bi-success-80)" },
+  "Flyttet til nytt fagområde": { background: "var(--bi-secondary-10)", text: "var(--bi-secondary-90)" },
+  "Fagområde fjernet": { background: "var(--bi-alert-5)", text: "var(--bi-alert-80)" },
 };
 
 const statusLines: Record<Status, string[]> = {
@@ -277,6 +280,7 @@ const statusLines: Record<Status, string[]> = {
   "Endret navn på fagområde": ["Endret navn på", "fagområde"],
   "1 fagområde prioritert": ["1 fagområde prioritert"],
   "Manglet fagområde": ["Manglet fagområde"],
+  "Lagt til ekstra fagområde": ["Lagt til ekstra", "fagområde"],
   "Flyttet til nytt fagområde": ["Flyttet til nytt", "fagområde"],
   "Fagområde fjernet": ["Fagområde fjernet"],
 };
@@ -296,7 +300,7 @@ function StatusBadge({ status, wide = false }: { status: Status; wide?: boolean 
         padding: "2px 6px",
         lineHeight: 1.3,
         borderRadius: 4,
-        border: `1px solid color-mix(in srgb, ${text} 45%, #ffffff)`,
+        border: `1px solid color-mix(in srgb, ${text} 45%, var(--bi-basic-white))`,
         background,
         color: text,
       }}
@@ -314,9 +318,9 @@ function StatusBadge({ status, wide = false }: { status: Status; wide?: boolean 
 function AreaWithSubcategory({ area, subcategory, muted = false }: { area: string; subcategory: string; muted?: boolean }) {
   return (
     <>
-      <div style={{ position: "relative", whiteSpace: "nowrap", fontSize: muted ? "0.875rem" : undefined, color: muted ? "#71717a" : undefined }}>
+      <div style={{ position: "relative", whiteSpace: "nowrap", fontSize: muted ? "0.875rem" : undefined, color: muted ? "var(--bi-color-neutral-text-secondary)" : undefined }}>
         {!muted && (
-          <span aria-label="Hovedfagområde" title="Hovedfagområde" style={{ position: "absolute", left: -12, color: "#0057b8", fontWeight: 700 }}>
+          <span aria-label="Hovedfagområde" title="Hovedfagområde" style={{ position: "absolute", left: -12, color: "var(--bi-primary-50)", fontWeight: 700 }}>
             *
           </span>
         )}
@@ -325,7 +329,7 @@ function AreaWithSubcategory({ area, subcategory, muted = false }: { area: strin
       <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 8, margin: "2px 0 0 10px", padding: "3px 0" }}>
         <span style={{ position: "absolute", left: 0, top: 0, bottom: "50%", width: 1, background: treeLine }} />
         <span style={{ flex: "0 0 14px", height: 1, background: treeLine }} />
-        <span style={{ fontSize: muted ? "0.8125rem" : "0.875rem", color: muted ? "#a1a1aa" : undefined, whiteSpace: "nowrap" }}>{subcategory}</span>
+        <span style={{ fontSize: muted ? "0.8125rem" : "0.875rem", color: muted ? "var(--bi-neutral-40)" : undefined, whiteSpace: "nowrap" }}>{subcategory}</span>
       </div>
     </>
   );
@@ -334,14 +338,14 @@ function AreaWithSubcategory({ area, subcategory, muted = false }: { area: strin
 type PillKind = "old" | "removed" | "new" | "same" | "added";
 
 const pillStyles: Record<PillKind, { background: string; border: string; color: string; textDecoration?: string }> = {
-  old: { background: "#ffffff", border: "1px dashed #a1a1aa", color: "#52525b" },
-  removed: { background: "#fde4e4", border: "1px solid #e8a9a5", color: "#b3261e", textDecoration: "line-through" },
-  new: { background: "#e3effa", border: "1px solid #9ec0e0", color: "#00467f" },
-  same: { background: "#f4f4f5", border: "1px solid #d4d4d8", color: "#27272a" },
-  added: { background: "#e8f5e4", border: "1px solid #a9d39b", color: "#2e6b1f" },
+  old: { background: "var(--bi-basic-white)", border: "1px dashed var(--bi-neutral-40)", color: "var(--bi-color-neutral-text-secondary)" },
+  removed: { background: "var(--bi-alert-5)", border: "1px solid var(--bi-alert-20)", color: "var(--bi-alert-60)", textDecoration: "line-through" },
+  new: { background: "var(--bi-primary-5)", border: "1px solid var(--bi-primary-20)", color: "var(--bi-color-primary-text-accent)" },
+  same: { background: "var(--bi-color-neutral-surface)", border: "1px solid var(--bi-color-neutral-stroke)", color: "var(--bi-color-neutral-text)" },
+  added: { background: "var(--bi-success-5)", border: "1px solid var(--bi-success-20)", color: "var(--bi-success-80)" },
 };
 
-function AreaPill({ label, kind, count, bold = false }: { label: string; kind: PillKind; count?: number; bold?: boolean }) {
+function AreaPill({ label, kind, count, bold = false, strike = false }: { label: string; kind: PillKind; count?: number; bold?: boolean; strike?: boolean }) {
   const style = pillStyles[kind];
   return (
     <span
@@ -352,7 +356,7 @@ function AreaPill({ label, kind, count, bold = false }: { label: string; kind: P
         background: style.background,
         border: style.border,
         color: style.color,
-        textDecoration: style.textDecoration,
+        textDecoration: strike ? "line-through" : style.textDecoration,
         lineHeight: 1.35,
         whiteSpace: "pre-line",
         fontWeight: bold ? 700 : undefined,
@@ -364,7 +368,7 @@ function AreaPill({ label, kind, count, bold = false }: { label: string; kind: P
   );
 }
 
-function ChangeArrow({ equal = false, color = "#71717a" }: { equal?: boolean; color?: string }) {
+function ChangeArrow({ equal = false, color = "#475e75" }: { equal?: boolean; color?: string }) {
   if (equal) {
     return <span style={{ display: "block", textAlign: "center", color, fontSize: "1.25rem", lineHeight: 1 }}>=</span>;
   }
@@ -392,7 +396,7 @@ function SplitRow({
         display: "grid",
         gridTemplateColumns: "subgrid",
         gridTemplateRows: `repeat(${to.length}, auto)`,
-        borderTop: "1px solid #e4e4e7",
+        borderTop: "1px solid var(--bi-color-neutral-stroke-subtle)",
         padding: "6px 0",
       }}
     >
@@ -430,8 +434,8 @@ function SplitRow({
             <ChangeArrow color={color} />
           </div>
           <div style={{ gridColumn: 3, gridRow: index + 1, padding: "6px 0" }}>
-            <AreaPill label={label} kind="added" count={count} />
-            <p style={{ margin: "6px 0 0", color: "#52525b" }}>{note}</p>
+            <AreaPill label={label} kind="new" count={count} />
+            <p style={{ margin: "6px 0 0", color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{note}</p>
           </div>
         </Fragment>
       ))}
@@ -476,7 +480,7 @@ function ChangeRow({ from, fromKind, fromLabel, to, toKind = "new", equal = fals
         gridTemplateColumns: "subgrid",
         alignItems: "start",
         padding: compact ? "6px 0" : "12px 0",
-        borderTop: compact ? undefined : "1px solid #e4e4e7",
+        borderTop: compact ? undefined : "1px solid var(--bi-color-neutral-stroke-subtle)",
       }}
     >
       <div>{from === null ? <AreaPill label={fromLabel ?? "Nytt"} kind="added" /> : <AreaPill label={from} kind={fromKind} bold={bold} />}</div>
@@ -489,7 +493,7 @@ function ChangeRow({ from, fromKind, fromLabel, to, toKind = "new", equal = fals
             <AreaPill key={label} label={label} kind={toKind} count={count} bold={bold} />
           ))}
         </div>
-        {note && <p style={{ margin: compact ? "3px 0 0" : "6px 0 0", color: "#52525b", fontSize: compact ? "0.8125rem" : undefined }}>{note}</p>}
+        {note && <p style={{ margin: compact ? "3px 0 0" : "6px 0 0", color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{note}</p>}
       </div>
     </div>
   );
@@ -525,6 +529,9 @@ function TreeBar({
           minWidth: 4,
           height,
           background: color,
+          boxShadow: hairline(color),
+          boxSizing: "border-box",
+          borderRight: !last ? "2px solid var(--bi-basic-white)" : undefined,
           borderRadius: `${first ? height / 2 : 0}px ${last ? height / 2 : 0}px ${last ? height / 2 : 0}px ${first ? height / 2 : 0}px`,
         }}
       />
@@ -537,22 +544,8 @@ function TreeBar({
   );
 }
 
-/** Anbefalte nye navn på studier og kurs, med nåværende tittel som nøkkel. */
-const suggestedNames: Record<string, string> = {
-  "Juss for ledere": "Juss for skole- og barnehageledere",
-  "Ledelse av utviklings- og endringsarbeid": "Ledelse av utviklings- og endringsarbeid i skole og barnehage",
-  "Ledelse av tjenesteutvikling": "Ledelse av tjenesteutvikling i helse- og omsorgstjenesten",
-  "Rådgivning og risiko": "Rådgivning og risiko i finansnæringen",
-  "Regelverk og risikoer": "Regelverk og risikoer i finansnæringen",
-  "Risikobasert tilnærming": "Risikobasert tilnærming i finansnæringen",
-  "Utvalgte praktiske problemstillinger": "Utvalgte praktiske problemstillinger innen compliance i finansnæringen",
-  "Grunnleggende teknologiforståelse": "Grunnleggende teknologiforståelse i finansnæringen",
-  "D-box kurs i systemorientert innovasjon": "Systemorientert innovasjon (D-box)",
-  "Ledelse; makt og mening": "Ledelse, makt og mening",
-  "Customer and Market analytics": "Customer and Market Analytics",
-};
-
 const statusOrder: Status[] = [
+  "Lagt til ekstra fagområde",
   "Flyttet til nytt fagområde",
   "Manglet fagområde",
   "1 fagområde prioritert",
@@ -562,12 +555,13 @@ const statusOrder: Status[] = [
 ];
 
 const statusPieColors: Record<Status, string> = {
-  "Flyttet til nytt fagområde": "#d9822b",
-  "Manglet fagområde": "#8e5ea2",
-  "1 fagområde prioritert": "#00467f",
-  "Endret navn på fagområde": "#2f9e8f",
-  Uendret: "#a1a1aa",
-  "Fagområde fjernet": "#c2185b",
+  "Lagt til ekstra fagområde": "#c5d9f7",
+  "Flyttet til nytt fagområde": "#6196f4",
+  "Manglet fagområde": "#042f5b",
+  "1 fagområde prioritert": "#0b4db4",
+  "Endret navn på fagområde": "#9ec0f1",
+  Uendret: "#c8d1db",
+  "Fagområde fjernet": "#475e75",
 };
 
 function StatusPie({ rows: list }: { rows: Row[] }) {
@@ -583,10 +577,10 @@ function StatusPie({ rows: list }: { rows: Row[] }) {
   });
   const legendRow = (status: Status, count: number) => (
     <div key={status} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-      <span style={{ width: 12, height: 12, borderRadius: 3, background: statusPieColors[status] }} />
+      <span style={{ width: 9, height: 9, borderRadius: 2, background: statusPieColors[status], boxShadow: hairline(statusPieColors[status]) }} />
       <StatusBadge status={status} wide />
       <span>
-        {count} <span style={{ color: "#71717a" }}>({Math.round((count / total) * 100)} %)</span>
+        {count} <span style={{ color: "var(--bi-color-neutral-text-secondary)" }}>({Math.round((count / total) * 100)} %)</span>
       </span>
     </div>
   );
@@ -599,9 +593,9 @@ function StatusPie({ rows: list }: { rows: Row[] }) {
       />
       <div style={{ display: "grid", gap: 6 }}>
         {counts.map(({ status, count }) => legendRow(status, count))}
-        <div style={{ borderTop: "1px solid #d4d4d8", margin: "4px 0 2px" }} />
+        <div style={{ borderTop: "1px solid var(--bi-color-neutral-stroke)", margin: "4px 0 2px" }} />
         {legendRow("Fagområde fjernet", removedCount)}
-        <span style={{ color: "#71717a", fontSize: "0.8125rem" }}>
+        <span style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>
           Kommer i tillegg til en av statusene over. Et tidligere fagområde er verken videreført som hoved, ekstra eller underkategori.
         </span>
       </div>
@@ -616,11 +610,9 @@ const headCell = {
   position: "sticky",
   top: 0,
   zIndex: 1,
-  background: "#ffffff",
-  boxShadow: "inset 0 -2px 0 #00467f",
+  background: "var(--bi-basic-white)",
+  boxShadow: "inset 0 -2px 0 var(--bi-color-primary-stroke-accent)",
 } as const;
-
-const studyCount = (list: Row[]) => list.filter(([, , , level]) => !/kurs/i.test(level)).length;
 
 /** De sju majorene i Master in Business er ikke med i tallene i oppsummeringen; selve graden («Business») er med. */
 const masterInBusinessMajors = new Set([
@@ -670,41 +662,28 @@ const buildTree = (list: Row[]) =>
 
 const areaTree = buildTree(summaryRows);
 
-const newAreas = ["Helse, skole og barnehage", "Sikkerhet og beredskap"];
-
-/** Tidligere fagområder (eller «Manglet fagområde») for studier og kurs i et nytt fagområde som ikke kom fra Offentlig sektor. */
-function otherOrigins(area: string): { origin: string; count: number }[] {
-  const counts = new Map<string, number>();
-  for (const row of summaryRows) {
-    if (row[0] !== area || row[4].split("; ").includes("Offentlig sektor")) continue;
-    const origin = row[4] === "–" ? "Manglet fagområde" : row[4];
-    counts.set(origin, (counts.get(origin) ?? 0) + 1);
-  }
-  return [...counts].map(([origin, count]) => ({ origin, count })).sort((a, b) => b.count - a.count);
-}
-
 function originNote(area: string): string {
   const fromPublic = summaryRows.filter((row) => row[0] === area && row[4].split("; ").includes("Offentlig sektor")).length;
-  const others = otherOrigins(area).map(({ origin, count }) =>
-    origin === "Manglet fagområde" ? `${count} hadde ikke fagområde fra før` : `${count} kom fra ${origin}`,
-  );
-  const joined = others.length > 1 ? `${others.slice(0, -1).join(", ")} og ${others[others.length - 1]}` : others[0];
-  return `${fromPublic} av ${areaCount(area)} studier og kurs kom fra Offentlig sektor${joined ? `, ${joined}` : ""}.`;
+  return `${fromPublic} av ${areaCount(area)} studier og kurs kom fra Offentlig sektor.`;
 }
 
+// Tre fargeroller: fagområde (kategorisk, areaColors), før/nå/ekstra (sammenligning) og relaterte kategorier i ett diagram (blå rampe, pieColors).
 const areaColors: Record<string, string> = {
-  "Finans, økonomi og regnskap": "#00467f",
-  "Helse, skole og barnehage": "#2f9e8f",
-  "HR og organisasjonsutvikling": "#8e5ea2",
-  "Juss, skatt og eiendom": "#6b7280",
-  "KI, digitalisering og analytics": "#c2185b",
-  Ledelse: "#d9822b",
-  "Markedsføring, kommunikasjon og kultur": "#2e7d32",
-  "Sikkerhet og beredskap": "#b3261e",
-  "Strategi, innovasjon og bærekraft": "#1e88e5",
+  "Finans, økonomi og regnskap": "#042f5b",
+  Ledelse: "#6929c4",
+  "Strategi, innovasjon og bærekraft": "#198038",
+  "KI, digitalisering og analytics": "#1192e8",
+  "Markedsføring, kommunikasjon og kultur": "#ee538b",
+  "HR og organisasjonsutvikling": "#ff832b",
+  "Helse, skole og barnehage": "#08bdba",
+  "Sikkerhet og beredskap": "#a2191f",
+  "Juss, skatt og eiendom": "#90a3b7",
 };
 
-const areaColor = (area: string) => areaColors[area] ?? "#a1a1aa";
+const areaColor = (area: string) => areaColors[area] ?? "#c8d1db";
+
+const lightFills = new Set(["#d5dde4", "#e4e8ed", "#c8d1db", "#c5d9f7", "var(--bi-primary-10)", "var(--bi-neutral-15)"]);
+const hairline = (fill: string) => (lightFills.has(fill) ? "inset 0 0 0 1px rgba(0,0,0,0.06)" : undefined);
 
 const industryGroups = [...new Set(summaryRows.map((row) => row[9]).filter((industry) => industry !== "–"))]
   .map((industry) => ({ industry, list: summaryRows.filter((row) => row[9] === industry) }))
@@ -769,33 +748,69 @@ const partTimeStudies = new Set([
 
 const isPartTime = ([, , title, level]: Row) => partTimeStudies.has(`${level}|${title}`);
 
+/** Foreslåtte nye titler for studier og kurs der tittelen ikke viser hvorfor de ligger i fagområdet. Nøkkel: «nivå|tittel». */
+const suggestedTitles: Record<string, string> = {
+  "Masterkurs|Juss for ledere": "Juss for ledere i skole og barnehage",
+  "Masterkurs|Ledelse av utviklings- og endringsarbeid": "Ledelse av utviklings- og endringsarbeid i skole og barnehage",
+  "Masterkurs|Ledelse av tjenesteutvikling": "Ledelse av tjenesteutvikling i helse og omsorg",
+  "Bachelorkurs|Consulting - Verktøy og teknikker": "Strategi og consulting: verktøy og teknikker",
+  "Masterkurs|Consulting": "Consulting: endring og organisasjonsutvikling",
+  "Kurs uten studiepoeng|Rådgivning og risiko": "Finansiell rådgivning og risiko",
+  "Kurs uten studiepoeng|Regelverk og risikoer": "Regelverk og compliance-risiko",
+  "Kurs uten studiepoeng|Rettslige rammebetingelser": "Rettslige rammebetingelser: compliance og bærekraft",
+  "Kurs uten studiepoeng|Risikobasert tilnærming": "Risikobasert tilnærming til compliance",
+  "Årsenhet|Utvalgte praktiske problemstillinger": "Compliance: utvalgte praktiske problemstillinger",
+  "Bachelorkurs|Matematisk analyse": "Matematisk analyse for økonomer",
+  "Bachelorkurs|Kvalitativ metode: Dypere innsikt": "Kvalitativ metode for markedsinnsikt",
+  "Bachelorkurs|Metode og innsikt": "Metode og kundeinnsikt",
+  "Bachelorkurs|Forhandling og forhandlingsteknikk": "Forhandling og forhandlingsteknikk for ledere",
+  "Bachelorkurs|Prestasjonsstyring": "Prestasjonsstyring: budsjett og økonomisk oppfølging",
+  "Bachelor|International Management": "International Management: kultur og internasjonal business",
+  "Bachelor|Summer School at BI": "Summer School at BI: internasjonal business og kultur",
+  "Masterkurs|Organisering for det uventede": "Organisering for det uventede: beredskap og krisehåndtering",
+  "Årsenhet|Vesentlighetsanalyse": "Vesentlighetsanalyse for bærekraftsrapportering",
+  "–|Qualifying Year at American College of Norway": "Qualifying Year at American College of Norway: Business Administration",
+};
+
+const suggestedTitle = ([, , title, level]: Row) => suggestedTitles[`${level}|${title.replace(/\u00ad|\(-\)/g, "")}`];
+
+function SuggestedTitle({ row }: { row: Row }) {
+  const suggestion = suggestedTitle(row);
+  if (!suggestion) return null;
+  return (
+    <div style={{ marginTop: 6, fontSize: "0.8125rem", color: "var(--bi-color-neutral-text-secondary)" }}>
+      Foreslått ny tittel: <strong style={{ color: "var(--bi-color-primary-text-accent)" }}>{suggestion}</strong>
+    </div>
+  );
+}
+
 type LevelSplit = { key: string; label: string; color: string; match: (row: Row) => boolean };
 
 const levelSplits: Record<string, LevelSplit[]> = {
   Bachelorkurs: [
-    { key: "Kurs", label: "Bachelorkurs", color: "#00467f", match: (row) => row[3] === "Bachelorkurs" },
-    { key: "Deltid", label: "Bachelorstudier, deltid", color: "#c2185b", match: (row) => row[3] === "Bachelor" },
+    { key: "Kurs", label: "Bachelorkurs", color: "#0b4db4", match: (row) => row[3] === "Bachelorkurs" },
+    { key: "Deltid", label: "Bachelorstudier, deltid", color: "#9ec0f1", match: (row) => row[3] === "Bachelor" },
   ],
   Masterkurs: [
-    { key: "Kurs", label: "Masterkurs", color: "#00467f", match: (row) => row[3] === "Masterkurs" },
-    { key: "Deltid", label: "Masterstudier, deltid", color: "#c2185b", match: (row) => row[3] === "Master" },
+    { key: "Kurs", label: "Masterkurs", color: "#0b4db4", match: (row) => row[3] === "Masterkurs" },
+    { key: "Deltid", label: "Masterstudier, deltid", color: "#9ec0f1", match: (row) => row[3] === "Master" },
   ],
   Heltid: [
-    { key: "Bachelor", label: "Bachelorstudier", color: "#00467f", match: (row) => row[3] === "Bachelor" },
-    { key: "Master", label: "Masterstudier", color: "#2f9e8f", match: (row) => row[3] === "Master" },
+    { key: "Bachelor", label: "Bachelorstudier", color: "#0b4db4", match: (row) => row[3] === "Bachelor" },
+    { key: "Master", label: "Masterstudier", color: "#9ec0f1", match: (row) => row[3] === "Master" },
   ],
   Deltid: [
-    { key: "Bachelorkurs", label: "Bachelorkurs", color: "#00467f", match: (row) => row[3] === "Bachelorkurs" },
-    { key: "Masterkurs", label: "Masterkurs", color: "#2f9e8f", match: (row) => row[3] === "Masterkurs" },
+    { key: "Bachelorkurs", label: "Bachelorkurs", color: "#0b4db4", match: (row) => row[3] === "Bachelorkurs" },
+    { key: "Masterkurs", label: "Masterkurs", color: "#9ec0f1", match: (row) => row[3] === "Masterkurs" },
   ],
   NettAlle: [
-    { key: "Bachelor", label: "Bachelorstudier", color: "#8e5ea2", match: (row) => row[3] === "Bachelor" },
-    { key: "Arsenhet", label: "Årsenhet", color: "#d9822b", match: (row) => /årsenhet/i.test(row[3]) },
-    { key: "Bachelorkurs", label: "Bachelorkurs", color: "#00467f", match: (row) => row[3] === "Bachelorkurs" },
+    { key: "Bachelor", label: "Bachelorstudier", color: "#042f5b", match: (row) => row[3] === "Bachelor" },
+    { key: "Arsenhet", label: "Årsenhet", color: "#0a64ff", match: (row) => /årsenhet/i.test(row[3]) },
+    { key: "Bachelorkurs", label: "Bachelorkurs", color: "#6196f4", match: (row) => row[3] === "Bachelorkurs" },
     {
       key: "Andre",
       label: "Masterkurs og kurs uten studiepoeng",
-      color: "#a1a1aa",
+      color: "#c8d1db",
       match: (row) => row[3] === "Masterkurs" || row[3] === "Kurs uten studiepoeng",
     },
   ],
@@ -824,7 +839,6 @@ const levelTrees = levelGroups.map(({ key, label, filter }) => {
   return { key, label, list, count: list.length, tree: buildTree(list) };
 });
 
-const levelExcluded = summaryRows.filter((row) => !levelGroups.some(({ filter }) => filter(row))).length;
 
 /** Fordeler fagområdeblokkene på to kolonner slik at kolonnene blir omtrent like høye, og beholder rekkefølgen innenfor hver kolonne. */
 const treeColumns = (() => {
@@ -923,7 +937,7 @@ const oldAreaCatalog: Record<string, { kind: PillKind; to?: string; note: string
   "Internasjonal Business": { kind: "removed", note: "Fjernet" },
   Prosjektledelse: { kind: "removed", note: "Nå underkategori i Ledelse" },
 };
-const noOldArea = "Ingen fagområde";
+const noOldArea = "Manglet fagområde";
 
 /** Gammel fordeling (bi.no i dag) mot ny fordeling, basert på studiene og kursene i oppsummeringen. */
 const beforeAfter = (() => {
@@ -977,25 +991,171 @@ const beforeAfter = (() => {
 const largestArea = Math.max(...areaTree.map(({ main, extra }) => main + extra));
 
 const treeColors = {
-  mainArea: "#00467f",
-  extraArea: "#d9822b",
-  mainSub: "#7fa7cb",
-  extraSub: "#f0c391",
-  extraText: "#b45f06",
+  mainArea: "#0b4db4",
+  extraArea: "#9ec0f1",
+  mainSub: "#6196f4",
+  extraSub: "#c5d9f7",
+  extraText: "#0b49a1",
 };
 
-const treeLine = "#c4c4c8";
+const treeLine = "#d5dde4";
+
+type TocItem = { id: string; label: string; gap?: boolean; section?: string };
+
+const tocAreas = [...new Set(rows.map(([area]) => area))].sort((a, b) => a.localeCompare(b, "nb"));
+const areaAnchor = (area: string) => `fagomrade-${area.toLowerCase().replace(/[^a-z0-9æøå]+/g, "-")}`;
+
+const summaryToc: TocItem[] = [
+  { id: "soketest", label: "Søketest" },
+  { id: "tilbakemelding", label: "Tilbakemelding" },
+  { id: "hva-gjores", label: "Hva gjøres?", section: "Forklaring" },
+  { id: "hvorfor", label: "Hvorfor gjøres dette?" },
+  { id: "oversikt-endringer", label: "Hvordan ser fordelingen ut?" },
+  ...tocAreas.map((area, index) => ({ id: areaAnchor(area), label: area, section: index === 0 ? "Forslag til nye fagområder" : undefined })),
+];
+
+function SummaryToc() {
+  const [active, setActive] = useState(summaryToc[0].id);
+  useEffect(() => {
+    const update = () => {
+      let current = summaryToc[0].id;
+      for (const { id } of summaryToc) {
+        const top = document.getElementById(id)?.getBoundingClientRect().top;
+        if (top !== undefined && top <= 120) current = id;
+      }
+      setActive(current);
+    };
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    return () => window.removeEventListener("scroll", update);
+  }, []);
+  return (
+    <nav
+      aria-label="Innhold"
+      style={{ position: "sticky", top: 16, flex: "0 0 200px", maxHeight: "calc(100vh - 32px)", overflowY: "auto", paddingTop: 24 }}
+    >
+      {summaryToc.map(({ id, label, gap, section }) => (
+        <Fragment key={id}>
+          {section && (
+            <div style={{ margin: "16px 0 8px 13px", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: "var(--bi-color-neutral-text-secondary)" }}>
+              {section}
+            </div>
+          )}
+        <a
+          href={`#${id}`}
+          aria-current={active === id ? "true" : undefined}
+          onClick={(event) => {
+            event.preventDefault();
+            document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+            history.replaceState(null, "", `#${id}`);
+          }}
+          style={{
+            display: "block",
+            marginTop: gap ? 16 : 0,
+            padding: "5px 10px",
+            borderLeft: `3px solid ${active === id ? "var(--bi-color-primary-stroke-accent)" : "var(--bi-color-neutral-stroke-subtle)"}`,
+            color: active === id ? "var(--bi-primary-50)" : "var(--bi-color-neutral-text-secondary)",
+            fontWeight: active === id ? 700 : 400,
+            textDecoration: "none",
+            fontSize: "0.875rem",
+            lineHeight: 1.35,
+          }}
+        >
+          {label}
+        </a>
+        </Fragment>
+      ))}
+    </nav>
+  );
+}
 
 const summaryHeading = {
-  margin: "44px 0 12px",
-  padding: "16px 0 0",
-  borderTop: "2px solid #00467f",
-  fontSize: "1.5rem",
-  lineHeight: 1.25,
-  color: "#00467f",
+  scrollMarginTop: 16,
+  margin: "40px 0 12px",
+  padding: "2px 0 2px 12px",
+  borderLeft: "4px solid var(--bi-color-primary-stroke-accent)",
+  fontFamily: "var(--bi-font-family-brand)",
+  fontSize: "1.25rem",
+  lineHeight: 1.3,
+  color: "var(--bi-color-neutral-text)",
 } as const;
-const summarySubHeading = { margin: "32px 0 12px", fontSize: "1.1875rem", fontWeight: 700, color: "#27272a" } as const;
-const summaryList = { margin: 0, paddingLeft: 20 } as const;
+const summaryBox = { background: "var(--bi-color-neutral-surface)", borderRadius: "var(--bi-radius-xl)", padding: 24, margin: "24px 0 0" } as const;
+const summaryPartHeading = {
+  scrollMarginTop: 16,
+  margin: "0 0 12px",
+  fontFamily: "var(--bi-font-family-brand)",
+  fontSize: "1.875rem",
+  lineHeight: 1.2,
+  color: "var(--bi-color-primary-text)",
+} as const;
+type Slide = { title: string; content: React.ReactNode };
+
+function Carousel({ slides, heading }: { slides: Slide[]; heading: React.ReactNode }) {
+  const [rawIndex, setIndex] = useState(0);
+  const [heights, setHeights] = useState<number[]>([]);
+  const slideRefs = useRef<(HTMLDivElement | null)[]>([]);
+  const count = slides.length;
+  const index = Math.min(rawIndex, count - 1);
+  useEffect(() => {
+    const observer = new ResizeObserver(() => setHeights(slideRefs.current.slice(0, count).map((element) => element?.offsetHeight ?? 0)));
+    slideRefs.current.slice(0, count).forEach((element) => element && observer.observe(element));
+    return () => observer.disconnect();
+  }, [count]);
+  const height = heights[index] || undefined;
+  const go = (next: number) => setIndex(Math.min(slides.length - 1, Math.max(0, next)));
+  const roundButton = (disabled: boolean) =>
+    ({
+      borderRadius: "50%",
+      "--bic-button-background": "var(--bi-basic-white)",
+      "--bic-button-box-shadow": "0 0 0 1px var(--bi-color-neutral-stroke) inset",
+      opacity: disabled ? 0.45 : 1,
+    }) as React.CSSProperties;
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+        {heading}
+        <div style={{ display: "flex", alignItems: "center", gap: "var(--bi-scale-3x)" }}>
+          <span style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "1.25rem" }}>
+            {index + 1} / {slides.length}
+          </span>
+          <Button icon size="large" variant="outlined" aria-label="Forrige" disabled={index === 0} onClick={() => go(index - 1)} style={roundButton(index === 0)}>
+            <ChevronLeftIcon aria-hidden="true" />
+          </Button>
+          <Button icon size="large" variant="outlined" aria-label="Neste" disabled={index === slides.length - 1} onClick={() => go(index + 1)} style={roundButton(index === slides.length - 1)}>
+            <ChevronRightIcon aria-hidden="true" />
+          </Button>
+        </div>
+      </div>
+      <div style={{ overflow: "clip", minWidth: 0, height, transition: "height 300ms ease" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", transform: `translateX(-${index * 100}%)`, transition: "transform 300ms ease" }}>
+          {slides.map(({ title, content }, slideIndex) => (
+            <div
+              key={title}
+              ref={(element) => {
+                slideRefs.current[slideIndex] = element;
+              }}
+              inert={slideIndex !== index}
+              aria-hidden={slideIndex !== index}
+              style={{
+                flex: "0 0 100%",
+                minWidth: 0,
+                boxSizing: "border-box",
+                overflowX: "auto",
+                background: "var(--bi-color-neutral-surface-subtle)",
+                border: "1px solid var(--bi-color-neutral-stroke-subtle)",
+                borderRadius: "var(--bi-radius-large)",
+                padding: 24,
+              }}
+            >
+              <h4 style={{ ...summaryHeading, margin: "0 0 16px", minHeight: 32, display: "flex", alignItems: "center" }}>{title}</h4>
+              {content}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 type EnglishName = { no: string; en: string; terms: string };
 
@@ -1074,7 +1234,9 @@ const englishNames: { area: EnglishName; subcategories: EnglishName[] }[] = [
       { no: "Generell ledelse og lederutdanning", en: "General Management and Leadership Education", terms: "Bachelor in Management, Executive MBA, Master of Management" },
       { no: "Prosjektledelse", en: "Project Management", terms: "Project Management, Agile" },
       { no: "Sikkerhets- og beredskapsledelse", en: "Security and Emergency Leadership", terms: "Security Management, Crisis Management" },
-      { no: "Team-, medarbeider- og endringsledelse", en: "Team, People and Change Leadership", terms: "Team Leadership, Organisational Psychology, Change Management" },
+      { no: "Teamledelse og prestasjon", en: "Team Leadership and Performance", terms: "Team Leadership, Organisational Psychology" },
+      { no: "Medarbeiderledelse og arbeidsmiljø", en: "People Leadership and Work Environment", terms: "HRM, Work Environment, Health-promoting Leadership" },
+      { no: "Endringsledelse", en: "Leading Change", terms: "Change Management, Leadership, Change and Analytics" },
       { no: "Lederferdigheter og kommunikasjon", en: "Leadership Skills and Communication", terms: "Leadership in Action, Coaching, Negotiation, Leadership Communication" },
       { no: "Strategisk ledelse", en: "Strategic Management", terms: "Strategic Management, Ocean Industry Leadership" },
       { no: "Helse-, skole- og barnehageledelse", en: "Healthcare, School and Early Childhood Leadership", terms: "Healthcare Management, Educational Leadership" },
@@ -1089,122 +1251,17 @@ const englishNames: { area: EnglishName; subcategories: EnglishName[] }[] = [
   },
 ];
 
-const pieColors = ["#00467f", "#2f9e8f", "#d9822b", "#8e5ea2", "#c2185b", "#6b7280", "#7fa7d4", "#9a7b1c", "#6aa84f", "#17a2b8", "#a05a2c"];
-
-/** Antall hovedplasseringer og ekstra-plasseringer per underkategori i et fagområde, alfabetisk. */
-function subcategoryCounts(area: string): { name: string; main: number; extra: number }[] {
-  const counts = new Map<string, { main: number; extra: number }>();
-  for (const row of rows) {
-    row[6].split("; ").forEach((entry, index) => {
-      const [entryArea, name] = entry.split(" › ");
-      if (entryArea !== area) return;
-      const count = counts.get(name) ?? { main: 0, extra: 0 };
-      if (index === 0) count.main += 1;
-      else count.extra += 1;
-      counts.set(name, count);
-    });
-  }
-  return [...counts]
-    .map(([name, count]) => ({ name, ...count }))
-    .sort((a, b) => a.name.localeCompare(b.name, "nb"));
-}
-
-function SubcategoryPie({ area }: { area: string }) {
-  const counts = subcategoryCounts(area);
-  const total = counts.reduce((sum, { main, extra }) => sum + main + extra, 0);
-  let angle = 0;
-  const stops = counts.map(({ main, extra }, index) => {
-    const start = angle;
-    angle += ((main + extra) / total) * 360;
-    return `${pieColors[index % pieColors.length]} ${start}deg ${angle}deg`;
-  });
-  return (
-    <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-      <div
-        role="img"
-        aria-label="Fordeling av underkategorier, hoved og ekstra samlet"
-        style={{ flex: "0 0 auto", width: 120, height: 120, borderRadius: "50%", background: `conic-gradient(${stops.join(", ")})` }}
-      />
-      <div style={{ display: "grid", gap: 4, color: "#52525b", fontSize: "0.875rem" }}>
-        {counts.map(({ name, main, extra }, index) => (
-          <span key={name} style={{ display: "inline-flex", alignItems: "center", gap: 8, whiteSpace: "nowrap" }}>
-            <span style={{ width: 12, height: 12, borderRadius: 3, background: pieColors[index % pieColors.length] }} />
-            <span>
-              {name} ({main + extra}, {Math.round(((main + extra) / total) * 100)} %)
-              <span style={{ color: "#71717a" }}>
-                {" "}
-                {main} hoved{extra > 0 ? ` + ${extra} ekstra` : ""}
-              </span>
-            </span>
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function subcategorySummary(area: string): string {
-  return subcategoryCounts(area)
-    .map(({ name, main, extra }) => `${name} (${main + extra})`)
-    .join(", ");
-}
-
-/** Fagområder som har fått nytt navn eller er delt ut fra et tidligere fagområde. */
-const areaOrigin: Record<string, { label: string; from: string; text: (linked: number, total: number) => string }> = {
-  "Finans, økonomi og regnskap": {
-    label: "Tidligere navn",
-    from: "Finans, økonomi og styring",
-    text: (linked, total) => `Finans, økonomi og styring. ${linked} av ${total} studier og kurs hadde dette fagområdet fra før.`,
-  },
-  "Juss, skatt og eiendom": {
-    label: "Tidligere navn",
-    from: "Eiendom, varehandel og forretningsjus",
-    text: (linked, total) =>
-      `Eiendom, varehandel og forretningsjus. ${linked} av ${total} studier og kurs hadde dette fagområdet fra før. Skatt og avgift er slått sammen med fagområdet.`,
-  },
-  "KI, digitalisering og analytics": {
-    label: "Tidligere navn",
-    from: "Digitalisering og Analytics",
-    text: (linked, total) => `Digitalisering og Analytics. ${linked} av ${total} studier og kurs hadde dette fagområdet fra før.`,
-  },
-  "HR og organisasjonsutvikling": {
-    label: "Tidligere navn",
-    from: "Organisasjonsutvikling og Human Resource Management",
-    text: (linked, total) =>
-      `Organisasjonsutvikling og Human Resource Management. ${linked} av ${total} studier og kurs hadde dette fagområdet fra før.`,
-  },
-  "Helse, skole og barnehage": {
-    label: "Delt ut fra",
-    from: "Offentlig sektor",
-    text: (linked, total) => `Offentlig sektor, som er delt opp. ${linked} av ${total} studier og kurs hadde dette fagområdet fra før.`,
-  },
-  "Sikkerhet og beredskap": {
-    label: "Delt ut fra",
-    from: "Offentlig sektor",
-    text: (linked, total) => `Offentlig sektor, som er delt opp. ${linked} av ${total} studier og kurs hadde dette fagområdet fra før.`,
-  },
-};
-
-const areaRationale: Record<string, string> = {
-  "Juss, skatt og eiendom":
-    "Fag der regelverk og juridisk kunnskap er kjernen: rettsvitenskap, forretningsjus, arbeidsrett, skatt og avgift og eiendomsmegling. Skiller seg fra Finans ved at jus og skatterett, ikke økonomi, er hovedfaget. Fordelingen er 18 innen jus, 8 innen skatt og 2 innen eiendom.",
-  "Finans, økonomi og regnskap":
-    "Det største fagfeltet: finans, økonomi, regnskap, økonomistyring og logistikk. Fagene bygger på felles økonomisk teori og kvantitative metoder, og har egne yrkesløp som revisor og regnskapsfører.",
-  "Strategi, innovasjon og bærekraft":
-    "Hvordan virksomheter fornyer seg og tar ansvar for omgivelsene: innovasjon og entreprenørskap, bærekraft og strategi.",
-  "Helse, skole og barnehage":
-    "Kurs for ledere i helse og utdanning, med egne målgrupper som allmennleger, tannleger, rektorer og barnehagestyrere. Innholdet er tilpasset sektorenes regelverk og styring, og passer ikke i generell ledelse.",
-  "KI, digitalisering og analytics":
-    "KI, data, analyse og digital transformasjon, ofte sammen med metode og statistikk. Fagene har eget teknologifokus og egen etterspørsel på tvers av bransjer.",
-  Ledelse:
-    "Lederrollen og lederskap: grunnutdanning i ledelse, lederutvikling, teamledelse og prosjektledelse. Bare fag der ledelse er hovedtemaet, ikke en bransje eller et annet fagfelt.",
-  "Markedsføring, kommunikasjon og kultur":
-    "Markedsføring, merkevare, kommunikasjon og forbrukeratferd, med internasjonale og kulturelle perspektiver. Et etablert fagfelt med egne studier og en tydelig målgruppe, der kommunikasjon og kultur hører naturlig sammen med markedsføring.",
-  "HR og organisasjonsutvikling":
-    "Mennesker og organisering i virksomheter: HR, organisasjonspsykologi, arbeidsmiljø og endring. Et eget fagfelt som handler om organisasjonen som helhet, i motsetning til Ledelse som handler om lederrollen.",
-  "Sikkerhet og beredskap":
-    "Sikkerhetsledelse, digital sikkerhet, beredskap og terrorbekjempelse. Et lite, men tydelig avgrenset tema med egen målgruppe, samlet slik at det er lett å finne.",
-};
+const blueShades = [
+  "var(--bi-primary-90)",
+  "var(--bi-neutral-40)",
+  "var(--bi-primary-60)",
+  "var(--bi-neutral-60)",
+  "var(--bi-primary-40)",
+  "var(--bi-primary-10)",
+  "var(--bi-primary-50)",
+  "var(--bi-primary-20)",
+  "var(--bi-neutral-80)",
+];
 
 type OverlapFocus = { from: string; to?: string } | null;
 const entryArea = (entry: string) => entry.split(" › ")[0];
@@ -1278,11 +1335,11 @@ function AreaChord({ focus, setFocus }: { focus: OverlapFocus; setFocus: (focus:
             d={path}
             fill={areaColor(link.from)}
             fillOpacity={isActive(link) ? (focus ? 0.85 : 0.55) : 0.06}
-            stroke="#ffffff"
+            stroke="#fff"
             strokeWidth={0.5}
             onMouseEnter={() => setFocus({ from: link.from, to: link.to })}
           >
-            <title>{`${areaShortName[link.from]} (hoved) → ${areaShortName[link.to]} (ekstra): ${link.count}`}</title>
+            <title>{`${areaShortName[link.from]} (hovedfagområde) → ${areaShortName[link.to]} (ekstra fagområde): ${link.count}`}</title>
           </path>
         );
       })}
@@ -1307,14 +1364,14 @@ function AreaChord({ focus, setFocus }: { focus: OverlapFocus; setFocus: (focus:
               const top = labelY + (countOffset < 0 ? -(lines.length - 1) * 15 : 0);
               return (
                 <>
-                  <text x={labelX} y={top} textAnchor={anchor} dominantBaseline="middle" fontSize="13" fontWeight={focusArea === area ? 700 : 600} fill="#27272a">
+                  <text x={labelX} y={top} textAnchor={anchor} dominantBaseline="middle" fontSize="13" fontWeight={focusArea === area ? 700 : 600} fill="#222d38">
                     {lines.map((line, lineIndex) => (
                       <tspan key={line} x={labelX} dy={lineIndex === 0 ? 0 : 15}>
                         {line}
                       </tspan>
                     ))}
                   </text>
-                  <text x={labelX} y={top + (lines.length - 1) * 15 + 15} textAnchor={anchor} dominantBaseline="middle" fontSize="11" fill="#71717a">
+                  <text x={labelX} y={top + (lines.length - 1) * 15 + 15} textAnchor={anchor} dominantBaseline="middle" fontSize="11" fill="#475e75">
                     {`${outgoing(area)} ut, ${incoming(area)} inn`}
                   </text>
                 </>
@@ -1384,11 +1441,11 @@ function SubChord({ focus, setFocus }: { focus: OverlapFocus; setFocus: (focus: 
             d={path}
             fill={areaColor(areaOf(link.from))}
             fillOpacity={isActive(link) ? (focus ? 0.85 : 0.5) : 0.05}
-            stroke="#ffffff"
+            stroke="#fff"
             strokeWidth={0.4}
             onMouseEnter={() => setFocus({ from: link.from, to: link.to })}
           >
-            <title>{`${label(link.from)} (hoved) → ${label(link.to)} (ekstra): ${link.count}`}</title>
+            <title>{`${label(link.from)} (hovedfagområde) → ${label(link.to)} (ekstra fagområde): ${link.count}`}</title>
           </path>
         );
       })}
@@ -1409,7 +1466,7 @@ function SubChord({ focus, setFocus }: { focus: OverlapFocus; setFocus: (focus: 
               strokeWidth={ring}
             />
             <g transform={`rotate(${degrees.toFixed(2)}) translate(${radius + ring + 8} 0)`}>
-              <text transform={flip ? "rotate(180)" : undefined} textAnchor={flip ? "end" : "start"} dominantBaseline="middle" fontSize="13" fontWeight={focused ? 700 : 400} fill="#27272a">
+              <text transform={flip ? "rotate(180)" : undefined} textAnchor={flip ? "end" : "start"} dominantBaseline="middle" fontSize="13" fontWeight={focused ? 700 : 400} fill="#222d38">
                 {subOf(node)}
               </text>
             </g>
@@ -1451,17 +1508,17 @@ function OverlapSection() {
 
   return (
     <div>
-      <div style={{ fontWeight: 700, color: "#00467f" }}>Sterkeste koblinger mellom underkategorier</div>
+      <div style={{ fontWeight: 700, color: "var(--bi-color-primary-text-accent)" }}>Sterkeste koblinger mellom underkategorier</div>
       <div style={{ display: "grid", gridTemplateColumns: "24px max-content 72px max-content max-content", columnGap: 12, rowGap: 8, alignItems: "center", margin: "8px 0 20px", fontSize: "0.875rem" }}>
         {strongest.map(({ from, to, count, share }) => (
           <Fragment key={`${from}|${to}`}>
             <span style={{ textAlign: "right", fontWeight: 700 }}>{count}</span>
-            <span style={{ justifySelf: "start", padding: "2px 8px", borderRadius: 4, background: "#ffffff", borderLeft: `4px solid ${areaColor(entryArea(from))}` }}>{label(from)}</span>
+            <span style={{ justifySelf: "start", padding: "2px 8px", borderRadius: 4, background: "var(--bi-basic-white)", borderLeft: `4px solid ${areaColor(entryArea(from))}` }}>{label(from)}</span>
             <span style={{ justifySelf: "center", width: 44 }}>
               <ChangeArrow />
             </span>
-            <span style={{ justifySelf: "start", padding: "2px 8px", borderRadius: 4, background: "#ffffff", borderLeft: `4px solid ${areaColor(entryArea(to))}` }}>{label(to)}</span>
-            <span style={{ color: share === 1 ? "#2e6b1f" : "#71717a", fontSize: "0.8125rem" }}>
+            <span style={{ justifySelf: "start", padding: "2px 8px", borderRadius: 4, background: "var(--bi-basic-white)", borderLeft: `4px solid ${areaColor(entryArea(to))}` }}>{label(to)}</span>
+            <span style={{ color: share === 1 ? "var(--bi-success-80)" : "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>
               {share === 1 ? "alle hovedkursene" : `${Math.round(share * 100)} % av hovedkursene`}
             </span>
           </Fragment>
@@ -1469,14 +1526,14 @@ function OverlapSection() {
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "0 24px", alignItems: "center" }}>
         <div style={{ alignSelf: "start", minHeight: 76 }}>
-          <div style={{ fontWeight: 700, color: "#52525b" }}>Fagområder</div>
-          <p style={{ margin: "2px 0 0", color: "#52525b", fontSize: "0.8125rem" }}>
+          <div style={{ fontWeight: 700, color: "var(--bi-color-neutral-text-secondary)" }}>Fagområder</div>
+          <p style={{ margin: "2px 0 0", color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>
             {describe(areaFocus, "Hold musepekeren over et fagområde eller en strek.")}
           </p>
         </div>
         <div style={{ alignSelf: "start", minHeight: 76 }}>
-          <div style={{ fontWeight: 700, color: "#52525b" }}>Underkategorier</div>
-          <p style={{ margin: "2px 0 0", color: "#52525b", fontSize: "0.8125rem" }}>
+          <div style={{ fontWeight: 700, color: "var(--bi-color-neutral-text-secondary)" }}>Underkategorier</div>
+          <p style={{ margin: "2px 0 0", color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>
             {describe(subFocus, "Hold musepekeren over en underkategori eller en strek.")}
           </p>
         </div>
@@ -1488,48 +1545,6 @@ function OverlapSection() {
 }
 
 const shortOldName = (name: string) => name;
-
-function BeforeAfterKpis() {
-  const { before, withSeveral, withoutArea } = beforeAfter;
-  const total = summaryRows.length;
-  const pct = (value: number) => `${Math.round((value / total) * 100)} %`;
-  const largestBefore = Math.max(...[...before].filter(([name]) => name !== noOldArea).map(([, value]) => value.count));
-  const largestAfter = Math.max(...areaTree.map(({ main }) => main));
-  const withExtra = summaryRows.filter((row) => row[6].split("; ").some((entry) => entry.split(" › ")[0] !== row[0])).length;
-  const cards: { label: string; before: string; after: string; note: string }[] = [
-    { label: "Uten fagområde", before: `${withoutArea}`, after: "0", note: `${pct(withoutArea)} av studiene og kursene manglet fagområde. Nå har alle ett.` },
-    {
-      label: "Flere fagområder uten prioritet",
-      before: `${withSeveral}`,
-      after: "0",
-      note: `${pct(withSeveral)} hadde flere likestilte fagområder. Nå har alle ett hovedfagområde (*), og ${withExtra} har i tillegg ekstra fagområder med egen underkategori.`,
-    },
-    {
-      label: "Største fagområde",
-      before: pct(largestBefore),
-      after: pct(largestAfter),
-      note: "Andel av alle studier og kurs i det største fagområdet. Mindre samleområde.",
-    },
-    { label: "Nivåer", before: "1", after: "2", note: `Før fantes bare fagområde. Nå finnes også ${subcategoryCount} underkategorier som gjør innholdet synlig.` },
-  ];
-  return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 16, margin: "0 0 20px" }}>
-      {cards.map(({ label, before: b, after: a, note }) => (
-        <div key={label} style={{ background: "#ffffff", border: "1px solid #e4e4e7", borderRadius: 8, padding: 16 }}>
-          <div style={{ color: "#52525b", fontSize: "0.8125rem", fontWeight: 600 }}>{label}</div>
-          <div style={{ display: "flex", alignItems: "baseline", gap: 10, margin: "6px 0" }}>
-            <span style={{ fontSize: "1.5rem", color: "#71717a", textDecoration: "line-through", textDecorationColor: "#d4d4d8" }}>{b}</span>
-            <span style={{ width: 32 }}>
-              <ChangeArrow />
-            </span>
-            <span style={{ fontSize: "1.75rem", fontWeight: 700, color: "#00467f" }}>{a}</span>
-          </div>
-          <div style={{ color: "#52525b", fontSize: "0.8125rem" }}>{note}</div>
-        </div>
-      ))}
-    </div>
-  );
-}
 
 const sankeyLeft = [
   "Finans, økonomi og styring",
@@ -1607,7 +1622,7 @@ function BeforeAfterSankey() {
   const isActive = (band: { from: string; to: string }) => !focus || (focus.side === "old" ? band.from === focus.name : band.to === focus.name);
   const leftColor = (name: string) => {
     const target = oldAreaCatalog[name]?.to;
-    return target ? areaColor(target) : name === noOldArea ? "#d4d4d8" : "#8d6e63";
+    return target ? areaColor(target) : name === noOldArea ? "#d5dde4" : "#c8d1db";
   };
   const count = (name: string) => beforeAfter.before.get(name)?.count ?? 0;
 
@@ -1631,7 +1646,7 @@ function BeforeAfterSankey() {
         return (
           <g key={name} onMouseEnter={() => setFocus({ side: "old", name })} opacity={!focus || (focus.side === "old" && focus.name === name) || bands.some((b) => b.from === name && isActive(b)) ? 1 : 0.35}>
             <rect x={0} y={y} width={nodeWidth} height={h} fill={leftColor(name)} />
-            <text x={-8} y={y + h / 2} textAnchor="end" dominantBaseline="middle" fontSize="12" fill="#27272a" textDecoration={oldAreaCatalog[name]?.kind === "removed" ? "line-through" : undefined}>
+            <text x={-8} y={y + h / 2} textAnchor="end" dominantBaseline="middle" fontSize="12" fill="#222d38" textDecoration={oldAreaCatalog[name]?.kind === "removed" ? "line-through" : undefined}>
               {wrapLabel(shortOldName(name), 34).map((line, lineIndex, all) => (
                 <tspan key={line} x={-8} dy={lineIndex === 0 ? `${-(all.length - 1) * 0.6}em` : "1.2em"}>
                   {line}
@@ -1648,7 +1663,7 @@ function BeforeAfterSankey() {
         return (
           <g key={name} onMouseEnter={() => setFocus({ side: "new", name })} opacity={!focus || (focus.side === "new" && focus.name === name) || bands.some((b) => b.to === name && isActive(b)) ? 1 : 0.35}>
             <rect x={width - nodeWidth} y={y} width={nodeWidth} height={h} fill={areaColor(name)} />
-            <text x={width + 8} y={y + h / 2} textAnchor="start" dominantBaseline="middle" fontSize="12" fill="#27272a">
+            <text x={width + 8} y={y + h / 2} textAnchor="start" dominantBaseline="middle" fontSize="12" fill="#222d38">
               {wrapLabel(areaShortName[name] ?? name, 34).map((line, lineIndex, all) => (
                 <tspan key={line} x={width + 8} dy={lineIndex === 0 ? `${-(all.length - 1) * 0.6}em` : "1.2em"}>
                   {line}
@@ -1663,35 +1678,236 @@ function BeforeAfterSankey() {
   );
 }
 
-const beforeAfterExamples: { title: string; level: string }[] = [
+function PublicSectorSankey() {
+  const targets = ["Helse, skole og barnehage", "Sikkerhet og beredskap", "Juss, skatt og eiendom"];
+  const publicSector = "Offentlig sektor";
+  const width = 400;
+  const nodeWidth = 14;
+  const gap = 9;
+  const scale = 5;
+  const originsOf = (row: Row) => {
+    const previous = row[4].split("; ").filter((p) => p !== "–");
+    if (!previous.length) return [noOldArea];
+    return [previous.includes(publicSector) ? publicSector : previous[0]];
+  };
+  const targetRows = summaryRows.filter((row) => targets.includes(row[0]));
+  const nodeOf = (key: string) => key;
+  const flows = new Map<string, number>();
+  const counts = new Map<string, number>();
+  for (const row of targetRows) {
+    const keys = originsOf(row);
+    for (const key of keys) {
+      const node = nodeOf(key);
+      flows.set(`${node}|${row[0]}`, (flows.get(`${node}|${row[0]}`) ?? 0) + 1 / keys.length);
+      counts.set(node, (counts.get(node) ?? 0) + 1);
+    }
+  }
+  const targetCenter = (name: string) => {
+    const total = targets.reduce((sum, to) => sum + (flows.get(`${name}|${to}`) ?? 0), 0);
+    return targets.reduce((sum, to, index) => sum + index * (flows.get(`${name}|${to}`) ?? 0), 0) / (total || 1);
+  };
+  const left = [...counts.keys()].sort((a, b) => targetCenter(a) - targetCenter(b) || (counts.get(b) ?? 0) - (counts.get(a) ?? 0));
+  const sumOf = (list: string[], other: (name: string) => string) => (name: string) => list.reduce((sum, item) => sum + (flows.get(other(item) + "|" + name) ?? 0), 0);
+  const leftTotals = new Map(left.map((name) => [name, targets.reduce((sum, to) => sum + (flows.get(`${name}|${to}`) ?? 0), 0)]));
+  const rightTotals = new Map(targets.map((name) => [name, sumOf(left, (item) => item)(name)]));
+  const minNode = 30;
+  const leftSize = (name: string) => Math.max((leftTotals.get(name) ?? 0) * scale, minNode);
+  const rightSize = (name: string) => Math.max((rightTotals.get(name) ?? 0) * scale, minNode);
+  const leftHeight = left.reduce((sum, name) => sum + leftSize(name), 0) + gap * (left.length - 1);
+  const rightHeight = targets.reduce((sum, name) => sum + rightSize(name), 0) + gap * (targets.length - 1);
+  const height = Math.max(leftHeight, rightHeight);
+
+  const place = (names: string[], size: (name: string) => number, offset: number) => {
+    const positions = new Map<string, number>();
+    let cursor = offset;
+    for (const name of names) {
+      positions.set(name, cursor);
+      cursor += size(name) + gap;
+    }
+    return positions;
+  };
+  const leftY = place(left, leftSize, (height - leftHeight) / 2);
+  const rightY = place(targets, rightSize, (height - rightHeight) / 2);
+  const leftCursor = new Map(left.map((name) => [name, (leftY.get(name) ?? 0) + (leftSize(name) - (leftTotals.get(name) ?? 0) * scale) / 2]));
+  const rightCursor = new Map(targets.map((name) => [name, (rightY.get(name) ?? 0) + (rightSize(name) - (rightTotals.get(name) ?? 0) * scale) / 2]));
+  const bands: { from: string; to: string; value: number; y0: number; y1: number }[] = [];
+  for (const from of left) {
+    for (const to of targets) {
+      const value = flows.get(`${from}|${to}`) ?? 0;
+      if (value <= 0) continue;
+      bands.push({ from, to, value, y0: leftCursor.get(from) ?? 0, y1: 0 });
+      leftCursor.set(from, (leftCursor.get(from) ?? 0) + value * scale);
+    }
+  }
+  for (const to of targets) {
+    for (const band of bands.filter((candidate) => candidate.to === to)) {
+      band.y1 = rightCursor.get(to) ?? 0;
+      rightCursor.set(to, (rightCursor.get(to) ?? 0) + band.value * scale);
+    }
+  }
+  const targetColor: Record<string, string> = {
+    "Helse, skole og barnehage": "var(--bi-primary-60)",
+    "Sikkerhet og beredskap": "var(--bi-primary-40)",
+    "Juss, skatt og eiendom": "var(--bi-neutral-40)",
+  };
+  const leftColor = (name: string) => {
+    if (name === publicSector || name.startsWith("Strategi")) return "var(--bi-primary-60)";
+    if (name === noOldArea) return "var(--bi-primary-40)";
+    if (/Finans|Eiendom|Juss/.test(name)) return "var(--bi-neutral-40)";
+    return ["var(--bi-primary-60)", "var(--bi-primary-40)", "var(--bi-primary-50)"][left.indexOf(name) % 3];
+  };
+
+  return (
+    <svg viewBox={`-240 -10 ${width + 480} ${height + 20}`} role="img" aria-label="Fra Offentlig sektor og andre fagområder til helse, sikkerhet og juss" style={{ width: "100%", height: "auto" }}>
+      {bands.map((band) => {
+        const h = band.value * scale;
+        const x0 = nodeWidth;
+        const x1 = width - nodeWidth;
+        const c = (x1 - x0) / 2;
+        const path = `M ${x0} ${band.y0} C ${x0 + c} ${band.y0} ${x1 - c} ${band.y1} ${x1} ${band.y1} L ${x1} ${band.y1 + h} C ${x1 - c} ${band.y1 + h} ${x0 + c} ${band.y0 + h} ${x0} ${band.y0 + h} Z`;
+        return (
+          <path key={`${band.from}|${band.to}`} d={path} fill={targetColor[band.to]} fillOpacity={0.5}>
+            <title>{`${band.from} → ${band.to}: ${Math.round(band.value * 10) / 10}`}</title>
+          </path>
+        );
+      })}
+      {left.map((name) => {
+        const y = leftY.get(name) ?? 0;
+        const h = leftSize(name);
+        return (
+          <g key={name}>
+            <rect x={0} y={y} width={nodeWidth} height={h} fill={leftColor(name)} />
+            <text x={-8} y={y + h / 2} textAnchor="end" dominantBaseline="middle" fontSize="12" fill="#222d38" textDecoration={name === publicSector ? "line-through" : undefined}>
+              {wrapLabel(shortOldName(name), 30).map((line, lineIndex, all) => (
+                <tspan key={line} x={-8} dy={lineIndex === 0 ? `${-(all.length - 1) * 0.6}em` : "1.2em"}>
+                  {line}
+                  {lineIndex === all.length - 1 && <tspan fontWeight="700"> {counts.get(name) ?? 0}</tspan>}
+                </tspan>
+              ))}
+            </text>
+          </g>
+        );
+      })}
+      {targets.map((name) => {
+        const y = rightY.get(name) ?? 0;
+        const h = rightSize(name);
+        return (
+          <g key={name}>
+            <rect x={width - nodeWidth} y={y} width={nodeWidth} height={h} fill={targetColor[name]} />
+            <text x={width + 8} y={y + h / 2} textAnchor="start" dominantBaseline="middle" fontSize="12" fill="#222d38">
+              {wrapLabel(areaShortName[name] ?? name, 30).map((line, lineIndex, all) => (
+                <tspan key={line} x={width + 8} dy={lineIndex === 0 ? `${-(all.length - 1) * 0.6}em` : "1.2em"}>
+                  {line}
+                  {lineIndex === all.length - 1 && <tspan fontWeight="700"> {beforeAfter.after.get(name)?.count ?? 0}</tspan>}
+                </tspan>
+              ))}
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+function LedelseSankey() {
+  const { after, extras } = beforeAfter;
+  const width = 400;
+  const nodeWidth = 14;
+  const gap = 9;
+  const scale = 4;
+  const minNode = 28;
+  const main = after.get("Ledelse")?.count ?? 0;
+  const sources = [
+    { key: "Ledelse", label: "Ledelse som hovedfagområde", value: main },
+    ...[...(extras.get("Ledelse") ?? [])].sort((x, y) => y[1] - x[1]).map(([area, value]) => ({ key: area, label: `Ekstra fra ${areaShortName[area] ?? area}`, value })),
+  ];
+  const total = sources.reduce((sum, source) => sum + source.value, 0);
+  const sizeOf = (value: number) => Math.max(value * scale, minNode);
+  const leftHeight = sources.reduce((sum, source) => sum + sizeOf(source.value), 0) + gap * (sources.length - 1);
+  const rightHeight = total * scale;
+  const height = Math.max(leftHeight, rightHeight);
+  const colors = ["var(--bi-primary-90)", "var(--bi-primary-60)", "var(--bi-primary-40)", "var(--bi-neutral-40)", "var(--bi-primary-50)", "var(--bi-neutral-60)", "var(--bi-primary-20)", "var(--bi-neutral-20)"];
+  const rightY = (height - rightHeight) / 2;
+  let leftCursor = (height - leftHeight) / 2;
+  let rightCursor = rightY;
+  const nodes = sources.map((source, index) => {
+    const size = sizeOf(source.value);
+    const bandHeight = source.value * scale;
+    const node = { ...source, color: colors[index % colors.length], y: leftCursor, size, y0: leftCursor + (size - bandHeight) / 2, y1: rightCursor, bandHeight };
+    leftCursor += size + gap;
+    rightCursor += bandHeight;
+    return node;
+  });
+
+  return (
+    <svg viewBox={`-240 -10 ${width + 400} ${height + 20}`} role="img" aria-label="Studier og kurs i Ledelse, fordelt på hovedfagområde" style={{ width: "100%", height: "auto" }}>
+      {nodes.map((node) => {
+        const x0 = nodeWidth;
+        const x1 = width - nodeWidth;
+        const c = (x1 - x0) / 2;
+        const path = `M ${x0} ${node.y0} C ${x0 + c} ${node.y0} ${x1 - c} ${node.y1} ${x1} ${node.y1} L ${x1} ${node.y1 + node.bandHeight} C ${x1 - c} ${node.y1 + node.bandHeight} ${x0 + c} ${node.y0 + node.bandHeight} ${x0} ${node.y0 + node.bandHeight} Z`;
+        return (
+          <path key={node.key} d={path} fill={node.color} fillOpacity={0.5}>
+            <title>{`${node.label}: ${node.value}`}</title>
+          </path>
+        );
+      })}
+      {nodes.map((node) => (
+        <g key={node.key}>
+          <rect x={0} y={node.y} width={nodeWidth} height={node.size} fill={node.color} />
+          <text x={-8} y={node.y + node.size / 2} textAnchor="end" dominantBaseline="middle" fontSize="12" fill="#222d38">
+            {wrapLabel(node.label, 30).map((line, lineIndex, all) => (
+              <tspan key={line} x={-8} dy={lineIndex === 0 ? `${-(all.length - 1) * 0.6}em` : "1.2em"}>
+                {line}
+                {lineIndex === all.length - 1 && <tspan fontWeight="700"> {node.value}</tspan>}
+              </tspan>
+            ))}
+          </text>
+        </g>
+      ))}
+      <rect x={width - nodeWidth} y={rightY} width={nodeWidth} height={rightHeight} fill="var(--bi-primary-90)" />
+      <text x={width + 8} y={rightY + rightHeight / 2} dominantBaseline="middle" fontSize="12" fill="#222d38">
+        Ledelse <tspan fontWeight="700">{total}</tspan>
+      </text>
+    </svg>
+  );
+}
+
+type BeforeAfterExample = { title: string; level: string };
+
+const beforeAfterExamples: BeforeAfterExample[] = [
   { title: "Juss for ledere", level: "Masterkurs" },
   { title: "Effektive team", level: "Bachelorkurs" },
-  { title: "Leading in the Age of AI", level: "Masterkurs" },
-  { title: "Arbeidsrett og arbeidsliv", level: "Masterkurs" },
-  { title: "Bærekraftig risikostyring", level: "Bachelorkurs" },
   { title: "Helseledelse", level: "Masterkurs" },
 ];
 
-function BeforeAfterExamples() {
+const sectorLeadershipExamples: BeforeAfterExample[] = [
+  { title: "Helseledelse", level: "Masterkurs" },
+  { title: "Nasjonal rektorutdanning", level: "Masterkurs" },
+  { title: "Sikkerhetsledelse", level: "Bachelorkurs" },
+  { title: "Digital sikkerhet for ledere", level: "Masterkurs" },
+];
+
+function BeforeAfterExamples({ examples = beforeAfterExamples }: { examples?: BeforeAfterExample[] }) {
   const normalizeTitle = (text: string) => text.replace(/\u00ad|\(-\)/g, "");
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16, margin: "0 0 20px" }}>
-      {beforeAfterExamples.map(({ title, level }) => {
+      {examples.map(({ title, level }) => {
         const row = summaryRows.find((candidate) => normalizeTitle(candidate[2]) === title && candidate[3] === level);
         if (!row) return null;
         const previous = row[4].split("; ").filter((p) => p !== "–");
         const entries = row[6].split("; ");
         return (
-          <div key={title} style={{ background: "#ffffff", border: "1px solid #e4e4e7", borderRadius: 8, padding: 16 }}>
+          <div key={title} style={{ background: "var(--bi-basic-white)", border: "1px solid var(--bi-color-neutral-stroke-subtle)", borderRadius: 8, padding: 16 }}>
             <div style={{ fontWeight: 700 }}>{title}</div>
-            <div style={{ color: "#71717a", fontSize: "0.8125rem", marginBottom: 10 }}>{level}</div>
-            <div style={{ color: "#71717a", fontSize: "0.8125rem", marginBottom: 4 }}>
-              Før: {previous.length > 1 ? `${previous.length} fagområder uten prioritet` : previous.length === 1 ? "1 fagområde" : "ingen fagområde"}
+            <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem", marginBottom: 10 }}>{level}</div>
+            <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem", marginBottom: 4 }}>
+              Før: {previous.length > 1 ? `${previous.length} fagområder uten prioritet` : previous.length === 1 ? "1 fagområde" : "manglet fagområde"}
             </div>
             <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
-              {previous.length ? previous.map((name) => <AreaPill key={name} label={shortOldName(name)} kind={oldAreaCatalog[name]?.kind === "removed" ? "removed" : "old"} />) : <AreaPill label="Ingen fagområde" kind="added" />}
+              {previous.length ? previous.map((name) => <AreaPill key={name} label={shortOldName(name)} kind={oldAreaCatalog[name]?.kind === "removed" ? "removed" : "old"} />) : <AreaPill label="Manglet fagområde" kind="added" />}
             </div>
-            <div style={{ color: "#00467f", fontSize: "0.8125rem", fontWeight: 600, marginBottom: 4 }}>
+            <div style={{ color: "var(--bi-color-primary-text-accent)", fontSize: "0.8125rem", fontWeight: 600, marginBottom: 4 }}>
               Nå: 1 hovedfagområde{entries.length > 1 ? ` + ${new Set(entries.slice(1).map((entry) => entry.split(" › ")[0])).size} ekstra` : ""}
             </div>
             {entries.map((entry, index) => {
@@ -1709,30 +1925,36 @@ function BeforeAfterExamples() {
   );
 }
 
-function BeforeAfterOverview() {
-  const { before, after, extras, subs, withSeveral, withoutArea, pairCount } = beforeAfter;
+function beforeAfterScale() {
+  const { before, after, extras } = beforeAfter;
   const total = summaryRows.length;
   const extraTotal = (area: string) => [...(extras.get(area)?.values() ?? [])].reduce((sum, value) => sum + value, 0);
   const maxCount = Math.max(...[...before.values()].map((v) => v.count), ...[...after.values()].map((v) => v.count), ...[...after.entries()].map(([area, value]) => value.count + extraTotal(area)));
   const percent = (value: number) => `${Math.round((value / total) * 100)} %`;
+  return { total, extraTotal, maxCount, percent };
+}
+
+function BeforeAfterOverview() {
+  const { before, after, subs, withSeveral, withoutArea } = beforeAfter;
+  const { total, extraTotal, maxCount, percent } = beforeAfterScale();
   const bar = (segments: { key: string; value: number; color: string }[], count: number) => (
-    <div style={{ display: "flex", width: `${(count / maxCount) * 100}%`, height: 14, borderRadius: 7, overflow: "hidden", background: "#e4e4e7" }}>
+    <div style={{ display: "flex", width: `${(count / maxCount) * 100}%`, height: 14, borderRadius: 7, overflow: "hidden", background: "var(--bi-color-neutral-stroke-subtle)" }}>
       {segments
         .filter(({ value }) => value > 0)
-        .map(({ key, value, color }) => (
-          <div key={key} style={{ flex: value, background: color, borderRight: "1px solid #ffffff" }} />
+        .map(({ key, value, color }, index, visible) => (
+          <div key={key} style={{ flex: value, background: color, boxShadow: hairline(color), borderRight: index < visible.length - 1 ? "2px solid var(--bi-basic-white)" : undefined }} />
         ))}
     </div>
   );
   const breakdown = (items: { name: string; value: number; color: string }[], prefix: string) => (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: "2px 12px", color: "#52525b", fontSize: "0.8125rem" }}>
-      <span style={{ color: "#71717a" }}>{prefix}</span>
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 16px", color: "var(--bi-color-neutral-text)", fontSize: "0.8125rem" }}>
+      <span style={{ color: "var(--bi-color-neutral-text-secondary)" }}>{prefix}</span>
       {items
         .filter(({ value }) => value > 0)
         .sort((a, b) => b.value - a.value)
         .map(({ name, value, color }) => (
           <span key={name} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-            <span style={{ width: 9, height: 9, borderRadius: 2, background: color }} />
+            <span style={{ width: 9, height: 9, borderRadius: 2, background: color, boxShadow: hairline(color) }} />
             {name} <strong>{value}</strong>
           </span>
         ))}
@@ -1764,7 +1986,7 @@ function BeforeAfterOverview() {
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
           <AreaPill label={name} kind={info?.kind ?? "added"} />
           <strong>{entry.count}</strong>
-          <span style={{ color: "#71717a", fontSize: "0.8125rem" }}>studier og kurs{info?.note ? ` · ${info.note}` : ""}</span>
+          <span style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>studier og kurs{info?.note ? ` · ${info.note}` : ""}</span>
         </div>
         {bar(destinations.map((d) => ({ key: d.name, value: d.value, color: d.color })), entry.count)}
         {breakdown(destinations, "Nå i:")}
@@ -1783,17 +2005,17 @@ function BeforeAfterOverview() {
     const color = areaColor(area);
     const subEntries = [...(subs.get(area) ?? [])].sort((x, y) => y[1].main + y[1].extra - (x[1].main + x[1].extra) || x[0].localeCompare(y[0], "nb"));
     const twoToneBar = (main: number, extra: number, height: number) => (
-      <div style={{ display: "flex", width: `${((main + extra) / maxCount) * 100}%`, height, borderRadius: height / 2, overflow: "hidden", background: "#e4e4e7" }}>
-        {main > 0 && <div title={`Hovedfagområde: ${main}`} style={{ flex: main, background: color }} />}
-        {extra > 0 && <div title={`Ekstra fagområde: ${extra}`} style={{ flex: extra, background: color, opacity: 0.35 }} />}
+      <div style={{ display: "flex", width: `${((main + extra) / maxCount) * 100}%`, height, borderRadius: height / 2, overflow: "hidden", background: "var(--bi-color-neutral-stroke-subtle)" }}>
+        {main > 0 && <div title={`Hovedfagområde: ${main}`} style={{ flex: main, background: color, boxShadow: hairline(color), borderRight: extra > 0 ? "2px solid var(--bi-basic-white)" : undefined }} />}
+        {extra > 0 && <div title={`Ekstra fagområde: ${extra}`} style={{ flex: extra, background: color, boxShadow: hairline(color), opacity: 0.45 }} />}
       </div>
     );
     const rowGrid = { display: "grid", gridTemplateColumns: "minmax(120px, 210px) minmax(0, 1fr) 118px", gap: 8, alignItems: "center", fontSize: "0.8125rem" } as const;
     return (
       <div key={area} style={{ display: "grid", gap: 6 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-          <span style={{ padding: "4px 10px", border: "1px solid #9ec0e0", borderRadius: 4, background: "#e3effa", color: "#00467f" }}>{area}</span>
-          <span style={{ color: "#71717a", fontSize: "0.8125rem" }}>Hovedkursene kom fra: {origins}</span>
+          <span style={{ padding: "4px 10px", border: "1px solid var(--bi-primary-20)", borderRadius: 4, background: "var(--bi-primary-5)", color: "var(--bi-color-primary-text-accent)" }}>{area}</span>
+          <span style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>Hovedkursene kom fra: {origins}</span>
         </div>
         <div style={{ display: "grid", gap: 3 }}>
           <div style={rowGrid}>
@@ -1807,10 +2029,10 @@ function BeforeAfterOverview() {
           </div>
           {subEntries.map(([name, { main, extra }]) => (
             <div key={name} style={rowGrid}>
-              <span style={{ color: "#3f3f46" }}>{name}</span>
+              <span style={{ color: "var(--bi-color-neutral-text)" }}>{name}</span>
               <div style={{ display: "flex" }}>{twoToneBar(main, extra, 8)}</div>
-              <span style={{ color: "#71717a", whiteSpace: "nowrap" }}>
-                {main > 0 && <strong style={{ color: "#27272a" }}>{main}</strong>}
+              <span style={{ color: "var(--bi-color-neutral-text-secondary)", whiteSpace: "nowrap" }}>
+                {main > 0 && <strong style={{ color: "var(--bi-color-neutral-text)" }}>{main}</strong>}
                 {extra > 0 && ` ${main > 0 ? "+ " : ""}${extra}`}
               </span>
             </div>
@@ -1820,30 +2042,25 @@ function BeforeAfterOverview() {
     );
   };
 
-  const toLedelseFromHr = pairCount("Organisasjonsutvikling og Human Resource Management", "Ledelse");
-  const toHrFromLedelse = pairCount("Ledelse", "HR og organisasjonsutvikling");
-  const financeToLaw = pairCount("Finans, økonomi og styring", "Juss, skatt og eiendom");
-  const digitalToMarketing = pairCount("Digitalisering og Analytics", "Markedsføring, kommunikasjon og kultur");
 
   return (
     <div>
-      <BeforeAfterKpis />
-      <p style={{ margin: "0 0 4px", color: "#52525b", fontSize: "0.8125rem" }}>
+      <p style={{ margin: "0 0 4px", color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>
         Fra gamle fagområder (til venstre) til nye hovedfagområder (til høyre). Bredden viser antall studier og kurs. Et studie eller kurs med flere gamle
         fagområder deles likt mellom dem. Hold musepekeren over et fagområde for å se hvor kursene kom fra eller gikk.
       </p>
       <BeforeAfterSankey />
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 40px minmax(0, 1fr)", gap: "0 16px", margin: "0 0 4px" }}>
         <div>
-          <div style={{ fontWeight: 700, color: "#52525b" }}>Før (bi.no i dag)</div>
-          <p style={{ margin: "2px 0 8px", color: "#52525b", fontSize: "0.8125rem" }}>
+          <div style={{ fontWeight: 700, color: "var(--bi-color-neutral-text-secondary)" }}>Før (bi.no i dag)</div>
+          <p style={{ margin: "2px 0 8px", color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>
             Stolpen viser hvor de ble av. Fargene er det nye hovedfagområdet. {withSeveral} av {total} ({percent(withSeveral)}) hadde flere fagområder, og {withoutArea}{" "}
-            ({percent(withoutArea)}) hadde ingen.
+            ({percent(withoutArea)}) manglet fagområde.
           </p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "2px 12px", color: "#52525b", fontSize: "0.8125rem" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 16px", color: "var(--bi-color-neutral-text)", fontSize: "0.8125rem" }}>
             {overlapOrder.map((area) => (
               <span key={area} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                <span style={{ width: 9, height: 9, borderRadius: 2, background: areaColor(area) }} />
+                <span style={{ width: 9, height: 9, borderRadius: 2, background: areaColor(area), boxShadow: hairline(areaColor(area)) }} />
                 {areaShortName[area]}
               </span>
             ))}
@@ -1851,18 +2068,18 @@ function BeforeAfterOverview() {
         </div>
         <span />
         <div>
-          <div style={{ fontWeight: 700, color: "#00467f" }}>Nå (forslaget)</div>
-          <p style={{ margin: "2px 0 8px", color: "#52525b", fontSize: "0.8125rem" }}>
+          <div style={{ fontWeight: 700, color: "var(--bi-color-primary-text-accent)" }}>Nå (forslaget)</div>
+          <p style={{ margin: "2px 0 8px", color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>
             Én stolpe per fagområde: solid farge er studier og kurs med fagområdet som hovedfagområde, og lys farge er de som har det som ekstra.
-            De mindre stolpene under er underkategoriene, i samme skala. Tallene viser antall studier og kurs som hoved + ekstra, og totalt for hele fagområdet.
+            De mindre stolpene under er underkategoriene, i samme skala. Tallene viser antall studier og kurs som hovedfagområde + ekstra fagområde, og totalt for hele fagområdet.
           </p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "2px 16px", color: "#52525b", fontSize: "0.8125rem" }}>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 16px", color: "var(--bi-color-neutral-text)", fontSize: "0.8125rem" }}>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-              <span style={{ width: 14, height: 9, borderRadius: 2, background: "#1b6a5f" }} />
+              <span style={{ width: 9, height: 9, borderRadius: 2, background: "#0b4db4" }} />
               Hovedfagområde (*)
             </span>
             <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-              <span style={{ width: 14, height: 9, borderRadius: 2, background: "#1b6a5f", opacity: 0.35 }} />
+              <span style={{ width: 9, height: 9, borderRadius: 2, background: "#0b4db4", opacity: 0.45 }} />
               Ekstra fagområde
             </span>
           </div>
@@ -1871,7 +2088,7 @@ function BeforeAfterOverview() {
       {lineage.map(({ olds, news }) => (
         <div
           key={olds.join("|")}
-          style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 40px minmax(0, 1fr)", gap: "0 16px", alignItems: "start", padding: "12px 0", borderTop: "1px solid #e4e4e7" }}
+          style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 40px minmax(0, 1fr)", gap: "0 16px", alignItems: "start", padding: "12px 0", borderTop: "1px solid var(--bi-color-neutral-stroke-subtle)" }}
         >
           <div style={{ display: "grid", gap: 12 }}>{olds.map((name) => oldCell(name))}</div>
           <div style={{ paddingTop: 6 }}>
@@ -1880,7 +2097,7 @@ function BeforeAfterOverview() {
           {news.length > 0 ? (
             <div style={{ display: "grid", gap: 12 }}>{news.map((area) => newCell(area))}</div>
           ) : (
-            <div style={{ color: "#71717a", fontSize: "0.875rem", paddingTop: 4 }}>
+            <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.875rem", paddingTop: 4 }}>
               {olds[0] === noOldArea
                 ? "Har nå fått hovedfagområde (se stolpen til venstre)."
                 : "Ikke lenger fagområder. Studiene og kursene er plassert i andre fagområder, og Prosjektledelse er en underkategori i Ledelse."}
@@ -1888,57 +2105,222 @@ function BeforeAfterOverview() {
           )}
         </div>
       ))}
+    </div>
+  );
+}
 
-      <h4 style={summarySubHeading}>Seks eksempler: før og nå</h4>
-      <BeforeAfterExamples />
+const labelled = (label: string, content: React.ReactNode) => (
+  <div style={{ display: "grid", gridTemplateColumns: "34px minmax(0, 1fr)", gap: 8, alignItems: "start", fontSize: "0.8125rem" }}>
+    <span style={{ color: "var(--bi-color-neutral-text-secondary)", lineHeight: "14px" }}>{label}</span>
+    {content}
+  </div>
+);
 
-      <h4 style={summarySubHeading}>Hva fungerer bedre</h4>
-      <div style={{ columnCount: 2, columnGap: 16, margin: "0 0 20px" }}>
-        {(() => {
-          const withOne = total - withoutArea - withSeveral;
-          const card = { background: "#ffffff", border: "1px solid #e4e4e7", borderRadius: 8, padding: 16, display: "grid", gap: 10, alignContent: "start", breakInside: "avoid", marginBottom: 16 } as const;
-          const heading = (text: string, sub: string) => (
-            <div>
-              <div style={{ fontWeight: 700 }}>{text}</div>
-              <div style={{ color: "#52525b", fontSize: "0.8125rem" }}>{sub}</div>
-            </div>
-          );
-          const labelled = (label: string, content: React.ReactNode) => (
-            <div style={{ display: "grid", gridTemplateColumns: "34px minmax(0, 1fr)", gap: 8, alignItems: "center", fontSize: "0.8125rem" }}>
-              <span style={{ color: "#71717a" }}>{label}</span>
-              {content}
-            </div>
-          );
-          const segmentBar = (segments: { key: string; value: number; color: string; label: string }[], widthPercent = 100) => (
-            <div style={{ display: "flex", width: `${widthPercent}%`, height: 22, borderRadius: 6, overflow: "hidden", background: "#e4e4e7" }}>
-              {segments
-                .filter((segment) => segment.value > 0)
-                .map((segment) => (
-                  <div
-                    key={segment.key}
-                    title={`${segment.label}: ${segment.value}`}
-                    style={{ flex: segment.value, background: segment.color, borderRight: "1px solid #ffffff", color: "#ffffff", fontSize: "0.75rem", display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", whiteSpace: "nowrap" }}
-                  >
-                    {segment.value}
+type BarSegment = { key: string; value: number; color: string; label: string; legend?: string };
+
+const segmentBar = (segments: BarSegment[], widthPercent = 100) => (
+  <div style={{ display: "flex", width: `${widthPercent}%`, height: 14, borderRadius: 7, overflow: "hidden", background: "var(--bi-color-neutral-stroke-subtle)" }}>
+    {segments
+      .filter((segment) => segment.value > 0)
+      .map((segment, index, visible) => (
+        <div
+          key={segment.key}
+          title={`${segment.label}: ${segment.value}`}
+          style={{ flex: segment.value, background: segment.color, boxShadow: hairline(segment.color), borderRight: index < visible.length - 1 ? "2px solid var(--bi-basic-white)" : undefined }}
+        />
+      ))}
+  </div>
+);
+
+const legendList = (items: { label: string; value: number; color: string }[]) => (
+  <div style={{ display: "flex", flexWrap: "wrap", gap: "4px 16px", fontSize: "0.8125rem" }}>
+    {items.map((item, index) => (
+      <span key={index} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+        <span style={{ width: 9, height: 9, borderRadius: 2, background: item.color, boxShadow: hairline(item.color) }} />
+        <span style={{ color: "var(--bi-color-neutral-text)" }}>{item.label.charAt(0).toUpperCase() + item.label.slice(1)}</span>
+        <span style={{ fontWeight: 700, color: "var(--bi-color-neutral-text)" }}>{item.value}</span>
+      </span>
+    ))}
+  </div>
+);
+
+const barWithLegend = (segments: BarSegment[], widthPercent = 100) => (
+  <div style={{ display: "grid", gap: 6 }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <div style={{ width: `calc((100% - 40px) * ${widthPercent / 100})` }}>{segmentBar(segments)}</div>
+      <span style={{ flex: "0 0 32px", fontWeight: 700, lineHeight: "14px" }}>{segments.reduce((sum, segment) => sum + segment.value, 0)}</span>
+    </div>
+    {legendList(segments.map((segment) => ({ label: segment.legend ?? segment.label, value: segment.value, color: segment.color })))}
+  </div>
+);
+
+const barWithNumber = (segment: BarSegment, widthPercent: number) => (
+  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+    <div style={{ width: `calc((100% - 40px) * ${widthPercent / 100})` }}>{segmentBar([segment])}</div>
+    <span style={{ flex: "0 0 32px", fontWeight: 700, lineHeight: "14px" }}>{segment.value}</span>
+  </div>
+);
+
+function KeepAreaSlide() {
+  const total = summaryRows.length;
+  const statusCount = (status: Status) => summaryRows.filter((row) => row[1][0] === status).length;
+  const keptCount = statusCount("Uendret") + statusCount("Endret navn på fagområde");
+  const prioritisedCount = statusCount("1 fagområde prioritert");
+  const extraCount = statusCount("Lagt til ekstra fagområde");
+  const movedCount = statusCount("Flyttet til nytt fagområde");
+  const missingCount = statusCount("Manglet fagområde");
+  return (
+    <div style={{ display: "grid", gap: 12, maxWidth: 820 }}>
+      <p style={{ margin: 0, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{`Bare ${Math.round((movedCount / total) * 100)} % er flyttet helt til et annet fagområde. ${Math.round(((keptCount + prioritisedCount) / total) * 100)} % har beholdt ett av fagområdene sine som hovedfagområde, ${Math.round((extraCount / total) * 100)} % har fått et nytt hovedfagområde, men beholder det gamle som ekstra, og ${Math.round((missingCount / total) * 100)} % har fått et fagområde for første gang.`}</p>
+      {barWithLegend([
+        { key: "kept", value: keptCount, color: statusPieColors.Uendret, label: "Beholdt fagområdet (uendret eller nytt navn)", legend: "beholdt" },
+        { key: "prio", value: prioritisedCount, color: statusPieColors["1 fagområde prioritert"], label: "Ett fagområde prioritert", legend: "ett prioritert" },
+        { key: "extra", value: extraCount, color: statusPieColors["Lagt til ekstra fagområde"], label: "Lagt til ekstra fagområde", legend: "lagt til ekstra fagområde" },
+        { key: "moved", value: movedCount, color: statusPieColors["Flyttet til nytt fagområde"], label: "Flyttet til nytt fagområde", legend: "flyttet" },
+        { key: "missing", value: missingCount, color: statusPieColors["Manglet fagområde"], label: "Manglet fagområde", legend: "manglet" },
+      ])}
+    </div>
+  );
+}
+
+const subcategoryReasons: Record<string, string> = {
+  "Finans, økonomi og regnskap › Bedriftsøkonomi": "Brede økonomi- og administrasjonsstudier som gir en grunnleggende forståelse av hvordan virksomheter drives økonomisk.",
+  "Finans, økonomi og regnskap › Bærekraftig finans": "Skilt ut fra Finans og investering fordi bærekraft og finans er et eget, voksende tema med egne kurs.",
+  "Finans, økonomi og regnskap › Finans og investering": "Kjernen i finansfaget: verdsettelse, investering og finansiell analyse.",
+  "Finans, økonomi og regnskap › Finansiell kriminalitet og compliance": "Tverrgående tema som gjør kurs om økonomisk kriminalitet i finansnæringen lette å finne, selv om de har Juss som hovedfagområde.",
+  "Finans, økonomi og regnskap › Fintech": "Tverrgående tema mellom finans og teknologi. Studiene og kursene har KI, digitalisering og analytics som hovedfagområde, men skal også være lette å finne under Finans.",
+  "Finans, økonomi og regnskap › Logistikk og forsyningskjeder": "Handler om hvordan varer og tjenester flyttes og styres gjennom verdikjeden, fra innkjøp og lager til transport og drift (supply chain management). Det er et operativt fag om flyt og effektivitet, mens de andre underkategoriene i Finans handler om penger, regnskap og investering. Master in Business-majoren i logistikk ligger her.",
+  "Finans, økonomi og regnskap › Regnskap og revisjon": "Regnskap er et eget yrkesløp med revisor og regnskapsfører, og skal være synlig i både navn og underkategori.",
+  "Finans, økonomi og regnskap › Samfunnsøkonomi": "Teoretisk og analytisk økonomi, som mikroøkonomi og matematikk for økonomer, skiller seg fra de bedriftsrettede temaene.",
+  "Finans, økonomi og regnskap › Økonomistyring": "Skilt ut fra Bedriftsøkonomi fordi budsjettering, prestasjonsstyring og beslutningsstøtte er et eget tema som ledere søker etter.",
+  "HR og organisasjonsutvikling › Arbeidsmiljø": "Samler kurs om motivasjon, arbeidsglede og HMS, som handler om hvordan folk har det på jobb.",
+  "HR og organisasjonsutvikling › Endringsledelse": "Egen inngang for endringsarbeid og omstilling, et tema mange leter etter.",
+  "HR og organisasjonsutvikling › HR og personalledelse": "Kjernen i HR: rekruttering, onboarding og oppfølging av ansatte.",
+  "HR og organisasjonsutvikling › Organisasjonspsykologi": "Eget fagfelt om atferd og samspill i organisasjoner.",
+  "Helse, skole og barnehage › Helse": "Ledelse i helse- og omsorgstjenesten er en egen bransje med egne behov og målgruppe.",
+  "Helse, skole og barnehage › Skole og barnehage": "Rektor- og styrerutdanning og pedagogisk ledelse har en annen målgruppe enn helse.",
+  "Juss, skatt og eiendom › Arbeidsrett": "Eget rettsområde som er viktig for både HR og ledere.",
+  "Juss, skatt og eiendom › Compliance": "Regelverk, personvern og risikostyring er et tema som trenger en egen oversikt.",
+  "Juss, skatt og eiendom › Eiendomsmegling": "Egen yrkesutdanning for eiendomsmeglere.",
+  "Juss, skatt og eiendom › Forretningsjus og rettsvitenskap": "Generell juss for næringslivet, fra rettsvitenskap til foretaksrett.",
+  "Juss, skatt og eiendom › Skatt og avgift": "Skatt og avgift var gjemt rundt på flere fagområder, og er nå samlet og synlig.",
+  "KI, digitalisering og analytics › Ansvarlig KI og personvern": "Etikk, regulering og personvern i bruk av KI er et eget tema som skiller seg fra de tekniske kursene.",
+  "KI, digitalisering og analytics › Data science og analytics": "Dataanalyse og maskinlæring i forretning, med egne metoder og verktøy.",
+  "KI, digitalisering og analytics › Digital transformasjon": "Hvordan virksomheter omstiller seg digitalt, med mer vekt på organisasjon og strategi enn teknikk.",
+  "KI, digitalisering og analytics › KI": "KI er hovedtema for flest studier og kurs, og fortjener en egen inngang.",
+  "KI, digitalisering og analytics › Statistikk og metode": "Grunnleggende metodefag som brukes på tvers av fagområdene.",
+  "Ledelse › Generell ledelse og lederutdanning": "Brede lederutdanninger som ikke passer i et bestemt tema, og som er inngangen for de fleste ledere.",
+  "Ledelse › Helse-, skole- og barnehageledelse": "Tverrgående tema: ledelse i helse og skole har Helse, skole og barnehage som hovedfagområde, men skal også kunne finnes under Ledelse.",
+  "Ledelse › Endringsledelse": "Tverrgående tema: endringsledelse har HR og organisasjonsutvikling som hovedfagområde, men er også ledelse.",
+  "Ledelse › Lederferdigheter og kommunikasjon": "Personlig lederutvikling som forhandling, coaching, påvirkning og ledertrening.",
+  "Ledelse › Medarbeiderledelse og arbeidsmiljø": "Tverrgående tema: å lede og følge opp medarbeidere har HR og organisasjonsutvikling som hovedfagområde, men er også ledelse.",
+  "Ledelse › Prosjektledelse": "Var tidligere et eget fagområde, men var for lite og hører hjemme i Ledelse.",
+  "Ledelse › Sikkerhets- og beredskapsledelse": "Tverrgående tema: sikkerhetsledelse har Sikkerhet og beredskap som hovedfagområde, men er også ledelse.",
+  "Ledelse › Strategisk ledelse": "Ledelse på toppnivå, som styrearbeid, strategi og prestasjonsstyring.",
+  "Ledelse › Teamledelse og prestasjon": "Å lede team og skape prestasjon, skilt ut fra Team-, medarbeider- og endringsledelse som var for bredt.",
+  "Markedsføring, kommunikasjon og kultur › Kommunikasjon": "Kommunikasjon er et eget fag, ikke bare en del av markedsføring.",
+  "Markedsføring, kommunikasjon og kultur › Kultur og internasjonal business": "Internasjonal profil er en egenskap ved studiene og kursene, ikke et fagområde. Det som handler om kultur og internasjonal forståelse samles her.",
+  "Markedsføring, kommunikasjon og kultur › Kunde- og markedsinnsikt": "Forbrukerpsykologi, kunderelasjoner og metode for å forstå kunder og marked.",
+  "Markedsføring, kommunikasjon og kultur › Markedsføring": "Kjernen i fagområdet, og den største underkategorien.",
+  "Sikkerhet og beredskap › Beredskap og krisehåndtering": "Å forberede seg på og håndtere kriser, terror og det uventede.",
+  "Sikkerhet og beredskap › Sikkerhetsledelse og cybersikkerhet": "Sikkerhetsledelse og digital sikkerhet for ledere.",
+  "Strategi, innovasjon og bærekraft › Bærekraft": "Bærekraft går på tvers av alle fagområder, og mange studier og kurs har det som ekstra fagområde.",
+  "Strategi, innovasjon og bærekraft › Innovasjon og entreprenørskap": "Nyskaping, forretningsutvikling og entreprenørskap er et eget tema med egne kurs.",
+  "Strategi, innovasjon og bærekraft › Strategi": "Strategi er et bredt tema som går på tvers, og få har det som hovedtema, men mange berører det.",
+};
+
+// Fagområder med like mange underkategorier står ved siden av hverandre.
+const subcategoryLayout: string[][][] = [
+  [["Finans, økonomi og regnskap"], ["Ledelse"]],
+  [["Juss, skatt og eiendom"], ["KI, digitalisering og analytics"]],
+  [["HR og organisasjonsutvikling"], ["Markedsføring, kommunikasjon og kultur"]],
+  [["Strategi, innovasjon og bærekraft"], ["Helse, skole og barnehage", "Sikkerhet og beredskap"]],
+];
+
+function SubcategorySlide() {
+  const { subs } = beforeAfter;
+  return (
+    <div style={{ display: "grid", gap: 12 }}>
+      <p style={{ margin: 0, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem", maxWidth: 820 }}>
+        Alle underkategoriene, med begrunnelse for hvorfor de bør være en underkategori. Tallet viser antall studier og kurs som har underkategorien som hovedplassering, pluss ekstra.
+      </p>
+      <div style={{ display: "grid", gap: 16 }}>
+        {subcategoryLayout.map((row, rowIndex) => (
+          <div key={rowIndex} style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16, alignItems: "start" }}>
+            {row.map((cell, cellIndex) => (
+              <div key={cellIndex} style={{ display: "grid", gap: 16 }}>
+        {cell.map((area) => {
+          const entries = [...(subs.get(area) ?? [])].sort((x, y) => y[1].main + y[1].extra - (x[1].main + x[1].extra) || x[0].localeCompare(y[0], "nb"));
+          return (
+            <div key={area} style={{ background: "var(--bi-basic-white)", border: "1px solid var(--bi-color-neutral-stroke-subtle)", borderLeft: `4px solid ${areaColor(area)}`, borderRadius: 8, padding: 16 }}>
+              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
+                <strong style={{ color: "var(--bi-color-primary-text-accent)" }}>{area}</strong>
+                <span style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>{entries.length} underkategorier</span>
+              </div>
+              <div style={{ display: "grid", gap: 10 }}>
+                {entries.map(([name, value]) => (
+                  <div key={name} style={{ display: "grid", gap: 2 }}>
+                    <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, fontSize: "0.9375rem" }}>
+                      <strong>{name}</strong>
+                      <span style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem", whiteSpace: "nowrap" }}>
+                        {value.main}
+                        {value.extra > 0 && ` + ${value.extra}`}
+                      </span>
+                    </div>
+                    <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{subcategoryReasons[`${area} › ${name}`]}</div>
                   </div>
                 ))}
+              </div>
             </div>
           );
-          const publicParts = [...(before.get("Offentlig sektor")?.destinations ?? [])].sort((x, y) => y[1] - x[1]);
-          const ledelseSubs = [...(subs.get("Ledelse") ?? [])].filter(([, v]) => v.main > 0).sort((x, y) => y[1].main - x[1].main);
-          const financeBefore = before.get("Finans, økonomi og styring")?.count ?? 0;
-          const financeAfter = after.get("Finans, økonomi og regnskap")?.count ?? 0;
-          const ledelseBefore = before.get("Ledelse")?.count ?? 0;
-          const crossCutting = [...subs]
-            .flatMap(([area, map]) => [...map].filter(([, value]) => value.main === 0 && value.extra > 0).map(([name, value]) => ({ area, name, count: value.extra })))
-            .sort((x, y) => y.count - x.count);
-          const majorRows = summaryRows.length === rows.length ? [] : rows.filter((row) => !summaryRows.includes(row));
-          const nameSuggestions = Object.entries(suggestedNames);
-          const statusCount = (status: Status) => summaryRows.filter((row) => row[1][0] === status).length;
-          const keptCount = statusCount("Uendret") + statusCount("Endret navn på fagområde");
-          const prioritisedCount = statusCount("1 fagområde prioritert");
-          const movedCount = statusCount("Flyttet til nytt fagområde");
-          const missingCount = statusCount("Manglet fagområde");
+        })}
+              </div>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CrossCuttingSlide() {
+  const crossCutting = [...beforeAfter.subs]
+    .flatMap(([area, map]) => [...map].filter(([, value]) => value.main === 0 && value.extra > 0).map(([name, value]) => ({ area, name, count: value.extra })))
+    .sort((x, y) => y.count - x.count);
+  return (
+    <div style={{ display: "grid", gap: 12, maxWidth: 820 }}>
+      <p style={{ margin: 0, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{`${crossCutting.length} underkategorier har ingen studier som hovedplassering, bare ekstra. De gjør at temaer som går på tvers, som fintech og ledelse i helse, kan finnes samlet.`}</p>
+      <div style={{ display: "grid", gap: 6 }}>
+        {crossCutting.map(({ area, name, count }) => (
+          <div key={`${area}|${name}`} style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 24px", gap: 8, alignItems: "center", fontSize: "0.9375rem" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+              <span style={{ padding: "2px 8px", borderRadius: 4, background: "var(--bi-basic-white)", border: "1px solid var(--bi-color-neutral-stroke-subtle)", borderLeft: "4px solid #6196f4" }}>{name}</span>
+              <span style={{ color: "var(--bi-color-neutral-text-secondary)" }}>i {area}</span>
+            </div>
+            <strong style={{ textAlign: "right" }}>{count}</strong>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+const renamedPairs = [
+  { from: "Finans, økonomi og styring", to: "Finans, økonomi og regnskap", why: "«Styring» var tvetydig (økonomistyring eller ledelse?). Regnskap er et eget yrkesløp med revisor og regnskapsfører, og er nå synlig i navnet." },
+  { from: "Digitalisering og Analytics", to: "KI, digitalisering og analytics", why: "Mange studier og kurs har KI som hovedtema så det bør inkluderes i tittelen til fagområde." },
+  { from: "Organisasjonsutvikling og Human Resource Management", to: "HR og organisasjonsutvikling", why: "HR er et mer vanlig begrep i Norge enn «Human Resource Management», og det folk flest søker etter. HR er også den største underkategorien, og står derfor først i navnet." },
+  { from: "Eiendom, varehandel og forretningsjus", to: "Juss, skatt og eiendom", why: "Skatt og avgift er synlig i navnet, før var det gjemt rundt på flere fagområder. Forretningsjus har blitt til kun juss siden det er mer enn kun forretningsjus i fagområdet." },
+];
+
+const whyRenamed = (from: string) => renamedPairs.find((pair) => pair.from === from)?.why;
+
+function WhyBetter() {
+  const { before, after, extras, subs, withSeveral, withoutArea } = beforeAfter;
+  const { total, maxCount, percent } = beforeAfterScale();
+  return (() => {
+          const withOne = total - withoutArea - withSeveral;
+          const ledelseSubs = [...(subs.get("Ledelse") ?? [])].filter(([, v]) => v.main + v.extra > 0).sort((x, y) => y[1].main + y[1].extra - (x[1].main + x[1].extra));
+          const ledelseNow = ledelseSubs.reduce((sum, [, v]) => sum + v.main + v.extra, 0);
           const HRNAME = "Organisasjonsutvikling og Human Resource Management";
           const HRNEW = "HR og organisasjonsutvikling";
           const bothBefore = summaryRows.filter((row) => row[4].split("; ").includes("Ledelse") && row[4].split("; ").includes(HRNAME)).length;
@@ -1949,27 +2331,16 @@ function BeforeAfterOverview() {
           const ledelseOnly = summaryRows.filter((row) => row[0] === "Ledelse" && !touches(row, HRNEW)).length;
           const hrWithLedelse = summaryRows.filter((row) => row[0] === HRNEW && touches(row, "Ledelse")).length;
           const hrOnly = summaryRows.filter((row) => row[0] === HRNEW && !touches(row, "Ledelse")).length;
-          const englishExamples = ["Bedriftsøkonomi", "Logistikk og forsyningskjeder", "Innovasjon og entreprenørskap", "Endringsledelse"]
-            .map((name) => englishNames.flatMap((group) => group.subcategories).find((sub) => sub.no === name))
-            .filter((sub): sub is NonNullable<typeof sub> => Boolean(sub));
-          const englishTotal = englishNames.reduce((sum, group) => sum + 1 + group.subcategories.length, 0);
           const missingRows = summaryRows.filter((row) => row[4] === "–");
           const missingMap = new Map<string, number>();
           for (const row of missingRows) missingMap.set(row[0], (missingMap.get(row[0]) ?? 0) + 1);
           const missingParts = [...missingMap].sort((x, y) => y[1] - x[1]);
           const areaMain = (area: string) => after.get(area)?.count ?? 0;
           const areaExtra = (area: string) => [...(extras.get(area)?.values() ?? [])].reduce((sum, value) => sum + value, 0);
-          const subCounts = [...subs].map(([area, map]) => [area, map.size] as [string, number]).sort((x, y) => overlapOrder.indexOf(x[0]) - overlapOrder.indexOf(y[0]));
           const withExtraRows = summaryRows.filter((row) => row[6].split("; ").some((entry) => entryArea(entry) !== row[0])).length;
           const placementsBefore = [...before].filter(([name]) => name !== noOldArea).reduce((sum, [, value]) => sum + value.count, 0);
           const placementsNow = summaryRows.reduce((sum, row) => sum + row[6].split("; ").length, 0);
           const withExtraCount = placementsNow - total;
-          const renamedPairs = [
-            { from: "Finans, økonomi og styring", to: "Finans, økonomi og regnskap", why: "«Styring» var tvetydig (økonomistyring eller ledelse?). Regnskap er et eget yrkesløp med revisor og regnskapsfører, og er nå synlig i navnet." },
-            { from: "Digitalisering og Analytics", to: "KI, digitalisering og analytics", why: "KI er det kursene faktisk handler om i dag, og det manglet i navnet. Digitalisering og analytics er beholdt." },
-            { from: "Organisasjonsutvikling og Human Resource Management", to: "HR og organisasjonsutvikling", why: "Kortere og lettere å søke på. HR står først fordi det er det største temaet, og HRM er skrevet ut som HR." },
-            { from: "Eiendom, varehandel og forretningsjus", to: "Juss, skatt og eiendom", why: "Ingen kurs handler om varehandel, så det er tatt ut. Skatt og avgift er synlig i navnet, og «forretningsjus» er blitt «juss»." },
-          ];
           const industryMap = new Map<string, number>();
           for (const row of summaryRows) if (row[9] !== "–") industryMap.set(row[9], (industryMap.get(row[9]) ?? 0) + 1);
           const industryParts = [...industryMap].sort((x, y) => y[1] - x[1]);
@@ -1993,459 +2364,357 @@ function BeforeAfterOverview() {
           const dotValues = { before: sizesBefore.map(([, value]) => value), after: sizesAfter.map(([, value]) => value), subs: sizesSubs.map(([, value]) => value) };
           const oneDecimal = (value: number) => (Math.round(value * 10) / 10).toString().replace(".", ",");
           return (
-            <>
-              <div style={card}>
-                {heading("Alle har ett hovedfagområde", `Før manglet ${percent(withoutArea)} fagområde, og ${percent(withSeveral)} hadde flere uten prioritet. Nå har alle ett hovedfagområde (*).`)}
-                {labelled(
-                  "Før",
-                  segmentBar([
-                    { key: "none", value: withoutArea, color: "#a1a1aa", label: "Ingen fagområde" },
-                    { key: "several", value: withSeveral, color: "#d9822b", label: "Flere fagområder uten prioritet" },
-                    { key: "one", value: withOne, color: "#00467f", label: "Ett fagområde" },
-                  ]),
-                )}
-                {labelled("Nå", segmentBar([{ key: "all", value: total, color: "#00467f", label: "Ett hovedfagområde" }]))}
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 12, color: "#52525b", fontSize: "0.75rem" }}>
-                  <span>■ <span style={{ color: "#a1a1aa" }}>ingen</span></span>
-                  <span>■ <span style={{ color: "#d9822b" }}>flere, uten prioritet</span></span>
-                  <span>■ <span style={{ color: "#00467f" }}>ett fagområde</span></span>
-                </div>
-              </div>
-
-              <div style={card}>
-                {heading("Fagområdene er temaer, ikke målgrupper", "«Offentlig sektor» blandet helse, jus og sikkerhet. Nå har hvert tema sitt eget fagområde.")}
-                {labelled(
-                  "Før",
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    <AreaPill label="Offentlig sektor" kind="removed" />
-                    <span style={{ color: "#52525b" }}>{before.get("Offentlig sektor")?.count ?? 0} studier og kurs</span>
-                  </div>,
-                )}
-                {labelled(
-                  "Nå",
-                  segmentBar(publicParts.map(([area, value]) => ({ key: area, value, color: areaColor(area), label: area }))),
-                )}
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "2px 12px", color: "#52525b", fontSize: "0.75rem" }}>
-                  {publicParts.map(([area, value]) => (
-                    <span key={area} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                      <span style={{ width: 9, height: 9, borderRadius: 2, background: areaColor(area) }} />
-                      {areaShortName[area]} {value}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div style={card}>
-                {heading("Færre samleområder", `«Finans, økonomi og styring» rommet også jus og KI. Det største fagområdet er nå ${percent(financeAfter)} av alle, mot ${percent(financeBefore)}.`)}
-                {labelled(
-                  "Før",
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    {segmentBar([{ key: "f", value: financeBefore, color: "#a1a1aa", label: "Finans, økonomi og styring" }], (financeBefore / maxCount) * 100)}
-                  </div>,
-                )}
-                {labelled(
-                  "Nå",
-                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                    {segmentBar([{ key: "f", value: financeAfter, color: areaColor("Finans, økonomi og regnskap"), label: "Finans" }], (financeAfter / maxCount) * 100)}
-                  </div>,
-                )}
-                <div style={{ color: "#52525b", fontSize: "0.75rem" }}>Studier og kurs i det største fagområdet, i samme skala.</div>
-              </div>
-
-              <div style={card}>
-                {heading("Underkategorier gjør innholdet synlig", `Før var «Ledelse» én lang liste med ${ledelseBefore} studier og kurs. Nå er hovedplasseringene delt i ${ledelseSubs.length} underkategorier.`)}
-                {labelled("Før", segmentBar([{ key: "l", value: ledelseBefore, color: "#a1a1aa", label: "Ledelse (én liste)" }], (ledelseBefore / Math.max(ledelseBefore, 35)) * 100))}
-                {labelled(
-                  "Nå",
-                  segmentBar(ledelseSubs.map(([name, value], index) => ({ key: name, value: value.main, color: pieColors[index % pieColors.length], label: name })), (35 / Math.max(ledelseBefore, 35)) * 100),
-                )}
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "2px 12px", color: "#52525b", fontSize: "0.75rem" }}>
-                  {ledelseSubs.map(([name], index) => (
-                    <span key={name} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                      <span style={{ width: 9, height: 9, borderRadius: 2, background: pieColors[index % pieColors.length] }} />
-                      {name}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div style={card}>
-                {heading("Studier og kurs kan finnes der man leter", `Før var det ${placementsBefore} plasseringer, uten prioritet. Nå har alle en hovedplassering, og ${withExtraCount} ekstra plasseringer gjør at studier og kurs også kan finnes i et nærliggende fagområde.`)}
-                {labelled("Før", segmentBar([{ key: "p", value: placementsBefore, color: "#a1a1aa", label: "Plasseringer før" }], (placementsBefore / placementsNow) * 100))}
-                {labelled(
-                  "Nå",
-                  segmentBar(
+            <Carousel
+              heading={<h3 id="hvorfor" style={{ ...summaryPartHeading, margin: 0 }}>Hvorfor gjøres dette?</h3>}
+              slides={[
+            {
+              title: "Mindre grupper - Bedre navigasjon",
+              content: (
+              <div style={{ display: "grid", gap: 12, maxWidth: 820 }}>
+                <p style={{ margin: 0, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{`Forskjellen mellom den største og den minste gruppen er ${statsAfter.spread} mellom de nye fagområdene og ${statsSubs.spread} mellom underkategoriene, mot ${statsBefore.spread} mellom de gamle fagområdene (${ratioAfter}× mot ${ratioBefore}× for fagområdene).`}</p>
+                <div style={{ display: "grid", gap: 14, padding: "4px 0 2px" }}>
+                  {(
                     [
-                      { key: "m", value: total, color: "#00467f", label: "Hovedfagområde" },
-                      { key: "e", value: placementsNow - total, color: "#7fa7d4", label: "Ekstra fagområde" },
+                      ["Før: fagområder", statsBefore, "#c8d1db", dotValues.before],
+                      ["Nå: fagområder", statsAfter, "#0b4db4", dotValues.after],
+                      ["Nå: underkategorier", statsSubs, "#6196f4", dotValues.subs],
+                    ] as [string, ReturnType<typeof describeSizes>, string, number[]][]
+                  ).map(([label, stats, color, dots]) => (
+                    <div key={label} style={{ display: "grid", gridTemplateColumns: "120px minmax(0, 1fr)", gap: 8, alignItems: "center", fontSize: "0.8125rem" }}>
+                      <span style={{ color: "var(--bi-color-neutral-text-secondary)" }}>{label}</span>
+                      <div style={{ position: "relative", height: 34 }}>
+                        <div style={{ position: "absolute", left: 0, right: 0, top: 14, height: 1, background: "var(--bi-color-neutral-stroke)" }} />
+                        {dots.map((value, dotIndex) => (
+                          <div key={dotIndex} title={`${value}`} style={{ position: "absolute", left: `calc(${(value / maxCount) * 100}% - 3px)`, top: 12, width: 6, height: 6, borderRadius: "50%", background: color, opacity: 0.55 }} />
+                        ))}
+                        <div title={`Fra ${stats.min} til ${stats.max}`} style={{ position: "absolute", left: `${(stats.min / maxCount) * 100}%`, width: `${((stats.max - stats.min) / maxCount) * 100}%`, top: 8, height: 14, borderRadius: 7, background: color, opacity: 0.55 }} />
+                        <div title={`Minste: ${stats.min}`} style={{ position: "absolute", left: `${(stats.min / maxCount) * 100}%`, top: 6, width: 3, height: 18, background: color }} />
+                        <div title={`Største: ${stats.max}`} style={{ position: "absolute", left: `calc(${(stats.max / maxCount) * 100}% - 3px)`, top: 6, width: 3, height: 18, background: color }} />
+                        <div title={`Median: ${oneDecimal(stats.median)}`} style={{ position: "absolute", left: `calc(${(stats.median / maxCount) * 100}% - 6px)`, top: 9, width: 12, height: 12, borderRadius: "50%", background: "var(--bi-basic-white)", border: `3px solid ${color}` }} />
+                        <div title={`Gjennomsnitt: ${oneDecimal(stats.mean)}`} style={{ position: "absolute", left: `calc(${(stats.mean / maxCount) * 100}% - 1px)`, top: 2, width: 2, height: 26, background: "#042f5b" }} />
+                        <span style={{ position: "absolute", left: `${(stats.min / maxCount) * 100}%`, top: 24, fontSize: "0.6875rem", color: "var(--bi-color-neutral-text-secondary)", transform: "translateX(-50%)" }}>{stats.min}</span>
+                        <span style={{ position: "absolute", left: `${(stats.max / maxCount) * 100}%`, top: 24, fontSize: "0.6875rem", color: "var(--bi-color-neutral-text-secondary)", transform: "translateX(-50%)" }}>{stats.max}</span>
+                      </div>
+                    </div>
+                  ))}
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: "2px 14px", color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>
+                    <span>● Hver gruppe</span>
+                    <span>▬ Fra minste til største</span>
+                    <span>◯ Median</span>
+                    <span style={{ color: "#042f5b" }}>| Gjennomsnitt</span>
+                  </div>
+                </div>
+              </div>
+              ),
+            },
+            {
+              title: "Løfte frem skjulte fagområder",
+              content: (
+              <div style={{ display: "grid", gap: 12, maxWidth: 820 }}>
+                <p style={{ margin: 0, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{"«Offentlig sektor» skjulte tre ulike fagområder: helse, juss og sikkerhet. Nå får hvert tema sin egen inngang, og Juss, skatt og eiendom samler i tillegg kurs som før lå spredt i andre fagområder."}</p>
+                <PublicSectorSankey />
+                <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>Bredden viser antall studier og kurs. Hvert studie eller kurs er vist med ett tidligere fagområde (Offentlig sektor hvis det hadde det, ellers det første).</div>
+              </div>
+              ),
+            },
+            {
+              title: "Flere innganger, færre blindveier",
+              content: (
+              <div style={{ display: "grid", gap: 12, maxWidth: 820 }}>
+                <div style={{ fontWeight: 700 }}>Flere plasseringer</div>
+                <p style={{ margin: 0, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{`Før var det ${placementsBefore} plasseringer, uten prioritet. Nå har alle en hovedplassering, og ${withExtraCount} ekstra plasseringer gjør at studier og kurs også kan finnes i et nærliggende fagområde.`}</p>
+                {labelled("Før", barWithNumber({ key: "p", value: placementsBefore, color: "#c8d1db", label: "Plasseringer før" }, (placementsBefore / placementsNow) * 100))}
+                {labelled(
+                  "Nå",
+                  barWithLegend(
+                    [
+                      { key: "m", value: total, color: "#0b4db4", label: "Hovedfagområde", legend: "hovedfagområde" },
+                      { key: "e", value: placementsNow - total, color: "#9ec0f1", label: "Ekstra fagområde", legend: "ekstra fagområde" },
                     ],
                     100,
                   ),
                 )}
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 12, color: "#52525b", fontSize: "0.75rem" }}>
-                  <span style={{ color: "#a1a1aa" }}>■ plasseringer før ({placementsBefore})</span>
-                  <span style={{ color: "#00467f" }}>■ hovedfagområde ({total})</span>
-                  <span style={{ color: "#7fa7d4" }}>■ ekstra ({placementsNow - total})</span>
-                </div>
+                <div style={{ fontWeight: 700, marginTop: 8 }}>Ingen ukategoriserte studier eller kurs</div>
+                <p style={{ margin: 0, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{`${missingRows.length} studier og kurs hadde ikke noe fagområde på bi.no. Nå er de fordelt på ${missingParts.length} fagområder.`}</p>
+                {labelled("Før", <span style={{ lineHeight: "14px" }}>Hadde ikke fagområde</span>)}
+                {labelled("Nå", barWithLegend(missingParts.map(([area, value], index) => ({ key: area, value, color: blueShades[index % blueShades.length], label: area }))))}
+                <div style={{ fontWeight: 700, marginTop: 8 }}>Bransjekategorier for B2B</div>
+                <p style={{ margin: 0, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{`${industryTotal} studier og kurs er rettet mot en bestemt bransje. De kan finnes via bransjefilteret og en etikett, uten at bransjen er et eget fagområde.`}</p>
+                {labelled("Før", <span style={{ lineHeight: "14px" }}>Hadde ikke bransjekategori</span>)}
+                {labelled("Nå", barWithLegend(industryParts.map(([name, value], index) => ({ key: name, value, color: blueShades[index % blueShades.length], label: name }))))}
               </div>
-
-              <div style={card}>
-                {heading("Navnene sier mer om innholdet", "Fire fagområder har fått navn som beskriver innholdet bedre, «Offentlig sektor» er delt opp, og to små fagområder er blitt underkategorier.")}
+              ),
+            },
+            {
+              title: "Forbedret søk og SEO",
+              content: (
+              <div style={{ display: "grid", gap: 12, maxWidth: 820 }}>
+                {(() => {
+                  const oldAreaCount = [...before.keys()].filter((name) => name !== noOldArea).length;
+                  const newAreaCount = after.size;
+                  const subCount = [...subs.values()].reduce((sum, map) => sum + map.size, 0);
+                  return (
+                    <>
+                      <div style={{ fontWeight: 700 }}>Temasider</div>
+                      <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>
+                        {`Før var det ${oldAreaCount} fagområder, og nå er det ${newAreaCount} fagområder og ${subCount} underkategorier. Det gjør det mulig å ha egne temasider for hvert fagområde og hver underkategori, som også hjelper med søk og navigasjon.`}
+                      </div>
+                      {labelled("Før", barWithNumber({ key: "pages-before", value: oldAreaCount, color: "#c8d1db", label: "Fagområder før" }, (oldAreaCount / (newAreaCount + subCount)) * 100))}
+                      {labelled(
+                        "Nå",
+                        barWithLegend(
+                          [
+                            { key: "pages-areas", value: newAreaCount, color: "#0b4db4", label: "Fagområder", legend: "fagområder" },
+                            { key: "pages-subs", value: subCount, color: "#9ec0f1", label: "Underkategorier", legend: "underkategorier" },
+                          ],
+                          100,
+                        ),
+                      )}
+                      <div style={{ fontWeight: 700, marginTop: 8 }}>Søkbare ord</div>
+                    </>
+                  );
+                })()}
+                {(() => {
+                  const stopWords = new Set(["og", "i", "for", "av", "på", "til", "med", "en", "et", "er"]);
+                  const wordsOf = (text: string) => [...new Set((text.toLowerCase().match(/[a-zæøåéü0-9]+/g) ?? []).filter((word) => !stopWords.has(word)))];
+                  const oldAreas = [...before.keys()].filter((name) => name !== noOldArea);
+                  const uniqueBefore = new Set(oldAreas.flatMap(wordsOf)).size;
+                  const nameWordSet = new Set(areaTree.flatMap(({ area }) => wordsOf(area)));
+                  const subWordSet = new Set([...subs.values()].flatMap((map) => [...map.keys()].flatMap(wordsOf)).filter((word) => !nameWordSet.has(word)));
+                  const uniqueNow = nameWordSet.size + subWordSet.size;
+                  return (
+                    <>
+                      <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>
+                        {`Antall ulike søkbare ord i navnene på fagområdene og underkategoriene (uten småord som «og»). Før var det ${uniqueBefore} ord, og nå er det ${uniqueNow}.`}
+                      </div>
+                      {labelled("Før", barWithNumber({ key: "words-before", value: uniqueBefore, color: "#c8d1db", label: "Ord i fagområdene før" }, (uniqueBefore / uniqueNow) * 100))}
+                      {labelled(
+                        "Nå",
+                        barWithLegend(
+                          [
+                            { key: "words-names", value: nameWordSet.size, color: "#0b4db4", label: "Ord i fagområdene", legend: "ord i fagområdene" },
+                            { key: "words-subs", value: subWordSet.size, color: "#9ec0f1", label: "Ord i underkategoriene", legend: "ord i underkategoriene" },
+                          ],
+                          100,
+                        ),
+                      )}
+                    </>
+                  );
+                })()}
+              </div>
+              ),
+            },
+            {
+              title: "Navnene sier mer om innholdet",
+              content: (
+              <div style={{ display: "grid", gap: 12, maxWidth: 820 }}>
+                <p style={{ margin: 0, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{"Fire fagområder har fått navn som beskriver innholdet bedre, «Offentlig sektor» er delt opp, og to små fagområder er blitt underkategorier."}</p>
                 <div style={{ display: "grid", gap: 12 }}>
                   {renamedPairs.map(({ from, to, why }) => (
-                    <div key={from} style={{ display: "grid", gap: 4 }}>
-                      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 44px minmax(0, 1fr)", alignItems: "center", gap: 8 }}>
-                        <span style={{ justifySelf: "start" }}>
-                          <AreaPill label={shortOldName(from)} kind="old" />
-                        </span>
-                        <ChangeArrow />
-                        <span style={{ justifySelf: "start", padding: "4px 10px", border: "1px solid #9ec0e0", borderRadius: 4, background: "#e3effa", color: "#00467f" }}>{to}</span>
-                      </div>
-                      <div style={{ color: "#52525b", fontSize: "0.8125rem" }}>{why}</div>
-                    </div>
-                  ))}
-                  <div style={{ display: "grid", gap: 4 }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 44px minmax(0, 1fr)", alignItems: "center", gap: 8 }}>
+                    <div key={from} style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 44px minmax(0, 1fr)", alignItems: "center", columnGap: 8, rowGap: 4 }}>
                       <span style={{ justifySelf: "start" }}>
-                        <AreaPill label="Offentlig sektor" kind="removed" />
+                        <AreaPill label={shortOldName(from)} kind="old" />
                       </span>
                       <ChangeArrow />
-                      <span style={{ justifySelf: "start", padding: "4px 10px", border: "1px solid #9ec0e0", borderRadius: 4, background: "#e3effa", color: "#00467f" }}>
-                        Helse, skole og barnehage + Sikkerhet og beredskap
+                      <span style={{ justifySelf: "start", padding: "4px 10px", border: "1px solid var(--bi-primary-20)", borderRadius: 4, background: "var(--bi-primary-5)", color: "var(--bi-color-primary-text-accent)" }}>{to}</span>
+                      <div style={{ gridColumn: 3, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{why}</div>
+                    </div>
+                  ))}
+                  {[
+                    {
+                      from: "Offentlig sektor",
+                      to: ["Helse, skole og barnehage", "Sikkerhet og beredskap"],
+                      why: "Offentlig sektor er ikke et fag og bestod av mange studier og kurs innad helse, jus, skatt og sikkerhet som hadde lite til felles. De nye navnene løfter disse fagområdene frem.",
+                    },
+                    {
+                      from: "Internasjonal Business",
+                      to: ["Markedsføring, kommunikasjon og kultur › Kultur og internasjonal business", "Ledelse", "Finans, økonomi og regnskap"],
+                      why: "Internasjonal profil er en egenskap ved studiene og kursene, ikke et fagområde. Internasjonal Business var for lite til å være et eget fagområde og var spredt på mange temaer. Studiene og kursene er nå plassert i tre fagområder, og Kultur og internasjonal business er en underkategori.",
+                    },
+                    {
+                      from: "Prosjektledelse",
+                      to: ["Ledelse › Prosjektledelse"],
+                      why: "Var for lite til å være et eget fagområde og hører hjemme i Ledelse. Er nå en underkategori.",
+                    },
+                  ].map(({ from, to, why }) => (
+                    <div key={from} style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 44px minmax(0, 1fr)", alignItems: "center", columnGap: 8, rowGap: 4 }}>
+                      <span style={{ justifySelf: "start" }}>
+                        <AreaPill label={from} kind="old" count={before.get(from)?.count} strike />
                       </span>
-                    </div>
-                    <div style={{ color: "#52525b", fontSize: "0.8125rem" }}>
-                      «Offentlig sektor» er en målgruppe, ikke et fag. De {before.get("Offentlig sektor")?.count ?? 0} kursene gikk til helse ({pairCount("Offentlig sektor", "Helse, skole og barnehage")}), jus og skatt ({pairCount("Offentlig sektor", "Juss, skatt og eiendom")}) og sikkerhet ({pairCount("Offentlig sektor", "Sikkerhet og beredskap")}) og har lite til felles. De nye navnene sier hva kursene handler om og hvem de er for. Til gjengjeld forsvinner samlingen «for offentlig sektor» som inngang, og bransjefilteret dekker det delvis.
-                    </div>
-                  </div>
-                  <div style={{ color: "#52525b", fontSize: "0.8125rem" }}>
-                    <strong>Internasjonal Business ({before.get("Internasjonal Business")?.count ?? 0}) og Prosjektledelse ({before.get("Prosjektledelse")?.count ?? 0}):</strong> var for små til å være egne fagområder. Internasjonal Business var spredt på mange temaer, og Prosjektledelse hører hjemme i Ledelse. Begge er nå underkategorier.
-                  </div>
-                </div>
-              </div>
-
-              <div style={card}>
-                {heading("Bransje som egen inngang", `${industryTotal} studier og kurs er rettet mot en bestemt bransje. De kan finnes via bransjefilteret og en etikett, uten at bransjen er et eget fagområde.`)}
-                {segmentBar(industryParts.map(([name, value], index) => ({ key: name, value, color: pieColors[index % pieColors.length], label: name })))}
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "2px 12px", color: "#52525b", fontSize: "0.75rem" }}>
-                  {industryParts.map(([name, value], index) => (
-                    <span key={name} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                      <span style={{ width: 9, height: 9, borderRadius: 2, background: pieColors[index % pieColors.length] }} />
-                      {name} {value}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div style={card}>
-                {heading("Jevnere grupper å lete i", `Forskjellen mellom den største og den minste gruppen er ${statsAfter.spread} mellom de nye fagområdene og ${statsSubs.spread} mellom underkategoriene, mot ${statsBefore.spread} mellom de gamle fagområdene (${ratioAfter}× mot ${ratioBefore}× for fagområdene). Den relative variasjonen er omtrent som før, men gruppene er langt mindre, så ingen gruppe blir en lang liste.`)}
-                <div style={{ display: "grid", gap: 14, padding: "4px 0 2px" }}>
-                  {(
-                    [
-                      ["Før: fagområder", statsBefore, "#a1a1aa", dotValues.before],
-                      ["Nå: fagområder", statsAfter, "#00467f", dotValues.after],
-                      ["Nå: underkategorier", statsSubs, "#2f9e8f", dotValues.subs],
-                    ] as [string, ReturnType<typeof describeSizes>, string, number[]][]
-                  ).map(([label, stats, color, dots]) => (
-                    <div key={label} style={{ display: "grid", gridTemplateColumns: "120px minmax(0, 1fr)", gap: 8, alignItems: "center", fontSize: "0.8125rem" }}>
-                      <span style={{ color: "#71717a" }}>{label}</span>
-                      <div style={{ position: "relative", height: 34 }}>
-                        <div style={{ position: "absolute", left: 0, right: 0, top: 14, height: 1, background: "#d4d4d8" }} />
-                        {dots.map((value, dotIndex) => (
-                          <div key={dotIndex} title={`${value}`} style={{ position: "absolute", left: `calc(${(value / maxCount) * 100}% - 3px)`, top: 12, width: 6, height: 6, borderRadius: "50%", background: color, opacity: 0.55 }} />
-                        ))}
-                        <div title={`Fra ${stats.min} til ${stats.max}`} style={{ position: "absolute", left: `${(stats.min / maxCount) * 100}%`, width: `${((stats.max - stats.min) / maxCount) * 100}%`, top: 8, height: 14, borderRadius: 7, background: color, opacity: 0.35 }} />
-                        <div title={`Minste: ${stats.min}`} style={{ position: "absolute", left: `${(stats.min / maxCount) * 100}%`, top: 6, width: 3, height: 18, background: color }} />
-                        <div title={`Største: ${stats.max}`} style={{ position: "absolute", left: `calc(${(stats.max / maxCount) * 100}% - 3px)`, top: 6, width: 3, height: 18, background: color }} />
-                        <div title={`Median: ${oneDecimal(stats.median)}`} style={{ position: "absolute", left: `calc(${(stats.median / maxCount) * 100}% - 6px)`, top: 9, width: 12, height: 12, borderRadius: "50%", background: "#ffffff", border: `3px solid ${color}` }} />
-                        <div title={`Gjennomsnitt: ${oneDecimal(stats.mean)}`} style={{ position: "absolute", left: `calc(${(stats.mean / maxCount) * 100}% - 1px)`, top: 2, width: 2, height: 26, background: "#d9822b" }} />
-                        <span style={{ position: "absolute", left: `${(stats.min / maxCount) * 100}%`, top: 24, fontSize: "0.6875rem", color: "#71717a", transform: "translateX(-50%)" }}>{stats.min}</span>
-                        <span style={{ position: "absolute", left: `${(stats.max / maxCount) * 100}%`, top: 24, fontSize: "0.6875rem", color: "#71717a", transform: "translateX(-50%)" }}>{stats.max}</span>
-                      </div>
-                    </div>
-                  ))}
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "2px 14px", color: "#52525b", fontSize: "0.75rem" }}>
-                    <span>● hver gruppe</span>
-                    <span>▬ fra minste til største</span>
-                    <span>◯ median</span>
-                    <span style={{ color: "#d9822b" }}>| gjennomsnitt</span>
-                  </div>
-                  <table style={{ borderCollapse: "collapse", fontSize: "0.8125rem", width: "100%" }}>
-                    <thead>
-                      <tr style={{ color: "#71717a", textAlign: "right" }}>
-                        <th style={{ textAlign: "left", fontWeight: 400, padding: "2px 0" }} />
-                        <th style={{ fontWeight: 400 }}>Før: fagområder</th>
-                        <th style={{ fontWeight: 400 }}>Nå: fagområder</th>
-                        <th style={{ fontWeight: 400 }}>Nå: underkategorier</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {(
-                        [
-                          ["Antall grupper", `${sizesBefore.length}`, `${sizesAfter.length}`, `${sizesSubs.length}`],
-                          ["Største gruppe", `${statsBefore.max}`, `${statsAfter.max}`, `${statsSubs.max}`],
-                          ["Minste gruppe", `${statsBefore.min}`, `${statsAfter.min}`, `${statsSubs.min}`],
-                          ["Forskjell (største − minste)", `${statsBefore.spread}`, `${statsAfter.spread}`, `${statsSubs.spread}`],
-                          ["Median", oneDecimal(statsBefore.median), oneDecimal(statsAfter.median), oneDecimal(statsSubs.median)],
-                          ["Gjennomsnitt", oneDecimal(statsBefore.mean), oneDecimal(statsAfter.mean), oneDecimal(statsSubs.mean)],
-                          ["Variasjon rundt snittet", `${Math.round(statsBefore.variation * 100)} %`, `${Math.round(statsAfter.variation * 100)} %`, `${Math.round(statsSubs.variation * 100)} %`],
-                        ] as [string, string, string, string][]
-                      ).map(([name, before, after, subsValue]) => (
-                        <tr key={name} style={{ borderTop: "1px solid #ececee", textAlign: "right" }}>
-                          <td style={{ textAlign: "left", padding: "3px 0", color: "#3f3f46" }}>{name}</td>
-                          <td style={{ color: "#71717a" }}>{before}</td>
-                          <td style={{ color: "#00467f" }}>{after}</td>
-                          <td style={{ fontWeight: 700, color: "#1b6a5f" }}>{subsValue}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16 }}>
-                  {(
-                    [
-                      ["Før", sizesBefore, () => "#a1a1aa"],
-                      ["Nå", sizesAfter, (name: string) => areaColor(name)],
-                    ] as [string, [string, number][], (name: string) => string][]
-                  ).map(([label, sizes, colorOf]) => (
-                    <div key={label} style={{ display: "grid", gap: 3, alignContent: "start" }}>
-                      <span style={{ color: "#71717a", fontSize: "0.8125rem" }}>{label}</span>
-                      {sizes.map(([name, value]) => (
-                        <div key={name} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: "0.6875rem", color: "#71717a" }}>
-                          <div style={{ width: `${(value / maxCount) * 100}%`, height: 6, borderRadius: 3, background: colorOf(name) }} />
-                          {value}
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-                <div style={{ color: "#52525b", fontSize: "0.75rem" }}>Antall studier og kurs per fagområde, i samme skala. Før uten studier og kurs som manglet fagområde. Underkategoriene teller hoved og ekstra, på samme måte som fagområdene før.</div>
-              </div>
-
-              <div style={card}>
-                {heading("Studier og kurs som manglet fagområde har fått hjem", `${missingRows.length} studier og kurs hadde ikke noe fagområde på bi.no. Nå er de fordelt på ${missingParts.length} fagområder.`)}
-                {segmentBar(missingParts.map(([area, value]) => ({ key: area, value, color: areaColor(area), label: area })))}
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "2px 12px", color: "#52525b", fontSize: "0.75rem" }}>
-                  {missingParts.map(([area, value]) => (
-                    <span key={area} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                      <span style={{ width: 9, height: 9, borderRadius: 2, background: areaColor(area) }} />
-                      {area} {value}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div style={card}>
-                {heading("Ledelse samler all ledelse", `Ledelse har ${areaMain("Ledelse")} studier og kurs som hovedfagområde og ${areaExtra("Ledelse")} til som ekstra, fra fag der ledelse er en viktig del. Den som leter i Ledelse, finner dem alle.`)}
-                {segmentBar([
-                  { key: "main", value: areaMain("Ledelse"), color: areaColor("Ledelse"), label: "Hovedfagområde" },
-                  ...[...(extras.get("Ledelse") ?? [])].sort((x, y) => y[1] - x[1]).map(([area, value]) => ({ key: area, value, color: areaColor(area), label: `Ekstra, med hovedfagområde ${area}` })),
-                ])}
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "2px 12px", color: "#52525b", fontSize: "0.75rem" }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                    <span style={{ width: 9, height: 9, borderRadius: 2, background: areaColor("Ledelse") }} />
-                    Hovedfagområde {areaMain("Ledelse")}
-                  </span>
-                  {[...(extras.get("Ledelse") ?? [])]
-                    .sort((x, y) => y[1] - x[1])
-                    .map(([area, value]) => (
-                      <span key={area} style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
-                        <span style={{ width: 9, height: 9, borderRadius: 2, background: areaColor(area) }} />
-                        Ekstra fra {area} {value}
-                      </span>
-                    ))}
-                </div>
-              </div>
-
-              <div style={card}>
-                {heading("Hvert fagområde har flere underkategorier", `Før fantes ingen underkategorier. Nå har hvert fagområde mellom ${Math.min(...subCounts.map(([, n]) => n))} og ${Math.max(...subCounts.map(([, n]) => n))}, så det er kort vei til riktig tema.`)}
-                <div style={{ display: "grid", gap: 4 }}>
-                  {subCounts.map(([area, n]) => (
-                    <div key={area} style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1fr) 24px", gap: 8, alignItems: "center", fontSize: "0.8125rem" }}>
-                      <span style={{ color: "#3f3f46" }}>{area}</span>
-                      <div style={{ display: "flex", gap: 2 }}>
-                        {Array.from({ length: n }, (_, index) => (
-                          <div key={index} style={{ width: 14, height: 14, borderRadius: 3, background: areaColor(area) }} />
+                      <ChangeArrow />
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: 8, minWidth: 0 }}>
+                        {to.map((area) => (
+                          <span key={area} style={{ padding: "4px 10px", border: "1px solid var(--bi-primary-20)", borderRadius: 4, background: "var(--bi-primary-5)", color: "var(--bi-color-primary-text-accent)" }}>
+                            {area}
+                          </span>
                         ))}
                       </div>
-                      <strong style={{ textAlign: "right" }}>{n}</strong>
+                      <div style={{ gridColumn: 3, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{why}</div>
                     </div>
                   ))}
                 </div>
               </div>
-
-              <div style={card}>
-                {heading("Overlapp er synlig i stedet for skjult", `${withExtraRows} av ${total} studier og kurs (${percent(withExtraRows)}) har ekstra fagområde, og koblingene kan utforskes i diagrammene over. Før hadde ${percent(withSeveral)} flere fagområder, men uten å si hvilket som var viktigst.`)}
-                {labelled("Før", segmentBar([{ key: "several", value: withSeveral, color: "#d9822b", label: "Flere fagområder uten prioritet" }, { key: "rest", value: total - withSeveral, color: "#a1a1aa", label: "Ett eller ingen" }]))}
-                {labelled("Nå", segmentBar([{ key: "extra", value: withExtraRows, color: "#7fa7d4", label: "Hoved og ekstra" }, { key: "main", value: total - withExtraRows, color: "#00467f", label: "Bare hovedfagområde" }]))}
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 12, color: "#52525b", fontSize: "0.75rem" }}>
-                  <span style={{ color: "#d9822b" }}>■ flere, uten prioritet</span>
-                  <span style={{ color: "#7fa7d4" }}>■ hoved og ekstra</span>
-                  <span style={{ color: "#00467f" }}>■ bare hovedfagområde</span>
-                </div>
-              </div>
-
-              <div style={card}>
-                {heading("De fleste beholder fagområdet", `Bare ${Math.round((movedCount / total) * 100)} % er flyttet til et annet fagområde. ${Math.round(((keptCount + prioritisedCount) / total) * 100)} % har fått beholde ett av fagområdene de hadde, og ${Math.round((missingCount / total) * 100)} % har fått et fagområde for første gang.`)}
-                {segmentBar([
-                  { key: "kept", value: keptCount, color: "#2f9e8f", label: "Beholdt fagområdet (uendret eller nytt navn)" },
-                  { key: "prio", value: prioritisedCount, color: "#00467f", label: "Ett fagområde prioritert" },
-                  { key: "moved", value: movedCount, color: "#d9822b", label: "Flyttet til nytt fagområde" },
-                  { key: "missing", value: missingCount, color: "#8e5ea2", label: "Manglet fagområde" },
-                ])}
-                <div style={{ display: "flex", flexWrap: "wrap", gap: "2px 14px", color: "#52525b", fontSize: "0.75rem" }}>
-                  <span style={{ color: "#2f9e8f" }}>■ beholdt ({keptCount})</span>
-                  <span style={{ color: "#00467f" }}>■ ett prioritert ({prioritisedCount})</span>
-                  <span style={{ color: "#d9822b" }}>■ flyttet ({movedCount})</span>
-                  <span style={{ color: "#8e5ea2" }}>■ manglet ({missingCount})</span>
-                </div>
-              </div>
-
-              <div style={card}>
-                {heading("Grensen mellom Ledelse og HR er tydeligere", "Ledelse eier lederrollen, og HR eier organisasjonen og medarbeiderne. Før lå mange i begge uten at det sto hvilket som var viktigst.")}
+              ),
+            },
+            {
+              title: "Prioriterte fagområder → Grupperte lister",
+              content: (
+              <div style={{ display: "grid", gap: 12, maxWidth: 820 }}>
+                <p style={{ margin: 0, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{`Før manglet ${percent(withoutArea)} fagområde, og ${percent(withSeveral)} hadde flere uten prioritet. Nå har alle ett hovedfagområde (*), og da kan en liste deles opp i grupper i stedet for å vises som én lang liste.`}</p>
                 {labelled(
                   "Før",
-                  segmentBar([
-                    { key: "ol", value: onlyLedelseBefore, color: areaColor("Ledelse"), label: "Bare Ledelse" },
-                    { key: "both", value: bothBefore, color: "#a1a1aa", label: "I både Ledelse og HR" },
-                    { key: "oh", value: onlyHrBefore, color: areaColor(HRNEW), label: "Bare HR" },
+                  barWithLegend([
+                    { key: "none", value: withoutArea, color: "#c8d1db", label: "Manglet fagområde", legend: "manglet" },
+                    { key: "several", value: withSeveral, color: "#9ec0f1", label: "Flere fagområder uten prioritet", legend: "flere, uten prioritet" },
+                    { key: "one", value: withOne, color: "#0b4db4", label: "Ett fagområde", legend: "ett fagområde" },
+                  ]),
+                )}
+                {labelled("Nå", barWithLegend([{ key: "all", value: total, color: "#0b4db4", label: "Ett hovedfagområde", legend: "ett hovedfagområde" }]))}
+                {(() => {
+                  const masterCourses = summaryRows.filter((row) => row[3] === "Masterkurs");
+                  const byTitle = [...masterCourses].sort((x, y) => x[2].localeCompare(y[2], "nb"));
+                  const groups = [...new Set(masterCourses.map((row) => row[0]))]
+                    .sort((x, y) => x.localeCompare(y, "nb"))
+                    .map((area) => ({ area, list: masterCourses.filter((row) => row[0] === area).sort((x, y) => x[2].localeCompare(y[2], "nb")) }));
+                  const listStyle = { margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 4, fontSize: "0.9375rem", color: "var(--bi-color-neutral-text)" } as const;
+                  return (
+                    <div style={{ display: "grid", gap: 12, marginTop: 8 }}>
+                      <div style={{ fontWeight: 700 }}>Eksempel: masterkurs, deltid ({masterCourses.length})</div>
+                      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1.3fr)", gap: 32, alignItems: "start" }}>
+                        <div style={{ display: "grid", gap: 8 }}>
+                          <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>Før: én lang liste</div>
+                          <ul style={listStyle}>
+                            {byTitle.map((row, rowIndex) => (
+                              <li key={`${row[2]}-${rowIndex}`}>{row[2]}</li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div style={{ display: "grid", gap: 14 }}>
+                          <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>Nå: samme liste, gruppert etter hovedfagområde</div>
+                          {groups.map(({ area, list }, groupIndex) => (
+                            <div key={area} style={{ borderLeft: `4px solid ${blueShades[groupIndex % blueShades.length]}`, paddingLeft: 12, display: "grid", gap: 6 }}>
+                              <div style={{ fontWeight: 700 }}>
+                                {area} <span style={{ color: "var(--bi-color-neutral-text-secondary)", fontWeight: 400 }}>({list.length})</span>
+                              </div>
+                              <ul style={listStyle}>
+                                {list.map((row, rowIndex) => (
+                                  <li key={`${row[2]}-${rowIndex}`}>{row[2]}</li>
+                                ))}
+                              </ul>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+              ),
+            },
+            {
+              title: "Underkategorier → Grupperte lister",
+              content: (
+              <div style={{ display: "grid", gap: 12, maxWidth: 820 }}>
+                {labelled("Før", barWithNumber({ key: "l-before", value: ledelseNow, color: "#c8d1db", label: "Én lang liste uten underkategorier" }, 100))}
+                {labelled(
+                  "Nå",
+                  barWithLegend(ledelseSubs.map(([name, value], index) => ({ key: name, value: value.main + value.extra, color: blueShades[index % blueShades.length], label: name }))),
+                )}
+                {(() => {
+                  const exampleArea = "Ledelse";
+                  const areaRows = summaryRows.filter((row) => row[4].split("; ").includes(exampleArea));
+                  const subOf = (row: Row) => row[6].split("; ").map((entry) => entry.split(" › ")).find(([area]) => area === exampleArea)?.[1];
+                  const byTitle = [...areaRows].sort((x, y) => x[2].localeCompare(y[2], "nb"));
+                  const groups = [...new Set(areaRows.map(subOf).filter((sub): sub is string => Boolean(sub)))]
+                    .sort((x, y) => x.localeCompare(y, "nb"))
+                    .map((sub) => ({ sub, list: areaRows.filter((row) => subOf(row) === sub).sort((x, y) => x[2].localeCompare(y[2], "nb")) }));
+                  const listStyle = { margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 4, fontSize: "0.9375rem", color: "var(--bi-color-neutral-text)" } as const;
+                  const mainNote = (row: Row) => (row[0] === exampleArea ? null : <span style={{ color: "var(--bi-color-neutral-text-secondary)" }}> (ekstra fagområde)</span>);
+                  return (
+                    <div style={{ display: "grid", gap: 12, marginTop: 8 }}>
+                      <div style={{ fontWeight: 700 }}>Eksempel: alle som lå i {exampleArea} før ({areaRows.length})</div>
+                      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1.3fr)", gap: 32, alignItems: "start" }}>
+                        <div style={{ display: "grid", gap: 8 }}>
+                          <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>Før: én lang liste</div>
+                          <ul style={listStyle}>
+                            {byTitle.map((row, rowIndex) => (
+                              <li key={`${row[2]}-${rowIndex}`}>{row[2]}</li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div style={{ display: "grid", gap: 14 }}>
+                          <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>Nå: samme studier og kurs, gruppert etter underkategori</div>
+                          {groups.map(({ sub, list }, groupIndex) => (
+                            <div key={sub} style={{ borderLeft: `4px solid ${blueShades[groupIndex % blueShades.length]}`, paddingLeft: 12, display: "grid", gap: 6 }}>
+                              <div style={{ fontWeight: 700 }}>
+                                {sub} <span style={{ color: "var(--bi-color-neutral-text-secondary)", fontWeight: 400 }}>({list.length})</span>
+                              </div>
+                              <ul style={listStyle}>
+                                {list.map((row, rowIndex) => (
+                                  <li key={`${row[2]}-${rowIndex}`}>
+                                    {row[2]}
+                                    {mainNote(row)}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+              ),
+            },
+            {
+              title: "Ledelse samler all ledelse",
+              content: (
+              <div style={{ display: "grid", gap: 12, maxWidth: 820 }}>
+                <p style={{ margin: 0, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{`Ledelse har ${areaMain("Ledelse")} studier og kurs som hovedfagområde og ${areaExtra("Ledelse")} til som ekstra, fra fag der ledelse er en viktig del. Den som leter i Ledelse, finner dem alle.`}</p>
+                <LedelseSankey />
+                <div style={{ fontWeight: 700, marginTop: 8 }}>Grensen mellom Ledelse og HR er tydeligere</div>
+                <p style={{ margin: 0, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{"Ledelse eier lederrollen, og HR eier organisasjonen og medarbeiderne. Før lå mange i begge uten at det sto hvilket som var viktigst."}</p>
+                {labelled(
+                  "Før",
+                  barWithLegend([
+                    { key: "ol", value: onlyLedelseBefore, color: "#0b4db4", label: "Bare Ledelse" },
+                    { key: "both", value: bothBefore, color: "#c8d1db", label: "I både Ledelse og HR", legend: "begge, uten prioritet" },
+                    { key: "oh", value: onlyHrBefore, color: "#9ec0f1", label: "Bare HR" },
                   ]),
                 )}
                 {labelled(
                   "Nå",
-                  segmentBar([
-                    { key: "lo", value: ledelseOnly, color: areaColor("Ledelse"), label: "Ledelse" },
-                    { key: "lh", value: ledelseWithHr, color: areaColor("Ledelse"), label: "Ledelse, med HR som ekstra" },
-                    { key: "hl", value: hrWithLedelse, color: areaColor(HRNEW), label: "HR, med Ledelse som ekstra" },
-                    { key: "ho", value: hrOnly, color: areaColor(HRNEW), label: "HR" },
+                  barWithLegend([
+                    { key: "lo", value: ledelseOnly, color: "#0b4db4", label: "Ledelse" },
+                    { key: "lh", value: ledelseWithHr, color: "#6196f4", label: "Ledelse, med HR som ekstra fagområde" },
+                    { key: "hl", value: hrWithLedelse, color: "#c5d9f7", label: "HR, med Ledelse som ekstra fagområde" },
+                    { key: "ho", value: hrOnly, color: "#9ec0f1", label: "HR" },
                   ]),
                 )}
-                <div style={{ color: "#52525b", fontSize: "0.75rem" }}>
-                  Før: bare Ledelse {onlyLedelseBefore}, begge uten prioritet {bothBefore}, bare HR {onlyHrBefore}. Nå: Ledelse {ledelseOnly} + {ledelseWithHr} med HR som ekstra, HR {hrOnly} + {hrWithLedelse} med Ledelse som ekstra.
-                </div>
+                <div style={{ fontWeight: 700, marginTop: 8 }}>Tre eksempler: før og nå</div>
+                <BeforeAfterExamples />
               </div>
-
-              <div style={card}>
-                {heading("Flere veier inn", "Tabellen har søk og fire filtre som kan kombineres, så man kan nå samme studie eller kurs fra flere kanter.")}
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                  {["Søk på navn", "Nivå", "Bransje", "Fagområde", "Underkategori"].map((name) => (
-                    <span key={name} style={{ padding: "3px 10px", border: "1px solid #d4d4d8", borderRadius: 14, background: "#f4f4f5", fontSize: "0.8125rem" }}>
-                      {name}
-                    </span>
-                  ))}
-                </div>
-                <div style={{ color: "#52525b", fontSize: "0.8125rem" }}>
-                  For eksempel «Finansnæringen» + «Fintech», eller «Masterkurs» + «Helse, skole og barnehage».
-                </div>
+              ),
+            },
+            {
+              title: "Overlapp er synlig i stedet for skjult",
+              content: (
+              <div style={{ display: "grid", gap: 12, maxWidth: 820 }}>
+                <p style={{ margin: 0, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{`${withExtraRows} av ${total} studier og kurs (${percent(withExtraRows)}) har ekstra fagområde, og koblingene kan utforskes i diagrammene over. Før hadde ${percent(withSeveral)} flere fagområder, men uten å si hvilket som var viktigst.`}</p>
+                {labelled("Før", barWithLegend([{ key: "several", value: withSeveral, color: "#9ec0f1", label: "Flere fagområder uten prioritet", legend: "flere, uten prioritet" }, { key: "rest", value: total - withSeveral, color: "#c8d1db", label: "Ett eller ingen", legend: "ett eller ingen" }]))}
+                {labelled("Nå", barWithLegend([{ key: "extra", value: withExtraRows, color: "#9ec0f1", label: "Hoved og ekstra", legend: "hoved og ekstra fagområde" }, { key: "main", value: total - withExtraRows, color: "#0b4db4", label: "Bare hovedfagområde", legend: "bare hovedfagområde" }]))}
               </div>
-
-              <div style={card}>
-                {heading("Engelske navn følger begrepene i kursene", `Alle ${englishTotal} fagområder og underkategorier har et engelsk forslag. De bruker begreper som allerede finnes i titlene på studiene og kursene, ikke direkte oversettelser.`)}
-                <div style={{ display: "grid", gap: 6 }}>
-                  {englishExamples.map((sub) => (
-                    <div key={sub.no} style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 44px minmax(0, 1fr)", alignItems: "center", gap: 8 }}>
-                      <span style={{ justifySelf: "start", padding: "3px 10px", border: "1px solid #d4d4d8", borderRadius: 4, background: "#ffffff" }}>{sub.no}</span>
-                      <ChangeArrow />
-                      <span style={{ justifySelf: "start", padding: "3px 10px", border: "1px solid #9ec0e0", borderRadius: 4, background: "#e3effa", color: "#00467f" }}>{sub.en}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div style={card}>
-                {heading("Tverrgående temaer har egne underkategorier", `${crossCutting.length} underkategorier har ingen studier som hovedplassering, bare ekstra. De gjør at temaer som går på tvers, som fintech og ledelse i helse, kan finnes samlet.`)}
-                <div style={{ display: "grid", gap: 6 }}>
-                  {crossCutting.map(({ area, name, count }) => (
-                    <div key={`${area}|${name}`} style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 24px", gap: 8, alignItems: "center", fontSize: "0.8125rem" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-                        <span style={{ padding: "2px 8px", borderRadius: 4, background: "#ffffff", border: "1px solid #e4e4e7", borderLeft: `4px solid ${areaColor(area)}` }}>{name}</span>
-                        <span style={{ color: "#71717a" }}>i {area}</span>
-                      </div>
-                      <strong style={{ textAlign: "right" }}>{count}</strong>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div style={card}>
-                {heading("Master in Business-majorene er plassert likt", `De ${majorRows.length} majorene ligger alle i Finans, økonomi og regnskap, sammen med selve graden. De som ikke handler om finans (markedsføring, strategi og ledelse) har spesialiseringen som ekstra fagområde.`)}
-                <div style={{ display: "grid", gap: 6 }}>
-                  {majorRows.map((row) => (
-                    <div key={row[2]} style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", fontSize: "0.8125rem" }}>
-                      <span style={{ flex: "1 1 220px" }}>{row[2].replace(/^Major in /, "")}</span>
-                      {row[6]
-                        .split("; ")
-                        .filter((entry) => entryArea(entry) !== row[0])
-                        .map((entry) => (
-                          <span key={entry} style={{ padding: "1px 8px", borderRadius: 10, background: areaColor(entryArea(entry)), color: "#ffffff", fontSize: "0.75rem" }}>
-                            {entryArea(entry)}
-                          </span>
-                        ))}
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div style={card}>
-                {heading("Tydeligere navn på kurs", `${nameSuggestions.length} studier og kurs har fått et forslag til navneendring som sier hvem eller hva de er for.`)}
-                <div style={{ display: "grid", gap: 8 }}>
-                  {nameSuggestions.slice(0, 5).map(([from, to]) => (
-                    <div key={from} style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 44px minmax(0, 1fr)", alignItems: "center", gap: 8, fontSize: "0.8125rem" }}>
-                      <span style={{ color: "#52525b" }}>{from}</span>
-                      <ChangeArrow />
-                      <span style={{ color: "#1b6a5f", fontWeight: 600 }}>{to}</span>
-                    </div>
-                  ))}
-                  <div style={{ color: "#71717a", fontSize: "0.75rem" }}>Alle forslagene står under navnet i tabellen.</div>
-                </div>
-              </div>
-            </>
+              ),
+            },
+            {
+              title: "Bygger videre på eksisterende struktur",
+              content: <KeepAreaSlide />,
+            },
+              ]}
+            />
           );
-        })()}
-      </div>
-
-      <h4 style={summarySubHeading}>Interessante koblinger før og nå</h4>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16 }}>
-        {(() => {
-          const flowCard = (title: string, oldName: string, newName: string, count: number, note: string) => {
-            const oldTotal = before.get(oldName)?.count ?? 1;
-            return (
-              <div key={title} style={{ background: "#ffffff", border: "1px solid #e4e4e7", borderRadius: 8, padding: 16, display: "grid", gap: 10, alignContent: "start" }}>
-                <div style={{ fontWeight: 700 }}>{title}</div>
-                <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 44px minmax(0, 1fr)", gridTemplateRows: "auto auto", columnGap: 8, rowGap: 4, alignItems: "center" }}>
-                  <div style={{ justifySelf: "start" }}>
-                    <AreaPill label={shortOldName(oldName)} kind={oldAreaCatalog[oldName]?.kind === "removed" ? "removed" : "old"} />
-                  </div>
-                  <ChangeArrow />
-                  <span style={{ justifySelf: "start", padding: "4px 10px", border: "1px solid #9ec0e0", borderRadius: 4, background: "#e3effa", color: "#00467f" }}>{newName}</span>
-                  <span style={{ color: "#71717a", fontSize: "0.75rem" }}>{oldTotal} studier og kurs før</span>
-                  <span />
-                  <span style={{ color: "#71717a", fontSize: "0.75rem" }}>hovedfagområde (*)</span>
-                </div>
-                <div style={{ display: "flex", height: 14, borderRadius: 7, overflow: "hidden", background: "#e4e4e7" }}>
-                  <div style={{ width: `${(count / oldTotal) * 100}%`, background: areaColor(newName) }} />
-                </div>
-                <div style={{ color: "#3f3f46", fontSize: "0.875rem" }}>
-                  <strong>
-                    {count} av {oldTotal} ({Math.round((count / oldTotal) * 100)} %)
-                  </strong>{" "}
-                  {note}
-                </div>
-              </div>
-            );
-          };
-          return (
-            <>
-              {flowCard("Ledelse → HR og organisasjonsutvikling", "Ledelse", "HR og organisasjonsutvikling", toHrFromLedelse, "av studiene og kursene i Ledelse har nå HR og organisasjonsutvikling som hovedfagområde.")}
-              {flowCard("Organisasjonsutvikling og HRM → Ledelse", "Organisasjonsutvikling og Human Resource Management", "Ledelse", toLedelseFromHr, "av studiene og kursene i Organisasjonsutvikling og HRM har nå Ledelse som hovedfagområde. Grensen var uklar før, og er nå uttrykt som ekstra fagområde.")}
-              {flowCard("Jus og skatt var gjemt i Finans, økonomi og styring", "Finans, økonomi og styring", "Juss, skatt og eiendom", financeToLaw, "er nå hovedplassert i Juss, skatt og eiendom, først og fremst skatt og avgift.")}
-              {flowCard("Digitalisering og markedsføring henger sammen", "Digitalisering og Analytics", "Markedsføring, kommunikasjon og kultur", digitalToMarketing, "er nå hovedplassert i Markedsføring, kommunikasjon og kultur (digital markedsføring og KI i markedsføring), og har KI, digitalisering og analytics som ekstra.")}
-            </>
-          );
-        })()}
-      </div>
-    </div>
-  );
+        })();
 }
 
 const shuffleIndexes = (length: number) => {
@@ -2491,11 +2760,18 @@ function SearchTest() {
   );
 
   const optionStyle = (state: "idle" | "main" | "extra" | "bad" | "dim", selected: boolean) => ({
-    padding: "6px 10px",
-    borderRadius: 4,
-    border: selected ? "2px solid #00467f" : "1px solid #d4d4d8",
-    background: state === "main" ? "#d6ecd0" : state === "extra" ? "#e8f5e4" : state === "bad" ? "#fde4e4" : "#ffffff",
-    color: state === "dim" ? "#a1a1aa" : "#27272a",
+    padding: "8px 12px",
+    borderRadius: "var(--bi-radius-large)",
+    border: selected ? "2px solid var(--bi-color-primary-stroke-accent)" : "1px solid var(--bi-color-neutral-stroke)",
+    background:
+      state === "main"
+        ? "var(--bi-color-success-surface-strong)"
+        : state === "extra"
+          ? "var(--bi-color-success-surface)"
+          : state === "bad"
+            ? "var(--bi-color-alert-surface-strong)"
+            : "var(--bi-color-neutral-surface-subtle)",
+    color: state === "dim" ? "var(--bi-neutral-40)" : "var(--bi-color-neutral-text)",
     cursor: "pointer",
     font: "inherit",
     fontSize: "0.875rem",
@@ -2511,15 +2787,15 @@ function SearchTest() {
   const done = Boolean(pick.area && pick.sub);
 
   return (
-    <div style={{ background: "#ffffff", border: "1px solid #e4e4e7", borderRadius: 8, padding: 20 }}>
+    <div style={{ background: "var(--bi-color-neutral-surface)", borderRadius: "var(--bi-radius-xl)", padding: 28 }}>
       <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 16, marginBottom: 12 }}>
         <div>
-          <div style={{ color: "#71717a", fontSize: "0.8125rem" }}>
+          <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>
             Studie eller kurs {position + 1} av {order.length}
           </div>
           <div style={{ fontWeight: 700, fontSize: "1.25rem" }}>Hvor finner du «{title}»?</div>
         </div>
-        <div style={{ color: "#52525b", fontSize: "0.875rem", textAlign: "right" }}>
+        <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.875rem", textAlign: "right" }}>
           <div>
             Riktig fagområde: <strong>{score.area}</strong> av {answered.length}
           </div>
@@ -2541,11 +2817,11 @@ function SearchTest() {
             <button
               key={area}
               type="button"
-              disabled={Boolean(pick.area)}
+              disabled={done}
               onClick={() => setPicks((current) => ({ ...current, [rowIndex]: { area } }))}
-              style={optionStyle(pick.area && !done ? (chosen ? "idle" : "dim") : state, chosen)}
+              style={optionStyle(state, chosen)}
             >
-              {done && kind === "main" ? <span style={{ color: "#0057b8", fontWeight: 700 }}>* </span> : null}
+              {done && kind === "main" ? <span style={{ color: "var(--bi-primary-50)", fontWeight: 700 }}>* </span> : null}
               {area}
             </button>
           );
@@ -2570,7 +2846,7 @@ function SearchTest() {
                   onClick={() => setPicks((current) => ({ ...current, [rowIndex]: { ...current[rowIndex], sub } }))}
                   style={optionStyle(state, chosen)}
                 >
-                  {done && kind === "main" ? <span style={{ color: "#0057b8", fontWeight: 700 }}>* </span> : null}
+                  {done && kind === "main" ? <span style={{ color: "var(--bi-primary-50)", fontWeight: 700 }}>* </span> : null}
                   {sub}
                 </button>
               );
@@ -2578,17 +2854,17 @@ function SearchTest() {
           </div>
         </>
       ) : (
-        <div style={{ color: "#71717a", fontSize: "0.875rem", paddingTop: 4 }}>2. Underkategoriene vises når du har valgt fagområde.</div>
+        <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.875rem", paddingTop: 4 }}>2. Underkategoriene vises når du har valgt fagområde.</div>
       )}
       </div>
       </div>
 
       {done && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 32, borderTop: "1px solid #e4e4e7", paddingTop: 16 }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 32, borderTop: "1px solid var(--bi-color-neutral-stroke)", paddingTop: 16 }}>
           <div>
-            <div style={{ fontWeight: 700, color: "#52525b", marginBottom: 8 }}>Før (bi.no i dag)</div>
+            <div style={{ fontWeight: 700, color: "var(--bi-color-neutral-text-secondary)", marginBottom: 8 }}>Før (bi.no i dag)</div>
             {previous.length === 0 ? (
-              <p style={{ margin: 0, color: "#3f3f46" }}>Hadde ikke noe fagområde. Det kunne ikke finnes via fagområde.</p>
+              <p style={{ margin: 0, color: "var(--bi-color-neutral-text)" }}>Manglet fagområde. Det kunne ikke finnes via fagområde.</p>
             ) : (
               <>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 6 }}>
@@ -2596,20 +2872,23 @@ function SearchTest() {
                     <AreaPill key={name} label={shortOldName(name)} kind={oldAreaCatalog[name]?.kind === "removed" ? "removed" : "old"} />
                   ))}
                 </div>
-                <p style={{ margin: 0, color: "#3f3f46", fontSize: "0.875rem" }}>
+                <p style={{ margin: 0, color: "var(--bi-color-neutral-text)", fontSize: "0.875rem" }}>
                   {previous.length === 1 ? "Lå i ett fagområde, uten underkategori." : `Lå i ${previous.length} fagområder uten prioritet og uten underkategori.`}
                 </p>
               </>
             )}
           </div>
           <div>
-            <div style={{ fontWeight: 700, color: "#00467f", marginBottom: 8 }}>Nå (forslaget)</div>
+            <div style={{ fontWeight: 700, color: "var(--bi-color-primary-text-accent)", marginBottom: 8 }}>Nå (forslaget)</div>
             {row[6].split("; ").map((entry, index) => (
               <div key={entry} style={{ marginBottom: 8 }}>
                 <AreaWithSubcategory area={entryArea(entry)} subcategory={entrySub(entry)} muted={index > 0} />
               </div>
             ))}
-            <div style={{ background: "#f4f4f5", borderRadius: 6, padding: 12, margin: "0 0 10px", fontSize: "0.875rem", color: "#3f3f46" }}>
+            <div style={{ marginBottom: 10 }}>
+              <SuggestedTitle row={row} />
+            </div>
+            <div style={{ background: "var(--bi-color-primary-background)", borderRadius: "var(--bi-radius-large)", padding: 12, margin: "0 0 10px", fontSize: "0.875rem", color: "var(--bi-color-neutral-text)" }}>
               <div style={{ fontWeight: 700, marginBottom: 4 }}>Hvorfor ligger det her?</div>
               {row[7] && <p style={{ margin: "0 0 6px" }}>{row[7]}</p>}
               {row[6].split("; ").some((entry) => entryArea(entry) !== row[0]) && (
@@ -2625,7 +2904,7 @@ function SearchTest() {
                 ))}
               </div>
             </div>
-            <p style={{ margin: 0, color: "#3f3f46", fontSize: "0.875rem" }}>
+            <p style={{ margin: 0, color: "var(--bi-color-neutral-text)", fontSize: "0.875rem" }}>
               {areaKind(pick.area ?? "") === "none"
                 ? "Du valgte et fagområde der kurset ikke ligger."
                 : areaKind(pick.area ?? "") === "main"
@@ -2637,24 +2916,45 @@ function SearchTest() {
         </div>
       )}
 
-      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 16 }}>
-        <button type="button" disabled={position === 0} onClick={() => setPosition(position - 1)} style={optionStyle(position === 0 ? "dim" : "idle", false)}>
-          Forrige
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setPicks({});
-            setOrder(shuffleIndexes(rows.length));
-            setPosition(0);
-          }}
-          style={optionStyle("idle", false)}
-        >
-          Start på nytt
-        </button>
-        <button type="button" onClick={nextRandom} style={optionStyle("idle", false)}>
-          Neste
-        </button>
+      {done && (
+        <div style={{ display: "flex", justifyContent: "center", marginTop: 28 }}>
+          <Button size="large" variant="filled" onClick={nextRandom}>
+            Gi meg en til!
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Feedback() {
+  return (
+    <div
+      style={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        flexWrap: "wrap",
+        gap: 24,
+        padding: 24,
+        background: "var(--bi-color-neutral-surface)",
+        borderRadius: "var(--bi-radius-xl)",
+        textAlign: "left",
+      }}
+    >
+      <p style={{ margin: 0, flex: "1 1 360px", color: "var(--bi-color-neutral-text)", fontSize: "1.125rem" }}>
+        Noen studier eller kurs du tenker er plassert feil eller som trenger et ekstra fagområde?
+        <br />
+        Gi beskjed til Stian Bordewick (
+        <Link data-color="neutral" href="mailto:stian.a.bordewick@bi.no">
+          stian.a.bordewick@bi.no
+        </Link>
+        ) på enten Teams, Slack eller på e-post.
+      </p>
+      <div style={{ display: "flex", alignItems: "center", gap: 28, flex: "0 0 auto" }}>
+        {(["teams.webp", "slack.png", "outlook.png"] as const).map((file) => (
+          <img key={file} src={`${import.meta.env.BASE_URL}logos/${file}`} alt={file.split(".")[0]} height={40} style={{ display: "block", height: 40, width: "auto" }} />
+        ))}
       </div>
     </div>
   );
@@ -2704,7 +3004,400 @@ export default function Result() {
 
   return (
     <div style={{ padding: 24, maxWidth: 1600, margin: "0 auto" }}>
-      <h1 style={{ margin: "0 0 4px" }}>Forslag til nye fagområder</h1>
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 24 }}>
+      <SummaryToc />
+      <div style={{ flex: 1, minWidth: 0 }}>
+      <section>
+        <h2 id="soketest" style={{ scrollMarginTop: 16, margin: "0 0 12px", fontFamily: "var(--bi-font-family-brand)", fontSize: "2rem", lineHeight: 1.2, color: "var(--bi-color-primary-text)" }}>Søketest: Finner du studiet/kurset?</h2>
+        <SearchTest />
+      </section>
+
+      <section style={{ margin: "48px 0 0" }}>
+        <h2 id="tilbakemelding" style={{ scrollMarginTop: 16, margin: "0 0 12px", fontFamily: "var(--bi-font-family-brand)", fontSize: "2rem", lineHeight: 1.2, color: "var(--bi-color-primary-text)" }}>Tilbakemelding</h2>
+        <Feedback />
+      </section>
+
+      <section style={{ margin: "48px 0 0" }}>
+        <h2 style={{ margin: "0 0 8px", fontFamily: "var(--bi-font-family-brand)", fontSize: "2rem", lineHeight: 1.2, color: "var(--bi-color-primary-text)" }}>Forklaring</h2>
+
+        <div style={summaryBox}>
+        <Carousel
+          heading={<h3 id="hva-gjores" style={{ ...summaryPartHeading, margin: 0 }}>Hva gjøres?</h3>}
+          slides={[
+            {
+              title: "Fagområder uten endring i navn",
+              content: (
+        <ChangeGroup>
+          <ChangeRow
+            from="Ledelse"
+            fromKind="same"
+            equal
+            to={[{ label: "Ledelse", count: areaCount("Ledelse") }]}
+            toKind="same"
+          />
+          <ChangeRow
+            from="Strategi, innovasjon og bærekraft"
+            fromKind="same"
+            equal
+            to={[{ label: "Strategi, innovasjon og bærekraft", count: areaCount("Strategi, innovasjon og bærekraft") }]}
+            toKind="same"
+          />
+          <ChangeRow
+            from="Markedsføring, kommunikasjon og kultur"
+            fromKind="same"
+            equal
+            to={[{ label: "Markedsføring, kommunikasjon og kultur", count: areaCount("Markedsføring, kommunikasjon og kultur") }]}
+            toKind="same"
+          />
+
+        </ChangeGroup>
+              ),
+            },
+            {
+              title: "Fagområder med nytt navn",
+              content: (
+        <ChangeGroup>
+          <ChangeRow
+            from="Finans, økonomi og styring"
+            fromKind="old"
+            to={[{ label: "Finans, økonomi og regnskap", count: areaCount("Finans, økonomi og regnskap") }]}
+            note={whyRenamed("Finans, økonomi og styring")}
+          />
+          <ChangeRow
+            from="Digitalisering og Analytics"
+            fromKind="old"
+            to={[{ label: "KI, digitalisering og analytics", count: areaCount("KI, digitalisering og analytics") }]}
+            note={whyRenamed("Digitalisering og Analytics")}
+          />
+          <ChangeRow
+            from={"Organisasjonsutvikling og\nHuman Resource Management"}
+            fromKind="old"
+            to={[{ label: "HR og organisasjonsutvikling", count: areaCount("HR og organisasjonsutvikling") }]}
+            note={whyRenamed("Organisasjonsutvikling og Human Resource Management")}
+          />
+          <ChangeRow
+            from="Eiendom, varehandel og forretningsjus"
+            fromKind="old"
+            to={[{ label: "Juss, skatt og eiendom", count: areaCount("Juss, skatt og eiendom") }]}
+            note={whyRenamed("Eiendom, varehandel og forretningsjus")}
+          />
+        </ChangeGroup>
+              ),
+            },
+            {
+              title: "Fjernede fagområder",
+              content: (
+        <ChangeGroup>
+          <SplitRow
+            from={[{ label: "Offentlig sektor", kind: "removed" }]}
+            color="#e41100"
+            to={[
+              {
+                label: "Helse, skole og barnehage",
+                count: areaCount("Helse, skole og barnehage"),
+                note: `${originNote("Helse, skole og barnehage")} «Juss for ledere» ligger her, med Juss, skatt og eiendom og Ledelse som ekstra.`,
+              },
+              { label: "Sikkerhet og beredskap", count: areaCount("Sikkerhet og beredskap"), note: originNote("Sikkerhet og beredskap") },
+              {
+                label: "Juss, skatt og eiendom",
+                count: areaCount("Juss, skatt og eiendom"),
+                note: `${originNote("Juss, skatt og eiendom")} Skatt- og avgiftskursene ligger her.`,
+              },
+            ]}
+          />
+          <ChangeRow
+            from="Prosjektledelse"
+            fromKind="removed"
+            arrowColor="#e41100"
+            to={[{ label: "Ledelse › Prosjektledelse (underkategori)" }]}
+            note="Slått sammen med Ledelse."
+          />
+          <ChangeRow
+            from="Internasjonal Business"
+            fromKind="removed"
+            arrowColor="#e41100"
+            to={[
+              { label: "Markedsføring, kommunikasjon og kultur › Kultur og internasjonal business" },
+              { label: "Ledelse" },
+              { label: "Finans, økonomi og regnskap" },
+            ]}
+            note="De fem studiene og kursene er fordelt på tre fagområder. Internasjonal profil er en egenskap ved kurset og ikke et fagområde."
+          />
+        </ChangeGroup>
+              ),
+            },
+            {
+              title: "Underkategorier og begrunnelse",
+              content: <SubcategorySlide />,
+            },
+            {
+              title: "Tverrgående temaer har egne underkategorier",
+              content: <CrossCuttingSlide />,
+            },
+            {
+              title: "Engelske navn",
+              content: (
+        <>
+                <p style={{ margin: "0 0 12px", color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>
+          Forslag til engelske navn, basert på begreper som allerede brukes i titlene på studiene og kurs.
+        </p>
+        <table style={{ width: "100%", maxWidth: 720, borderCollapse: "collapse", background: "var(--bi-basic-white)", border: "1px solid var(--bi-color-neutral-stroke-subtle)", fontSize: "0.9375rem" }}>
+          <tbody>
+            {englishNames.map(({ area, subcategories }) => (
+              <Fragment key={area.no}>
+                <tr style={{ background: "var(--bi-primary-5)", color: "var(--bi-color-primary-text-accent)", fontWeight: 700 }}>
+                  <td style={{ padding: "5px 12px", width: "50%" }}>{area.no}</td>
+                  <td style={{ padding: "5px 12px" }}>{area.en}</td>
+                </tr>
+                {subcategories.map((sub) => (
+                  <tr key={sub.no} style={{ borderTop: "1px solid var(--bi-color-neutral-stroke-subtle)" }}>
+                    <td style={{ padding: "3px 12px", color: "var(--bi-color-neutral-text-secondary)" }}>{sub.no}</td>
+                    <td style={{ padding: "3px 12px" }}>{sub.en}</td>
+                  </tr>
+                ))}
+              </Fragment>
+            ))}
+          </tbody>
+        </table>
+        </>
+              ),
+            },
+            {
+              title: "Status",
+              content: (
+        <StatusPie rows={summaryRows} />
+              ),
+            },
+            {
+              title: "Eksempler: helseledelse og lignende",
+              content: <BeforeAfterExamples examples={sectorLeadershipExamples} />,
+            },
+          ]}
+        />
+        </div>
+
+        <div style={summaryBox}>
+        <WhyBetter />
+        </div>
+
+        <div style={summaryBox}>
+        <Carousel
+          heading={<h3 id="oversikt-endringer" style={{ ...summaryPartHeading, margin: 0 }}>Hvordan ser fordelingen ut?</h3>}
+          slides={[
+            {
+              title: "Før og nå",
+              content: (
+        <BeforeAfterOverview />
+              ),
+            },
+            {
+              title: "Fagområder og underkategorier",
+              content: (
+        <>
+        <p style={{ margin: "0 0 12px", color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>
+          {summaryRows.length} studier og kurs fordelt på {areaTree.length} fagområder og {subcategoryCount} underkategorier. Tallene viser
+          hvor mange studier og kurs som har fagområdet eller underkategorien som hovedplassering, og hvor mange som har det som ekstra.
+        </p>
+        <div style={{ display: "flex", gap: 16, margin: "0 0 16px", color: "var(--bi-color-neutral-text)", fontSize: "0.8125rem" }}>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+            <span style={{ width: 9, height: 9, borderRadius: 2, background: treeColors.mainArea }} />
+            Hovedfagområde
+          </span>
+          <span style={{ display: "inline-flex", alignItems: "center", gap: 4 }}>
+            <span style={{ width: 9, height: 9, borderRadius: 2, background: treeColors.extraArea }} />
+            Ekstra fagområde
+          </span>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", columnGap: 64, alignItems: "start" }}>
+          {treeColumns.map((column, columnIndex) => (
+            <div key={columnIndex}>
+          {column.map(({ area, main, extra, subs }) => (
+            <div key={area} style={{ marginBottom: 20 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <strong style={{ flex: "0 0 320px", color: "var(--bi-color-primary-text-accent)", whiteSpace: "nowrap" }}>{area}</strong>
+                <TreeNumbers main={main} extra={extra} bold />
+                <TreeBar main={main} extra={extra} height={14} mainColor={treeColors.mainArea} extraColor={treeColors.extraArea} />
+              </div>
+              <div style={{ margin: "4px 0 0 10px" }}>
+                {subs.map(([name, { main: subMain, extra: subExtra }], index) => (
+                  <div
+                    key={name}
+                    style={{
+                      position: "relative",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 12,
+                      paddingTop: 4,
+                      paddingBottom: 4,
+                    }}
+                  >
+                    <span
+                      style={{
+                        position: "absolute",
+                        left: 0,
+                        top: 0,
+                        bottom: index === subs.length - 1 ? "50%" : 0,
+                        width: 2,
+                        background: treeLine,
+                      }}
+                    />
+                    <span
+                      style={{
+                        flex: "0 0 18px",
+                        height: 2,
+                        background: treeLine,
+                        marginTop: 0,
+                      }}
+                    />
+                    <span style={{ flex: "0 0 280px", whiteSpace: "nowrap" }}>{name}</span>
+                    <TreeNumbers main={subMain} extra={subExtra} />
+                    <TreeBar main={subMain} extra={subExtra} height={8} mainColor={treeColors.mainSub} extraColor={treeColors.extraSub} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+            </div>
+          ))}
+        </div>
+
+        </>
+              ),
+            },
+            {
+              title: "Overlapp og koblinger",
+              content: (
+        <OverlapSection />
+              ),
+            },
+            {
+              title: "Fordeling per nivå",
+              content: (
+        <>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "24px 64px" }}>
+          {levelTrees.map(({ key, label, list, count, tree }) => {
+            const split = levelSplits[key];
+            const largestShare = Math.max(...tree.map(({ main }) => main / count));
+            return (
+              <div key={key}>
+                <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 8, whiteSpace: "nowrap" }}>
+                  <span style={{ fontWeight: 700, color: "var(--bi-color-primary-text-accent)" }}>
+                    {label} ({count})
+                  </span>
+                  {split?.map(({ key: splitKey, label: levelLabel, color }) => (
+                      <span key={splitKey} style={{ display: "inline-flex", alignItems: "center", gap: 4, color: "var(--bi-color-neutral-text)", fontSize: "0.8125rem" }}>
+                        <span style={{ width: 9, height: 9, borderRadius: 2, background: color, boxShadow: hairline(color) }} />
+                        {levelLabel}
+                      </span>
+                    ))}
+                </div>
+                {[...tree]
+                  .sort((x, y) => y.main - x.main || x.area.localeCompare(y.area, "nb"))
+                  .map(({ area, main }) => (
+                    <div key={area} style={{ display: "flex", alignItems: "center", gap: 12, padding: "3px 0" }}>
+                      <span style={{ flex: "0 0 290px", whiteSpace: "nowrap" }}>{area}</span>
+                      <span style={{ flex: "0 0 84px", whiteSpace: "nowrap", textAlign: "right" }}>
+                        {main} <span style={{ color: "var(--bi-color-neutral-text-secondary)" }}>({Math.round((main / count) * 100)} %)</span>
+                      </span>
+                      <div style={{ flex: 1, display: "flex" }}>
+                        {(split
+                          ? split.map(({ match, color }) => ({
+                              color,
+                              value: list.filter((row) => row[0] === area && match(row)).length,
+                            }))
+                          : [{ color: treeColors.mainArea, value: main }]
+                        )
+                          .filter(({ value }) => value > 0)
+                          .map(({ color, value }, index, segments) => (
+                            <div
+                              key={color}
+                              style={{
+                                width: `${(value / count / largestShare) * 100}%`,
+                                minWidth: 4,
+                                height: 14,
+                                background: color,
+                                boxShadow: hairline(color),
+                                borderRight: index < segments.length - 1 ? "2px solid var(--bi-basic-white)" : undefined,
+                                boxSizing: "border-box",
+                                borderRadius: `${index === 0 ? 7 : 0}px ${index === segments.length - 1 ? 7 : 0}px ${
+                                  index === segments.length - 1 ? 7 : 0
+                                }px ${index === 0 ? 7 : 0}px`,
+                              }}
+                            />
+                          ))}
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            );
+          })}
+        </div>
+
+        </>
+              ),
+            },
+            {
+              title: "Studier og kurs per bransje",
+              content: (
+        <>
+        <p style={{ margin: "0 0 12px", color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>
+          Studier og kurs som retter seg mot en bestemt bransje. Bransjen er avledet av nettadressen (bransjeprogram og målgruppeprogram
+          på bi.no), tittelen og beskrivelsen, ikke fra et eget bransjefelt hos BI. Studier uten tydelig bransje er ikke med.
+        </p>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 24 }}>
+          {industryGroups.map(({ industry, list }) => {
+            const byArea = [...new Set(list.map((row) => row[0]))]
+              .map((area) => ({ area, rows: list.filter((row) => row[0] === area).sort((a, b) => a[2].localeCompare(b[2], "nb")) }))
+              .sort((a, b) => b.rows.length - a.rows.length || a.area.localeCompare(b.area, "nb"));
+            return (
+              <div key={industry} style={{ background: "var(--bi-basic-white)", border: "1px solid var(--bi-color-neutral-stroke-subtle)", borderRadius: 8, padding: 20 }}>
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
+                  <strong style={{ fontSize: "1.125rem", color: "var(--bi-color-primary-text-accent)" }}>{industry}</strong>
+                  <span style={{ color: "var(--bi-color-neutral-text-secondary)" }}>{list.length} studier og kurs</span>
+                </div>
+                <div style={{ display: "flex", height: 14, borderRadius: 7, overflow: "hidden", marginBottom: 16, background: "var(--bi-color-neutral-stroke-subtle)" }}>
+                  {byArea.map(({ area, rows: areaList }, index) => (
+                    <div
+                      key={area}
+                      title={`${area}: ${areaList.length}`}
+                      style={{ flex: areaList.length, background: areaColor(area), boxShadow: hairline(areaColor(area)), borderRight: index < byArea.length - 1 ? "2px solid var(--bi-basic-white)" : undefined }}
+                    />
+                  ))}
+                </div>
+                <div style={{ display: "grid", gap: 14 }}>
+                  {byArea.map(({ area, rows: areaList }) => (
+                    <div key={area} style={{ borderLeft: `4px solid ${areaColor(area)}`, paddingLeft: 12 }}>
+                      <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 6 }}>
+                        <strong>{area}</strong>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: 5 }}>
+                          <span style={{ width: 9, height: 9, borderRadius: 2, background: areaColor(area), boxShadow: hairline(areaColor(area)) }} />
+                          <strong>{areaList.length}</strong>
+                        </span>
+                      </div>
+                      <ul style={{ margin: 0, paddingLeft: 18, color: "var(--bi-color-neutral-text)" }}>
+                        {areaList.map((row) => (
+                          <li key={`${row[2]}-${row[3]}`}>
+                            {row[2]} <span style={{ color: "var(--bi-color-neutral-text-secondary)" }}>({row[3]})</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        </>
+              ),
+            },
+          ]}
+        />
+        </div>
+      </section>
+
+      <div style={{ margin: "48px 0 0" }}>
+      <h1 style={{ margin: "0 0 4px", fontFamily: "var(--bi-font-family-brand)", color: "var(--bi-color-primary-text)" }}>Forslag til nye fagområder</h1>
       <p style={{ margin: "0 0 24px" }}>
         {rows.length} studier og kurs fordelt på {areas.length} fagområder. Alle har fått ett hovedfagområde, og{" "}
         {rows.filter((row) => row[6]).length === rows.length ? "alle" : rows.filter((row) => row[6]).length} har en underkategori.{" "}
@@ -2726,7 +3419,7 @@ export default function Result() {
           </div>
         </div>
         {filtersActive && (
-          <p style={{ margin: "8px 0 0", color: "#52525b" }}>
+          <p style={{ margin: "8px 0 0", color: "var(--bi-color-neutral-text-secondary)" }}>
             {matchCount === 0 ? "Ingen treff." : `Viser ${matchCount} av ${rows.length} studier og kurs.`}
           </p>
         )}
@@ -2791,7 +3484,6 @@ export default function Result() {
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
           <tr>
-            <th style={headCell}>Nivå</th>
             <th style={headCell}>Studie/kurs</th>
             <th style={headCell}>Tidligere fagområder</th>
             <th style={headCell}>Fagområde</th>
@@ -2808,52 +3500,20 @@ export default function Result() {
           return (
             <tbody key={area}>
               <tr>
-                <td colSpan={6} style={{ padding: "28px 0 12px" }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "space-between",
-                      gap: 40,
-                      background: "#f1f1f1",
-                      borderRadius: 8,
-                      padding: "16px 24px",
-                      margin: "0 -12px",
-                    }}
-                  >
-                    <div style={{ flex: 1 }}>
-                    <h2 style={{ margin: "0 0 4px", fontSize: "1.125rem", color: "#00467f" }}>
-                      {area} ({areaRows.length})
-                    </h2>
-                    <p style={{ margin: 0, color: "#52525b", fontWeight: "normal" }}>
-                      {areaRows.length} studier og kurs ({studyCount(areaRows)} {studyCount(areaRows) === 1 ? "studie" : "studier"} og{" "}
-                      {areaRows.length - studyCount(areaRows)} kurs). {areaRationale[area]}
-                    </p>
-                    <p style={{ margin: "8px 0 0", color: "#52525b", fontWeight: "normal" }}>
-                      <strong>Underkategorier:</strong> {subcategorySummary(area)}
-                    </p>
-                    {areaOrigin[area] && (
-                      <p style={{ margin: "8px 0 0", color: "#52525b", fontWeight: "normal" }}>
-                        <strong>{areaOrigin[area].label}:</strong> {areaOrigin[area].text(areaRows.filter(([, , , , previous]) => previous.split("; ").includes(areaOrigin[area].from)).length, areaRows.length)}
-                      </p>
-                    )}
-                    </div>
-                    <SubcategoryPie area={area} />
-                  </div>
+                <td colSpan={5} style={{ padding: "28px 12px 12px" }}>
+                  <h2 id={areaAnchor(area)} style={{ scrollMarginTop: 16, margin: 0, fontFamily: "var(--bi-font-family-brand)", fontSize: "1.5rem", color: "var(--bi-color-primary-text)" }}>
+                    {area}
+                  </h2>
                 </td>
               </tr>
               {visibleRows.map((row, index) => {
                 const [, statuses, title, level, previous, , subcategories, reason, , industry] = row;
                 return (
-                  <tr key={`${title}-${index}`} style={{ borderBottom: "1px solid #e0e0e0" }}>
-                    <td style={cell}>{level}</td>
+                  <tr key={`${title}-${index}`} style={{ borderBottom: "1px solid var(--bi-color-neutral-stroke-subtle)" }}>
                     <td style={cell}>
+                      <div style={{ marginBottom: 2, color: "var(--bi-primary-60)", fontSize: "0.8125rem", fontWeight: 700 }}>{level}</div>
                       {title}
-                      {suggestedNames[title.replace(/\u00ad/g, "")] && (
-                        <div style={{ marginTop: 4, color: "#1b6a5f", fontSize: "0.875rem" }}>
-                          <div style={{ fontSize: "0.75rem", opacity: 0.8 }}>Forslag til navneendring</div>({suggestedNames[title.replace(/\u00ad/g, "")]})
-                        </div>
-                      )}
+                      <SuggestedTitle row={row} />
                       {industry !== "–" && (
                         <div style={{ marginTop: 6 }}>
                           <span
@@ -2861,9 +3521,9 @@ export default function Result() {
                               display: "inline-block",
                               padding: "1px 8px",
                               borderRadius: 10,
-                              background: "#eef0f3",
-                              border: "1px solid #d4d4d8",
-                              color: "#3f3f46",
+                              background: "var(--bi-color-neutral-surface)",
+                              border: "1px solid var(--bi-color-neutral-stroke)",
+                              color: "var(--bi-color-neutral-text)",
                               fontSize: "0.8125rem",
                             }}
                           >
@@ -2875,8 +3535,8 @@ export default function Result() {
                     <td style={{ ...cell, position: "relative", paddingRight: 56 }}>
                       {previous}
                       <svg width="18" height="12" viewBox="0 0 18 12" aria-hidden="true" style={{ position: "absolute", right: 18, top: 14 }}>
-                        <line x1="0" y1="6" x2="15" y2="6" stroke="#d4d4d8" strokeWidth="1.5" />
-                        <polyline points="10,1.5 16,6 10,10.5" fill="none" stroke="#d4d4d8" strokeWidth="1.5" />
+                        <line x1="0" y1="6" x2="15" y2="6" stroke="#d5dde4" strokeWidth="1.5" />
+                        <polyline points="10,1.5 16,6 10,10.5" fill="none" stroke="#d5dde4" strokeWidth="1.5" />
                       </svg>
                     </td>
                     <td style={cell}>
@@ -2896,7 +3556,7 @@ export default function Result() {
                         ))}
                       </div>
                     </td>
-                    <td style={{ ...cell, fontSize: "0.8125rem", color: "#71717a" }}>
+                    <td style={{ ...cell, fontSize: "0.8125rem", color: "var(--bi-color-neutral-text-secondary)" }}>
                       {reason}
                                           </td>
                   </tr>
@@ -2906,430 +3566,9 @@ export default function Result() {
           );
         })}
       </table>
-
-      <section style={{ background: "#f1f1f1", borderRadius: 8, padding: "24px", margin: "48px -12px 0" }}>
-        <h2 style={{ margin: "0 0 8px", fontSize: "2rem", lineHeight: 1.2, color: "#00467f" }}>Oppsummering</h2>
-
-        <h3 style={summaryHeading}>Før og nå: fagområdene sammenlignet</h3>
-        <p style={{ margin: "0 0 12px", color: "#52525b" }}>
-          Venstre side viser fagområdene slik de er på bi.no i dag, og høyre side viser forslaget. Et studie eller kurs som hadde to
-          fagområder før, telles i begge radene til venstre.
-        </p>
-        <BeforeAfterOverview />
-
-        <h3 style={summaryHeading}>Oversikt over fagområder og underkategorier</h3>
-        <p style={{ margin: "0 0 12px", color: "#52525b" }}>
-          {summaryRows.length} studier og kurs fordelt på {areaTree.length} fagområder og {subcategoryCount} underkategorier. Tallene viser
-          hvor mange studier og kurs som har fagområdet eller underkategorien som hovedplassering, og hvor mange som har det som ekstra.
-        </p>
-        <p style={{ margin: "0 0 12px", color: "#52525b" }}>
-          De sju majorene i Master in Business er ikke med i tallene i oppsummeringen. Alle er plassert i Finans, økonomi og regnskap,
-          som selve graden og Siviløkonom. Major in Finance (Finans og investering), Economics (Samfunnsøkonomi) og Accounting and
-          Business Control (Regnskap og revisjon) ligger i underkategorien som passer spesialiseringen. Marketing, Strategy, Logistics,
-          Operations and Supply Chain Management og Leadership, Change and Analytics ligger i Bedriftsøkonomi, med spesialiseringen som
-          ekstra fagområde (Markedsføring, Strategi to ganger og Ledelse).
-        </p>
-        <div style={{ display: "flex", gap: 24, margin: "0 0 16px", color: "#52525b" }}>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-            <span style={{ width: 14, height: 10, borderRadius: 3, background: treeColors.mainArea }} />
-            Hovedfagområde
-          </span>
-          <span style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-            <span style={{ width: 14, height: 10, borderRadius: 3, background: treeColors.extraArea }} />
-            Ekstra fagområde
-          </span>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", columnGap: 64, alignItems: "start" }}>
-          {treeColumns.map((column, columnIndex) => (
-            <div key={columnIndex}>
-          {column.map(({ area, main, extra, subs }) => (
-            <div key={area} style={{ marginBottom: 20 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                <strong style={{ flex: "0 0 320px", color: "#00467f", whiteSpace: "nowrap" }}>{area}</strong>
-                <TreeNumbers main={main} extra={extra} bold />
-                <TreeBar main={main} extra={extra} height={10} mainColor={treeColors.mainArea} extraColor={treeColors.extraArea} />
-              </div>
-              <div style={{ margin: "4px 0 0 10px" }}>
-                {subs.map(([name, { main: subMain, extra: subExtra }], index) => (
-                  <div
-                    key={name}
-                    style={{
-                      position: "relative",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 12,
-                      paddingTop: 4,
-                      paddingBottom: 4,
-                    }}
-                  >
-                    <span
-                      style={{
-                        position: "absolute",
-                        left: 0,
-                        top: 0,
-                        bottom: index === subs.length - 1 ? "50%" : 0,
-                        width: 2,
-                        background: treeLine,
-                      }}
-                    />
-                    <span
-                      style={{
-                        flex: "0 0 18px",
-                        height: 2,
-                        background: treeLine,
-                        marginTop: 0,
-                      }}
-                    />
-                    <span style={{ flex: "0 0 280px", whiteSpace: "nowrap" }}>{name}</span>
-                    <TreeNumbers main={subMain} extra={subExtra} />
-                    <TreeBar main={subMain} extra={subExtra} height={8} mainColor={treeColors.mainSub} extraColor={treeColors.extraSub} />
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-            </div>
-          ))}
-        </div>
-
-        <h3 style={summaryHeading}>Overlapp og koblinger mellom fagområder og underkategorier</h3>
-        <p style={{ margin: "0 0 12px", color: "#52525b" }}>
-          Hver strek viser studier og kurs som har ett fagområde (eller en underkategori) som hovedplassering og et annet som ekstra. Streken har
-          fargen til hovedfagområdet, og bredden viser antall. Til venstre er koblingene mellom fagområdene, og til høyre mellom underkategoriene. Hold musepekeren over en bue eller en strek i en av sirklene
-          for å fremheve koblingene i den sirkelen. De sterkeste koblingene mellom underkategorier står alltid øverst.
-          Fagområdene som henger tett sammen ligger ved siden av hverandre. For eksempel har alle studiene og kursene i Helse, skole og barnehage også
-          Ledelse som ekstra. Underkategorier som bare brukes i ett fagområde, uten koblinger, er ikke med.
-        </p>
-        <OverlapSection />
-
-        <h3 style={summaryHeading}>Fordeling per nivå</h3>
-        <p style={{ margin: "0 0 12px", color: "#52525b" }}>
-          Hovedfagområde for bachelorstudier på heltid, masterstudier på heltid, bachelorkurs og masterkurs. «Heltid» er bachelorstudier og
-          masterstudier på heltid samlet, «Deltid» er bachelorkurs og masterkurs samlet (uten deltidsstudiene), og bachelorkurs- og masterkursoversiktene har i tillegg deltidsstudiene markert i egen farge, og «Alle nettstudier» er alt som tilbys på nett (campus Online på bi.no),
-          delt på bachelorstudier, årsenhet, bachelorkurs og øvrige kurs. Gruppene
-          overlapper derfor. Søylene viser andelen av studiene eller kursene i gruppen, og tallet er antall. {summaryRows.length - levelExcluded}{" "}
-          av {summaryRows.length} studier og kurs er med i minst én gruppe. De {levelExcluded} øvrige er studier uten
-          oppgitt studieform på bi.no, PhD, årsenheter, kurs uten studiepoeng og andre nivåer som ikke tilbys på nett.
-        </p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "24px 64px" }}>
-          {levelTrees.map(({ key, label, list, count, tree }) => {
-            const split = levelSplits[key];
-            const largestShare = Math.max(...tree.map(({ main }) => main / count));
-            return (
-              <div key={key}>
-                <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 8, whiteSpace: "nowrap" }}>
-                  <span style={{ fontWeight: 700, color: "#00467f" }}>
-                    {label} ({count})
-                  </span>
-                  {split?.map(({ key: splitKey, label: levelLabel, color }) => (
-                      <span key={splitKey} style={{ display: "inline-flex", alignItems: "center", gap: 8, color: "#52525b" }}>
-                        <span style={{ width: 14, height: 10, borderRadius: 3, background: color }} />
-                        {levelLabel}
-                      </span>
-                    ))}
-                </div>
-                {[...tree]
-                  .sort((x, y) => y.main - x.main || x.area.localeCompare(y.area, "nb"))
-                  .map(({ area, main }) => (
-                    <div key={area} style={{ display: "flex", alignItems: "center", gap: 12, padding: "3px 0" }}>
-                      <span style={{ flex: "0 0 290px", whiteSpace: "nowrap" }}>{area}</span>
-                      <span style={{ flex: "0 0 84px", whiteSpace: "nowrap", textAlign: "right" }}>
-                        {main} <span style={{ color: "#71717a" }}>({Math.round((main / count) * 100)} %)</span>
-                      </span>
-                      <div style={{ flex: 1, display: "flex" }}>
-                        {(split
-                          ? split.map(({ match, color }) => ({
-                              color,
-                              value: list.filter((row) => row[0] === area && match(row)).length,
-                            }))
-                          : [{ color: treeColors.mainArea, value: main }]
-                        )
-                          .filter(({ value }) => value > 0)
-                          .map(({ color, value }, index, segments) => (
-                            <div
-                              key={color}
-                              style={{
-                                width: `${(value / count / largestShare) * 100}%`,
-                                minWidth: 4,
-                                height: 12,
-                                background: color,
-                                borderRadius: `${index === 0 ? 6 : 0}px ${index === segments.length - 1 ? 6 : 0}px ${
-                                  index === segments.length - 1 ? 6 : 0
-                                }px ${index === 0 ? 6 : 0}px`,
-                              }}
-                            />
-                          ))}
-                      </div>
-                    </div>
-                  ))}
-              </div>
-            );
-          })}
-        </div>
-
-        <ChangeGroup>
-        <h3 style={{ ...summaryHeading, gridColumn: "1 / -1" }}>Fagområder som har fått nytt navn</h3>
-          <ChangeRow
-            from="Eiendom, varehandel og forretningsjus"
-            fromKind="old"
-            to={[{ label: "Juss, skatt og eiendom", count: areaCount("Juss, skatt og eiendom") }]}
-            note="«Varehandel» utgår fordi ingen kurs har det som eget tema. Det nærmeste er logistikk og forsyningskjeder, som nå ligger i Finans, økonomi og regnskap. Skatt og avgift er slått sammen med fagområdet."
-          />
-          <ChangeRow
-            from="Finans, økonomi og styring"
-            fromKind="old"
-            to={[{ label: "Finans, økonomi og regnskap", count: areaCount("Finans, økonomi og regnskap") }]}
-            note="Regnskap er nå synlig i navnet, og styring er dekket av økonomi."
-          />
-          <ChangeRow
-            from="Digitalisering og Analytics"
-            fromKind="old"
-            to={[{ label: "KI, digitalisering og analytics", count: areaCount("KI, digitalisering og analytics") }]}
-          />
-          <ChangeRow
-            from={"Organisasjonsutvikling og\nHuman Resource Management"}
-            fromKind="old"
-            to={[{ label: "HR og organisasjonsutvikling", count: areaCount("HR og organisasjonsutvikling") }]}
-            note="HR står først fordi det er det største temaet, og HRM er skrevet ut som HR."
-          />
-
-        <h3 style={{ ...summaryHeading, gridColumn: "1 / -1" }}>Fagområder som er fjernet</h3>
-          <ChangeRow
-            from="Offentlig sektor"
-            fromKind="removed"
-            arrowColor="#b3261e"
-            to={[
-              { label: "Helse, skole og barnehage", count: areaCount("Helse, skole og barnehage") },
-              { label: "Sikkerhet og beredskap", count: areaCount("Sikkerhet og beredskap") },
-              { label: "Juss, skatt og eiendom" },
-            ]}
-            note="Skatt- og avgiftskursene ligger i Juss, skatt og eiendom. «Juss for ledere» ligger i Helse, skole og barnehage, med Juss, skatt og eiendom og Ledelse som ekstra."
-          />
-          <ChangeRow
-            from="Prosjektledelse"
-            fromKind="removed"
-            arrowColor="#b3261e"
-            to={[{ label: "Ledelse › Prosjektledelse (underkategori)" }]}
-            note="Slått sammen med Ledelse."
-          />
-          <ChangeRow
-            from="Internasjonal Business"
-            fromKind="removed"
-            arrowColor="#b3261e"
-            to={[
-              { label: "Markedsføring, kommunikasjon og kultur › Kultur og internasjonal business" },
-              { label: "Ledelse" },
-              { label: "Finans, økonomi og regnskap" },
-            ]}
-            note="De fem studiene og kursene er fordelt på tre fagområder. Internasjonal profil er en egenskap ved kurset og ikke et fagområde."
-          />
-          <ChangeRow
-            from="Skatt og avgift"
-            fromKind="removed"
-            arrowColor="#b3261e"
-            to={[{ label: "Juss, skatt og eiendom" }]}
-            note="Foreslått som eget fagområde, men slått sammen med Juss, skatt og eiendom."
-          />
-
-        <h3 style={{ ...summaryHeading, gridColumn: "1 / -1" }}>Nye fagområder</h3>
-          <SplitRow
-            from={[{ label: "Offentlig sektor", kind: "old" }]}
-            color="#2e6b1f"
-            to={newAreas.map((area) => ({
-              label: area,
-              count: areaCount(area),
-              note: originNote(area),
-            }))}
-          />
-        <h3 style={{ ...summaryHeading, gridColumn: "1 / -1" }}>Fagområder uten endring i navn</h3>
-          <ChangeRow
-            from="Ledelse"
-            fromKind="same"
-            equal
-            to={[{ label: "Ledelse", count: areaCount("Ledelse") }]}
-            toKind="same"
-          />
-          <ChangeRow
-            from="Strategi, innovasjon og bærekraft"
-            fromKind="same"
-            equal
-            to={[{ label: "Strategi, innovasjon og bærekraft", count: areaCount("Strategi, innovasjon og bærekraft") }]}
-            toKind="same"
-            note="Navnet er beholdt, og strategi er en underkategori."
-          />
-          <ChangeRow
-            from="Markedsføring, kommunikasjon og kultur"
-            fromKind="same"
-            equal
-            to={[{ label: "Markedsføring, kommunikasjon og kultur", count: areaCount("Markedsføring, kommunikasjon og kultur") }]}
-            toKind="same"
-          />
-        </ChangeGroup>
-
-        <h3 style={summaryHeading}>Andre grep</h3>
-        <ul style={summaryList}>
-          <li>
-            Alle {summaryRows.length} studier og kurs har nå nøyaktig ett hovedfagområde. Kolonnen «Fagområde» viser hovedfagområdet først
-            og deretter eventuelle ekstra fagområder i mindre og svakere tekst, som de også kunne passet i.
-          </li>
-          <li>
-            Ledelse er strammet inn til studier og kurs der lederrollen er hovedtemaet. Endringsledelse, rådgivning og HR-kurs ligger i
-            HR og organisasjonsutvikling. Team, prestasjon, forhandling og kommunikasjon for ledere ligger i Ledelse.
-          </li>
-          <li>
-            Ledelse er også ekstra fagområde for studier og kurs om å lede innenfor et annet felt, for eksempel sikkerhetsledelse,
-            medarbeiderledelse, endringsledelse og ledelse i skole og helse. Underkategoriene i Ledelse er slått sammen der
-            innholdet overlapper: Team-, medarbeider- og endringsledelse og Lederferdigheter og kommunikasjon. Strategisk ledelse og
-            Sikkerhets- og beredskapsledelse står for seg selv.
-          </li>
-          <li>Logistikk og supply chain ligger i Finans, økonomi og regnskap, med egen underkategori.</li>
-          <li>
-            Det er innført {subcategoryCount} underkategorier innenfor fagområdene. Under hvert fagområde i kolonnen «Fagområde»
-            står underkategorien, også i ekstra fagområder, for eksempel Helse i Helse, skole og barnehage og Helse-, skole- og barnehageledelse i Ledelse.
-          </li>
-          <li>Ledelse har underkategorien «Helse-, skole- og barnehageledelse» for ledelse i helsetjenesten og i skole og barnehage. Bransjer er samlet i et eget avsnitt nederst i oppsummeringen.</li>
-          <li>
-            {summaryRows.filter(([, statuses]) => statuses.includes("Manglet fagområde")).length} studier og kurs som ikke hadde noe fagområde
-            fra før, er nå plassert.
-          </li>
-        </ul>
-
-        <h3 style={summaryHeading}>Status</h3>
-        <StatusPie rows={summaryRows} />
-
-        <h3 style={summaryHeading}>Gjennomgang av underkategoriene</h3>
-        <ul style={summaryList}>
-          <li>
-            Underkategoriene er gjennomgått mot kursbeskrivelsene for å få lister med temaer av samme slag, uten overlapp innenfor hvert
-            fagområde.
-          </li>
-          <li>
-            «Ledelsesstudier» og «Markedsføringsstudier» er fjernet, siden de grupperte etter format og ikke tema. Studiene ligger nå
-            under «Generell ledelse og lederutdanning» og «Markedsføring».
-          </li>
-          <li>
-            Ledelse eier lederrollen, og HR eier organisasjonen og medarbeiderne. Endringsledelse ligger derfor i HR, og team og
-            prestasjon i Ledelse.
-          </li>
-          <li>
-            Finans er delt opp: Økonomistyring skilt ut fra Bedriftsøkonomi, og Bærekraftig finans og «Fintech» skilt
-            ut fra Finans og investering. «Fintech» og «Finansiell kriminalitet og compliance» brukes bare som ekstra, siden hovedfaget til de kursene er KI, digitalisering og analytics eller Juss, skatt og eiendom.
-          </li>
-          <li>
-            «Lederskap og lederutdanning» er delt i tre: Generell ledelse og lederutdanning (hele studier, grunnutdanning og brede
-            ledelseskurs), Lederferdigheter og kommunikasjon (coaching, selvinnsikt, retorikk og forhandling) og Strategisk ledelse.
-          </li>
-          <li>
-            Underkategorier som var så like at de trengte lignende navn, er slått sammen innenfor samme fagområde: Bærekraft i Finans
-            (nå en del av Bærekraftig finans), KI-gruppene, Lederutdanning og Lederskap, og de tre markedsføringsgruppene. Navn kan
-            fortsatt gjentas mellom fagområder.
-          </li>
-          <li>Navn er valgt ut fra ord studentene søker på. Navn kan gjentas mellom fagområder, men ikke innenfor samme fagområde.</li>
-        </ul>
-
-        <h3 style={summaryHeading}>Gjennomgang mot kursbeskrivelsene</h3>
-        <ul style={summaryList}>
-          <li>
-            Plasseringene er sjekket mot beskrivelsene på bi.no for 235 av 237 studier og kurs. To sider (Eiendomsmegling, jus og
-            økonomi og Rettsvitenskap, bachelor) ble ikke funnet.
-          </li>
-          <li>
-            31 studier og kurs er justert på grunn av beskrivelsen, bare der gjennomgangen var tydelig. Ti har fått nytt fagområde,
-            for eksempel Digital Compliance (til Juss, skatt og eiendom), Markedsrett og etikk (til Juss, skatt og eiendom) og
-            Helsefremmende ledelse (til HR og organisasjonsutvikling). Resten er justert underkategori eller ekstra fagområde.
-          </li>
-          <li>Foreslåtte endringer med lav sikkerhet er ikke gjennomført.</li>
-        </ul>
-
-        <h3 style={summaryHeading}>Studier og kurs per bransje</h3>
-        <p style={{ margin: "0 0 12px", color: "#52525b" }}>
-          Studier og kurs som retter seg mot en bestemt bransje. Bransjen er avledet av nettadressen (bransjeprogram og målgruppeprogram
-          på bi.no), tittelen og beskrivelsen, ikke fra et eget bransjefelt hos BI. Studier uten tydelig bransje er ikke med.
-        </p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 24 }}>
-          {industryGroups.map(({ industry, list }) => {
-            const byArea = [...new Set(list.map((row) => row[0]))]
-              .map((area) => ({ area, rows: list.filter((row) => row[0] === area).sort((a, b) => a[2].localeCompare(b[2], "nb")) }))
-              .sort((a, b) => b.rows.length - a.rows.length || a.area.localeCompare(b.area, "nb"));
-            return (
-              <div key={industry} style={{ background: "#ffffff", border: "1px solid #e4e4e7", borderRadius: 8, padding: 20 }}>
-                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, marginBottom: 12 }}>
-                  <strong style={{ fontSize: "1.125rem", color: "#00467f" }}>{industry}</strong>
-                  <span style={{ color: "#52525b" }}>{list.length} studier og kurs</span>
-                </div>
-                <div style={{ display: "flex", height: 10, borderRadius: 5, overflow: "hidden", marginBottom: 16, gap: 2 }}>
-                  {byArea.map(({ area, rows: areaList }) => (
-                    <div key={area} title={`${area}: ${areaList.length}`} style={{ flex: areaList.length, background: areaColor(area) }} />
-                  ))}
-                </div>
-                <div style={{ display: "grid", gap: 14 }}>
-                  {byArea.map(({ area, rows: areaList }) => (
-                    <div key={area} style={{ borderLeft: `4px solid ${areaColor(area)}`, paddingLeft: 12 }}>
-                      <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 6 }}>
-                        <strong>{area}</strong>
-                        <span
-                          style={{
-                            padding: "0 8px",
-                            borderRadius: 10,
-                            background: areaColor(area),
-                            color: "#ffffff",
-                            fontSize: "0.8125rem",
-                            lineHeight: 1.5,
-                          }}
-                        >
-                          {areaList.length}
-                        </span>
-                      </div>
-                      <ul style={{ margin: 0, paddingLeft: 18, color: "#27272a" }}>
-                        {areaList.map((row) => (
-                          <li key={`${row[2]}-${row[3]}`}>
-                            {row[2]} <span style={{ color: "#71717a" }}>({row[3]})</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-        <h3 style={summaryHeading}>Engelske navn</h3>
-        <p style={{ margin: "0 0 16px", color: "#52525b" }}>
-          Forslag til engelske navn på fagområdene og underkategoriene. Navnene bygger på begrepene som allerede brukes i titlene på
-          studiene og kursene (for eksempel «Business Administration», «Supply Chain Management» og «Change Management»), og er ikke
-          direkte oversettelser.
-        </p>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "16px 32px", alignItems: "start" }}>
-          {englishNames.map(({ area, subcategories }) => (
-            <div key={area.no} style={{ background: "#ffffff", border: "1px solid #e4e4e7", borderRadius: 8, padding: 20 }}>
-              <ChangeGroup compact>
-                <ChangeRow from={area.no} fromKind="same" to={[{ label: area.en }]} note={`Begreper: ${area.terms}`} compact bold />
-                {subcategories.map((sub) => (
-                  <ChangeRow key={sub.no} from={sub.no} fromKind="same" to={[{ label: sub.en }]} note={`Begreper: ${sub.terms}`} compact />
-                ))}
-              </ChangeGroup>
-            </div>
-          ))}
-        </div>
-
-        <h3 style={summaryHeading}>Forbehold</h3>
-        <p style={{ margin: 0 }}>
-          Plasseringene er justert ut fra beskrivelsene bare der gjennomgangen var tydelig, så noen er fortsatt basert på tittelen og de
-          tidligere fagområdene.
-        </p>
-      </section>
-
-      <section style={{ background: "#f1f1f1", borderRadius: 8, padding: "24px", margin: "24px -12px 0" }}>
-        <h2 style={{ margin: "0 0 8px", fontSize: "2rem", lineHeight: 1.2, color: "#00467f" }}>Søketest: finner du kurset?</h2>
-        <p style={{ margin: "0 0 12px", color: "#52525b" }}>
-          Et tilfeldig studie eller kurs vises med bare navnet. Velg hvilket fagområde og hvilken underkategori du ville lete i. Når du har svart, vises hvor det lå før og
-          hvor det ligger nå, så man ser om det finnes et tydelig hovedsted. Alle studier og kurs kan dukke opp.
-        </p>
-        <SearchTest />
-      </section>
-
+      </div>
+      </div>
+      </div>
       </div>
     </div>
   );
