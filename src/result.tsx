@@ -1,7 +1,7 @@
 // --- generert kode ---
 import { Fragment, useEffect, useRef, useState } from "react";
 import { Button, Link, Badge, Search, Selectfield } from "@bi-digital/react";
-import { CheckThickIcon, ChevronLeftIcon, ChevronRightIcon, CrossThickIcon, RedoIcon } from "@bi-digital/icons";
+import { CheckThickIcon, ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon, CrossThickIcon, RedoIcon } from "@bi-digital/icons";
 import { AreaIcon, AreaIconInSvg } from "./areaIcons";
 import { placementReasons } from "./placementReasons";
 
@@ -36,7 +36,7 @@ const rows: Row[] = [
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Økonomi og administrasjon", "Bachelor", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Bedriftsøkonomi", "Handler om bedriftsøkonomi, budsjett og beslutningsstøtte, eller er en bred økonomiutdanning.", false, "–", true],
   ["Finans, økonomi og regnskap", ["1 fagområde prioritert", "Fagområde fjernet"], "Siviløkonom", "Bachelor/Master", "Finans, økonomi og styring; Ledelse", "–", "Finans, økonomi og regnskap › Bedriftsøkonomi", "Handler om bedriftsøkonomi, budsjett og beslutningsstøtte, eller er en bred økonomiutdanning.", false, "–", false],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Bedriftsøkonomi", "Bachelor/Årsenhet", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Bedriftsøkonomi", "Handler om bedriftsøkonomi, budsjett og beslutningsstøtte, eller er en bred økonomiutdanning.", false, "–", true],
-  ["Finans, økonomi og regnskap", ["Manglet fagområde"], "Anvendt mikroøkonomi", "Bachelorkurs", "–", "–", "Finans, økonomi og regnskap › Samfunnsøkonomi", "Handler om økonomisk teori og samfunnsøkonomi.", false, "–", true],
+  ["Finans, økonomi og regnskap", ["Manglet fagområde"], "Anvendt mikroøkonomi", "Bachelorkurs", "–", "–", "Finans, økonomi og regnskap › Samfunnsøkonomi, økonomisk teori og matematikk", "Handler om økonomisk teori og samfunnsøkonomi.", false, "–", true],
   ["KI, digitalisering og analytics", ["Manglet fagområde"], "Bachelor fintech", "Bachelorkurs", "–", "Finans, økonomi og regnskap", "KI, digitalisering og analytics › Digital transformasjon; Finans, økonomi og regnskap › Fintech", "Handler om teknologi og digital transformasjon i finansnæringen.", false, "Finansnæringen", true],
   ["Finans, økonomi og regnskap", ["Manglet fagområde"], "Bærekraft i kreditt og utlån for bedriftsrådgivere", "Bachelorkurs", "–", "Strategi, innovasjon og bærekraft", "Finans, økonomi og regnskap › Bærekraftig finans; Strategi, innovasjon og bærekraft › Bærekraft", "Handler om finans og investering, med bærekraft som tema.", true, "Finansnæringen", false],
   ["Finans, økonomi og regnskap", ["1 fagområde prioritert"], "Bærekraft og finans", "Bachelorkurs", "Finans, økonomi og styring; Strategi, innovasjon og bærekraft", "Strategi, innovasjon og bærekraft", "Finans, økonomi og regnskap › Bærekraftig finans; Strategi, innovasjon og bærekraft › Bærekraft", "Handler om finans og investering, med bærekraft som tema.", true, "Finansnæringen", true],
@@ -51,38 +51,38 @@ const rows: Row[] = [
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Finansregnskap og regnskapsanalyse", "Bachelorkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om regnskap, bokføring eller revisjon.", false, "–", true],
   ["Finans, økonomi og regnskap", ["Manglet fagområde"], "Innføring i bedriftsøkonomi og finans", "Bachelorkurs", "–", "–", "Finans, økonomi og regnskap › Bedriftsøkonomi", "Handler om bedriftsøkonomi, budsjett og beslutningsstøtte, eller er en bred økonomiutdanning.", false, "–", true],
   ["Finans, økonomi og regnskap", ["Flyttet til nytt fagområde", "Fagområde fjernet"], "Innføring i bedriftsøkonomi og finans", "Bachelorkurs", "Ledelse; Organisasjonsutvikling og Human Resource Management", "–", "Finans, økonomi og regnskap › Bedriftsøkonomi", "Handler om bedriftsøkonomi, budsjett og beslutningsstøtte, eller er en bred økonomiutdanning.", false, "–", false],
-  ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Matematikk for økonomer", "Bachelorkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Samfunnsøkonomi", "Handler om økonomisk teori og samfunnsøkonomi.", false, "–", true],
-  ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Matematisk analyse", "Bachelorkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Samfunnsøkonomi", "Handler om økonomisk teori og samfunnsøkonomi.", false, "–", true],
+  ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Matematikk for økonomer", "Bachelorkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Samfunnsøkonomi, økonomisk teori og matematikk", "Handler om økonomisk teori og samfunnsøkonomi.", false, "–", true],
+  ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Matematisk analyse", "Bachelorkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Samfunnsøkonomi, økonomisk teori og matematikk", "Handler om økonomisk teori og samfunnsøkonomi.", false, "–", true],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Personlig økonomi", "Bachelorkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Finans og investering", "Handler om finans, investering, bank eller finansnæringen.", false, "–", true],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Prestasjonsstyring", "Bachelorkurs", "Finans, økonomi og styring", "Ledelse", "Finans, økonomi og regnskap › Økonomistyring; Ledelse › Strategisk ledelse", "Handler om budsjett, nøkkeltall og oppfølging av økonomisk resultat, derfor Økonomistyring. Styring av enheter og resultater er også et lederansvar, så Ledelse er ekstra fagområde.", false, "–", true],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Regnskapsføring i næring", "Bachelorkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om regnskap, bokføring eller revisjon.", false, "–", true],
-  ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Samfunnsøkonomi I", "Bachelorkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Samfunnsøkonomi", "Handler om økonomisk teori og samfunnsøkonomi.", false, "–", true],
-  ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Samfunnsøkonomi II", "Bachelorkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Samfunnsøkonomi", "Handler om økonomisk teori og samfunnsøkonomi.", false, "–", true],
+  ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Samfunnsøkonomi I", "Bachelorkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Samfunnsøkonomi, økonomisk teori og matematikk", "Handler om økonomisk teori og samfunnsøkonomi.", false, "–", true],
+  ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Samfunnsøkonomi II", "Bachelorkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Samfunnsøkonomi, økonomisk teori og matematikk", "Handler om økonomisk teori og samfunnsøkonomi.", false, "–", true],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Strategisk økonomistyring", "Bachelorkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Økonomistyring", "Handler om bedriftsøkonomi, budsjett og beslutningsstøtte, eller er en bred økonomiutdanning.", false, "–", true],
   ["Finans, økonomi og regnskap", ["1 fagområde prioritert", "Fagområde fjernet"], "Styrekompetanse", "Bachelorkurs", "Finans, økonomi og styring; Organisasjonsutvikling og Human Resource Management", "Ledelse; Strategi, innovasjon og bærekraft; Juss, skatt og eiendom", "Finans, økonomi og regnskap › Bedriftsøkonomi; Ledelse › Strategisk ledelse; Strategi, innovasjon og bærekraft › Strategi; Juss, skatt og eiendom › Forretningsjus og rettsvitenskap", "Handler om styrearbeid, eierstyring og governance.", false, "–", false],
   ["Finans, økonomi og regnskap", ["1 fagområde prioritert", "Fagområde fjernet"], "Business", "Master", "Finans, økonomi og styring; Ledelse; Markedsføring, kommunikasjon og kultur; Organisasjonsutvikling og Human Resource Management; Eiendom, varehandel og forretningsjus; Strategi, innovasjon og bærekraft", "Markedsføring, kommunikasjon og kultur; Strategi, innovasjon og bærekraft; Ledelse; HR og organisasjonsutvikling", "Finans, økonomi og regnskap › Bedriftsøkonomi; Markedsføring, kommunikasjon og kultur › Markedsføring; Strategi, innovasjon og bærekraft › Strategi; Ledelse › Generell ledelse og lederutdanning; HR og organisasjonsutvikling › HR og personalledelse", "Handler om bedriftsøkonomi, budsjett og beslutningsstøtte, eller er en bred økonomiutdanning.", false, "–", false],
   ["Finans, økonomi og regnskap", ["1 fagområde prioritert"], "Bærekraft og finans", "Master", "Finans, økonomi og styring; Strategi, innovasjon og bærekraft", "Strategi, innovasjon og bærekraft", "Finans, økonomi og regnskap › Bærekraftig finans; Strategi, innovasjon og bærekraft › Bærekraft", "Handler om finans og investering, med bærekraft som tema.", true, "–", false],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Finans", "Master", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Finans og investering", "Handler om finans, investering, bank eller finansnæringen.", false, "–", false],
   ["Finans, økonomi og regnskap", ["1 fagområde prioritert", "Fagområde fjernet"], "Major in Accounting and Business Control", "Master", "Finans, økonomi og styring; Strategi, innovasjon og bærekraft", "–", "Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om regnskap, bokføring eller revisjon.", false, "–", false],
-  ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Major in Economics", "Master", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Samfunnsøkonomi", "Handler om økonomisk teori og samfunnsøkonomi.", false, "–", false],
+  ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Major in Economics", "Master", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Samfunnsøkonomi, økonomisk teori og matematikk", "Handler om økonomisk teori og samfunnsøkonomi.", false, "–", false],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Major in Finance", "Master", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Finans og investering", "Handler om finans, investering, bank eller finansnæringen.", false, "–", false],
   ["Finans, økonomi og regnskap", ["1 fagområde prioritert", "Fagområde fjernet"], "Quantitative Finance", "Master", "Finans, økonomi og styring; Digitalisering og Analytics", "KI, digitalisering og analytics", "Finans, økonomi og regnskap › Finans og investering; KI, digitalisering og analytics › Data science og analytics", "Handler om finans, investering, bank eller finansnæringen.", false, "–", false],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Regnskap og revisjon", "Master", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om regnskap, bokføring eller revisjon.", false, "–", false],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Regnskap og revisjon +1-modellen", "Master", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om regnskap, bokføring eller revisjon.", false, "–", false],
-  ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Anvendt økonomi", "Masterkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Samfunnsøkonomi", "Handler om økonomisk teori og samfunnsøkonomi.", false, "–", false],
+  ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Anvendt økonomi", "Masterkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Samfunnsøkonomi, økonomisk teori og matematikk", "Handler om økonomisk teori og samfunnsøkonomi.", false, "–", false],
   ["Finans, økonomi og regnskap", ["1 fagområde prioritert", "Fagområde fjernet"], "Det verdiskapende styret", "Masterkurs", "Finans, økonomi og styring; Strategi, innovasjon og bærekraft", "Ledelse; Strategi, innovasjon og bærekraft; Juss, skatt og eiendom", "Finans, økonomi og regnskap › Bedriftsøkonomi; Ledelse › Strategisk ledelse; Strategi, innovasjon og bærekraft › Strategi; Juss, skatt og eiendom › Forretningsjus og rettsvitenskap", "Handler om styrearbeid, eierstyring og governance.", false, "–", false],
   ["Finans, økonomi og regnskap", ["1 fagområde prioritert"], "Finansiell strategi", "Masterkurs", "Finans, økonomi og styring; Strategi, innovasjon og bærekraft", "Strategi, innovasjon og bærekraft", "Finans, økonomi og regnskap › Finans og investering; Strategi, innovasjon og bærekraft › Strategi", "Handler om finans, investering, bank eller finansnæringen.", false, "–", false],
-  ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Global økonomi", "Masterkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Samfunnsøkonomi", "Handler om økonomisk teori og samfunnsøkonomi.", false, "–", false],
+  ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Global økonomi", "Masterkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Samfunnsøkonomi, økonomisk teori og matematikk", "Handler om økonomisk teori og samfunnsøkonomi.", false, "–", false],
   ["Juss, skatt og eiendom", ["1 fagområde prioritert", "Fagområde fjernet"], "Governance: Risikostyring, compliance og internrevisjon", "Masterkurs", "Eiendom, varehandel og forretningsjus; Finans, økonomi og styring; Strategi, innovasjon og bærekraft", "Finans, økonomi og regnskap", "Juss, skatt og eiendom › Compliance; Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om risikostyring, compliance og internrevisjon.", false, "–", false],
   ["KI, digitalisering og analytics", ["Manglet fagområde"], "Master fintech", "Masterkurs", "–", "Finans, økonomi og regnskap", "KI, digitalisering og analytics › Digital transformasjon; Finans, økonomi og regnskap › Fintech", "Handler om teknologi og digital transformasjon i finansnæringen.", false, "Finansnæringen", true],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Økonomi for beslutningstakere", "Masterkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Økonomistyring", "Budsjettering, kostnads- og lønnsomhetsanalyse, derfor Økonomistyring og bedriftsøkonomi.", false, "–", false],
   ["Finans, økonomi og regnskap", ["Manglet fagområde"], "Rådgivning og risiko", "Kurs uten studiepoeng", "–", "Strategi, innovasjon og bærekraft", "Finans, økonomi og regnskap › Finans og investering; Strategi, innovasjon og bærekraft › Bærekraft", "Handler om finans og investering, med bærekraft som tema.", true, "Finansnæringen", true],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Finans", "PhD", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Finans og investering", "Handler om finans, investering, bank eller finansnæringen.", false, "–", false],
   ["Finans, økonomi og regnskap", ["Manglet fagområde"], "Regnskap", "PhD", "–", "–", "Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om regnskap, bokføring eller revisjon.", false, "–", false],
-  ["Finans, økonomi og regnskap", ["Manglet fagområde"], "Samfunnsøkonomi", "PhD", "–", "–", "Finans, økonomi og regnskap › Samfunnsøkonomi", "Handler om økonomisk teori og samfunnsøkonomi.", false, "–", false],
+  ["Finans, økonomi og regnskap", ["Manglet fagområde"], "Samfunnsøkonomi", "PhD", "–", "–", "Finans, økonomi og regnskap › Samfunnsøkonomi, økonomisk teori og matematikk", "Handler om økonomisk teori og samfunnsøkonomi.", false, "–", false],
   ["Finans, økonomi og regnskap", ["Manglet fagområde"], "Qualifying Year at American College of Norway", "–", "–", "–", "Finans, økonomi og regnskap › Bedriftsøkonomi", "Handler om bedriftsøkonomi, budsjett og beslutningsstøtte, eller er en bred økonomiutdanning.", false, "–", false],
-  ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Bærekraftig økonomisk utvikling", "Bachelorkurs", "Finans, økonomi og styring", "Strategi, innovasjon og bærekraft", "Finans, økonomi og regnskap › Samfunnsøkonomi; Strategi, innovasjon og bærekraft › Bærekraft", "Makroøkonomi (vekst, statsfinanser) med bærekraft som perspektiv.", false, "–", true],
-  ["Finans, økonomi og regnskap", ["Lagt til ekstra fagområde"], "Marked, kriser og bærekraft", "Bachelorkurs", "Strategi, innovasjon og bærekraft", "Strategi, innovasjon og bærekraft", "Finans, økonomi og regnskap › Samfunnsøkonomi; Strategi, innovasjon og bærekraft › Bærekraft", "Innsikt i markedsøkonomi som økonomisk system.", false, "–", true],
+  ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Bærekraftig økonomisk utvikling", "Bachelorkurs", "Finans, økonomi og styring", "Strategi, innovasjon og bærekraft", "Finans, økonomi og regnskap › Samfunnsøkonomi, økonomisk teori og matematikk; Strategi, innovasjon og bærekraft › Bærekraft", "Makroøkonomi (vekst, statsfinanser) med bærekraft som perspektiv.", false, "–", true],
+  ["Finans, økonomi og regnskap", ["Lagt til ekstra fagområde"], "Marked, kriser og bærekraft", "Bachelorkurs", "Strategi, innovasjon og bærekraft", "Strategi, innovasjon og bærekraft", "Finans, økonomi og regnskap › Samfunnsøkonomi, økonomisk teori og matematikk; Strategi, innovasjon og bærekraft › Bærekraft", "Innsikt i markedsøkonomi som økonomisk system.", false, "–", true],
   ["Helse, skole og barnehage", ["Flyttet til nytt fagområde", "Fagområde fjernet"], "Grunnkurs i ledelse og kvalitet i helse- og omsorgstjenesten", "Bachelor", "Offentlig sektor; Organisasjonsutvikling og Human Resource Management", "Ledelse", "Helse, skole og barnehage › Helse; Ledelse › Helse-, skole- og barnehageledelse", "Rettet mot ledere og fagfolk i helsetjenesten.", false, "Helse og omsorg", false],
   ["Helse, skole og barnehage", ["Flyttet til nytt fagområde"], "Helseledelse, kvalitet og utvikling", "Bachelorkurs", "Offentlig sektor", "Ledelse", "Helse, skole og barnehage › Helse; Ledelse › Helse-, skole- og barnehageledelse", "Rettet mot ledere og fagfolk i helsetjenesten.", false, "Helse og omsorg", false],
   ["Helse, skole og barnehage", ["Lagt til ekstra fagområde"], "Ledelse av tjenesteutvikling og innovasjonsprosesser i helsetjenesten", "Bachelorkurs", "Strategi, innovasjon og bærekraft", "Strategi, innovasjon og bærekraft; Ledelse", "Helse, skole og barnehage › Helse; Strategi, innovasjon og bærekraft › Innovasjon og entreprenørskap; Ledelse › Helse-, skole- og barnehageledelse", "Rettet mot ledere og fagfolk i helsetjenesten.", false, "Helse og omsorg", false],
@@ -158,7 +158,7 @@ const rows: Row[] = [
   ["Markedsføring, kommunikasjon og kultur", ["Lagt til ekstra fagområde"], "Metode og innsikt", "Bachelorkurs", "Digitalisering og Analytics", "KI, digitalisering og analytics", "Markedsføring, kommunikasjon og kultur › Kunde- og markedsinnsikt; KI, digitalisering og analytics › Statistikk og metode", "Metodekurs for innsikt i kunder og marked.", false, "–", true],
   ["KI, digitalisering og analytics", ["1 fagområde prioritert", "Fagområde fjernet"], "Metode og statistisk dataanalyse", "Bachelorkurs", "Finans, økonomi og styring; Digitalisering og Analytics", "–", "KI, digitalisering og analytics › Statistikk og metode", "Handler om statistikk og forskningsmetode.", false, "–", true],
   ["KI, digitalisering og analytics", ["1 fagområde prioritert", "Fagområde fjernet"], "Statistikk", "Bachelorkurs", "Finans, økonomi og styring; Digitalisering og Analytics", "–", "KI, digitalisering og analytics › Statistikk og metode", "Handler om statistikk og forskningsmetode.", false, "–", true],
-  ["KI, digitalisering og analytics", ["1 fagområde prioritert"], "Statistikk for økonomer", "Bachelorkurs", "Finans, økonomi og styring; Digitalisering og Analytics", "Finans, økonomi og regnskap", "KI, digitalisering og analytics › Statistikk og metode; Finans, økonomi og regnskap › Samfunnsøkonomi", "Handler om statistikk og forskningsmetode.", false, "–", true],
+  ["KI, digitalisering og analytics", ["1 fagområde prioritert"], "Statistikk for økonomer", "Bachelorkurs", "Finans, økonomi og styring; Digitalisering og Analytics", "Finans, økonomi og regnskap", "KI, digitalisering og analytics › Statistikk og metode; Finans, økonomi og regnskap › Samfunnsøkonomi, økonomisk teori og matematikk", "Handler om statistikk og forskningsmetode.", false, "–", true],
   ["KI, digitalisering og analytics", ["Endret navn på fagområde"], "Verdiskaping med KI", "Bachelorkurs", "Digitalisering og Analytics", "–", "KI, digitalisering og analytics › KI", "Handler om kunstig intelligens, maskinlæring og bruken av dem.", false, "–", false],
   ["KI, digitalisering og analytics", ["Endret navn på fagområde"], "Business Analytics", "Master", "Digitalisering og Analytics", "–", "KI, digitalisering og analytics › Data science og analytics", "Handler om dataanalyse, data science og maskinlæring.", false, "–", false],
   ["KI, digitalisering og analytics", ["Endret navn på fagområde"], "Data Science for Business", "Master", "Digitalisering og Analytics", "–", "KI, digitalisering og analytics › Data science og analytics", "Handler om dataanalyse, data science og maskinlæring.", false, "–", false],
@@ -212,7 +212,7 @@ const rows: Row[] = [
   ["Markedsføring, kommunikasjon og kultur", ["Manglet fagområde"], "Markedskandidat", "–", "–", "–", "Markedsføring, kommunikasjon og kultur › Markedsføring", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", true, "–", false],
   ["Markedsføring, kommunikasjon og kultur", ["Uendret"], "Digital kommunikasjon og markedsføring", "Bachelor", "Markedsføring, kommunikasjon og kultur", "KI, digitalisering og analytics", "Markedsføring, kommunikasjon og kultur › Markedsføring; KI, digitalisering og analytics › Digital transformasjon", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", true, "–", false],
   ["Markedsføring, kommunikasjon og kultur", ["Uendret"], "Markedsføringsledelse", "Bachelor", "Markedsføring, kommunikasjon og kultur", "Ledelse", "Markedsføring, kommunikasjon og kultur › Markedsføring; Ledelse › Generell ledelse og lederutdanning", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", true, "–", false],
-  ["Markedsføring, kommunikasjon og kultur", ["Lagt til ekstra fagområde"], "Markedsøkonomi", "Bachelor/Årsenhet", "Finans, økonomi og styring", "Finans, økonomi og regnskap", "Markedsføring, kommunikasjon og kultur › Markedsføring; Finans, økonomi og regnskap › Samfunnsøkonomi", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", true, "–", true],
+  ["Markedsføring, kommunikasjon og kultur", ["Lagt til ekstra fagområde"], "Markedsøkonomi", "Bachelor/Årsenhet", "Finans, økonomi og styring", "Finans, økonomi og regnskap", "Markedsføring, kommunikasjon og kultur › Markedsføring; Finans, økonomi og regnskap › Samfunnsøkonomi, økonomisk teori og matematikk", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", true, "–", true],
   ["Markedsføring, kommunikasjon og kultur", ["1 fagområde prioritert", "Fagområde fjernet"], "Business Communication: Culture and Ethics", "Bachelorkurs", "Markedsføring, kommunikasjon og kultur; Internasjonal Business", "–", "Markedsføring, kommunikasjon og kultur › Kultur og internasjonal business", "Handler om kultur eller har internasjonal vinkling.", false, "–", true],
   ["Markedsføring, kommunikasjon og kultur", ["Uendret"], "Digital Marketing Management", "Bachelorkurs", "Markedsføring, kommunikasjon og kultur", "KI, digitalisering og analytics; Ledelse", "Markedsføring, kommunikasjon og kultur › Markedsføring; KI, digitalisering og analytics › Digital transformasjon; Ledelse › Generell ledelse og lederutdanning", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", false, "–", false],
   ["Markedsføring, kommunikasjon og kultur", ["Uendret"], "Digital Marketing Tools and AI", "Bachelorkurs", "Markedsføring, kommunikasjon og kultur", "KI, digitalisering og analytics", "Markedsføring, kommunikasjon og kultur › Markedsføring; KI, digitalisering og analytics › KI", "Handler om markedsføring, fra merkevare og strategi til digitale kanaler.", false, "–", true],
@@ -1012,7 +1012,7 @@ const summaryToc: TocItem[] = [
   { id: "tilbakemelding", label: "Tilbakemelding" },
   { id: "hva-gjores", label: "Hva gjøres?", section: "Forklaring" },
   { id: "hvorfor", label: "Hvorfor gjøres dette?" },
-  { id: "oversikt-endringer", label: "Hvordan ser fordelingen ut?" },
+  { id: "oversikt-endringer", label: "Hvordan ser dette ut?" },
   ...tocAreas.map((area, index) => ({ id: areaAnchor(area), label: area, area, section: index === 0 ? "Forslag til nye fagområder" : undefined })),
 ];
 
@@ -1183,7 +1183,7 @@ const englishNames: { area: EnglishName; subcategories: EnglishName[] }[] = [
       { no: "Finansiell kriminalitet og compliance", en: "Financial Crime and Compliance", terms: "Anti-Money Laundering, Compliance, Financial Crime" },
       { no: "Regnskap og revisjon", en: "Accounting and Auditing", terms: "Accounting, Auditing" },
       { no: "Logistikk og forsyningskjeder", en: "Logistics and Supply Chain Management", terms: "Supply Chain Management, Major in Logistics, Operations, and Supply Chain Management" },
-      { no: "Samfunnsøkonomi", en: "Economics", terms: "Major in Economics, Applied Microeconomics" },
+      { no: "Samfunnsøkonomi, økonomisk teori og matematikk", en: "Economics, Economic Theory and Mathematics", terms: "Major in Economics, Applied Microeconomics, Mathematics for Economists" },
     ],
   },
   {
@@ -1582,23 +1582,35 @@ const sankeyRight = [
   "Sikkerhet og beredskap",
 ];
 
-function BeforeAfterSankey() {
+function BeforeAfterSankey({ mode = "all" }: { mode?: "main" | "all" }) {
   const [focus, setFocus] = useState<{ side: "old" | "new"; name: string } | null>(null);
   const width = 640;
-  const height = 520;
   const nodeWidth = 14;
   const gap = 9;
-  const total = summaryRows.length;
   const flows = new Map<string, number>();
+  const leftCounts = new Map<string, number>();
+  const rightCounts = new Map<string, number>();
+  let totalFlow = 0;
+  let allFlow = 0;
   for (const row of summaryRows) {
     const previous = row[4].split("; ").filter((p) => p !== "–");
     const keys = previous.length ? previous : [noOldArea];
-    for (const key of keys) flows.set(`${key}|${row[0]}`, (flows.get(`${key}|${row[0]}`) ?? 0) + 1 / keys.length);
+    const extraTargets = row[6].split("; ").slice(1).map((entry) => entry.split(" › ")[0]).filter((area) => area !== row[0]);
+    allFlow += 1 + extraTargets.length;
+    for (const target of mode === "main" ? [row[0]] : [row[0], ...extraTargets]) {
+      for (const key of keys) flows.set(`${key}|${target}`, (flows.get(`${key}|${target}`) ?? 0) + 1 / keys.length);
+      rightCounts.set(target, (rightCounts.get(target) ?? 0) + 1);
+      totalFlow++;
+    }
+    for (const key of keys) leftCounts.set(key, (leftCounts.get(key) ?? 0) + 1);
   }
-  const scale = (height - gap * (sankeyLeft.length - 1)) / total;
+  // Begge modusene har samme høyde, slik at kun hovedfagområder får bredere bånd
+  const gaps = gap * (sankeyLeft.length - 1);
+  const height = (allFlow * (520 - gaps)) / summaryRows.length + gaps;
+  const scale = (height - gaps) / totalFlow;
   const leftTotals = new Map(sankeyLeft.map((name) => [name, sankeyRight.reduce((sum, to) => sum + (flows.get(`${name}|${to}`) ?? 0), 0)]));
   const rightTotals = new Map(sankeyRight.map((name) => [name, sankeyLeft.reduce((sum, from) => sum + (flows.get(`${from}|${name}`) ?? 0), 0)]));
-  const rightHeight = total * scale + gap * (sankeyRight.length - 1);
+  const rightHeight = totalFlow * scale + gap * (sankeyRight.length - 1);
   const rightOffset = (height - rightHeight) / 2;
 
   const leftY = new Map<string, number>();
@@ -1635,29 +1647,69 @@ function BeforeAfterSankey() {
     const target = oldAreaCatalog[name]?.to;
     return target ? areaColor(target) : name === noOldArea ? "#d5dde4" : "#c8d1db";
   };
-  const count = (name: string) => beforeAfter.before.get(name)?.count ?? 0;
+  const count = (name: string) => leftCounts.get(name) ?? 0;
+  const newCount = (name: string) => rightCounts.get(name) ?? 0;
+
+  // Tredje nivå (kun hoved og ekstra samlet): hvert nye fagområde deles i antallet som hovedfagområde og som ekstra
+  const withKinds = mode === "all";
+  const kindGap = 340;
+  const kindX = width + kindGap;
+  const viewWidth = withKinds ? 330 + kindX + nodeWidth + 230 : width + 640;
+  const fontSize = (12 * viewWidth) / (width + 640);
+  const mainCount = (name: string) => beforeAfter.after.get(name)?.count ?? 0;
+  const extraCount = (name: string) => newCount(name) - mainCount(name);
+  const mainTotal = sankeyRight.reduce((sum, name) => sum + mainCount(name), 0);
+  const extraTotal = sankeyRight.reduce((sum, name) => sum + extraCount(name), 0);
+  const kindStackGap = 36;
+  const kindOffset = (height - (mainTotal + extraTotal) * scale - kindStackGap) / 2;
+  const kindY = { main: kindOffset, extra: kindOffset + mainTotal * scale + kindStackGap };
+  const kindCursor = { ...kindY };
+  const kindBands = withKinds
+    ? sankeyRight.flatMap((area) => {
+        const parts = [
+          { kind: "main" as const, value: mainCount(area), y0: (rightY.get(area) ?? 0) },
+          { kind: "extra" as const, value: extraCount(area), y0: (rightY.get(area) ?? 0) + mainCount(area) * scale },
+        ];
+        return parts
+          .filter((part) => part.value > 0)
+          .map((part) => {
+            const y1 = kindCursor[part.kind];
+            kindCursor[part.kind] += part.value * scale;
+            return { area, ...part, y1 };
+          });
+      })
+    : [];
+  const isKindActive = (area: string) =>
+    !focus || (focus.side === "new" ? area === focus.name : (flows.get(`${focus.name}|${area}`) ?? 0) > 0);
+  const bandPath = (x0: number, x1: number, y0: number, y1: number, h: number) => {
+    const c = (x1 - x0) / 2;
+    return `M ${x0} ${y0} C ${x0 + c} ${y0} ${x1 - c} ${y1} ${x1} ${y1} L ${x1} ${y1 + h} C ${x1 - c} ${y1 + h} ${x0 + c} ${y0 + h} ${x0} ${y0 + h} Z`;
+  };
+  const halo = withKinds ? { stroke: "#fff", strokeWidth: 4, paintOrder: "stroke" as const } : {};
 
   return (
-    <svg viewBox={`-330 -10 ${width + 640} ${height + 20}`} role="img" aria-label="Fra gamle til nye fagområder" style={{ width: "100%", height: "auto", margin: "0 0 20px" }} onMouseLeave={() => setFocus(null)}>
+    <svg viewBox={`-330 -10 ${viewWidth} ${height + 20}`} role="img" aria-label={mode === "main" ? "Fra gamle fagområder til nye hovedfagområder" : "Fra gamle fagområder til nye fagområder, både hoved og ekstra, og hvor mange som er hovedfagområde og ekstra"} style={{ width: "100%", height: "auto", margin: "0 0 20px" }} onMouseLeave={() => setFocus(null)}>
       {bands.map((band) => {
         const h = band.value * scale;
-        const x0 = nodeWidth;
-        const x1 = width - nodeWidth;
-        const c = (x1 - x0) / 2;
-        const path = `M ${x0} ${band.y0} C ${x0 + c} ${band.y0} ${x1 - c} ${band.y1} ${x1} ${band.y1} L ${x1} ${band.y1 + h} C ${x1 - c} ${band.y1 + h} ${x0 + c} ${band.y0 + h} ${x0} ${band.y0 + h} Z`;
+        const path = bandPath(nodeWidth, width - nodeWidth, band.y0, band.y1, h);
         return (
           <path key={`${band.from}|${band.to}`} d={path} fill={areaColor(band.to)} fillOpacity={isActive(band) ? (focus ? 0.8 : 0.5) : 0.06}>
             <title>{`${band.from} → ${band.to}: ${Math.round(band.value * 10) / 10}`}</title>
           </path>
         );
       })}
+      {kindBands.map((band) => (
+        <path key={`${band.area}|${band.kind}`} d={bandPath(width, kindX, band.y0, band.y1, band.value * scale)} fill={areaColor(band.area)} fillOpacity={isKindActive(band.area) ? (focus ? 0.8 : 0.5) : 0.06}>
+          <title>{`${band.area} → ${band.kind === "main" ? "Hovedfagområde" : "Ekstra fagområde"}: ${band.value}`}</title>
+        </path>
+      ))}
       {sankeyLeft.map((name) => {
         const y = leftY.get(name) ?? 0;
         const h = Math.max((leftTotals.get(name) ?? 0) * scale, 2);
         return (
           <g key={name} onMouseEnter={() => setFocus({ side: "old", name })} opacity={!focus || (focus.side === "old" && focus.name === name) || bands.some((b) => b.from === name && isActive(b)) ? 1 : 0.35}>
             <rect x={0} y={y} width={nodeWidth} height={h} fill={leftColor(name)} />
-            <text x={-8} y={y + h / 2} textAnchor="end" dominantBaseline="middle" fontSize="12" fill="#222d38" textDecoration={oldAreaCatalog[name]?.kind === "removed" ? "line-through" : undefined}>
+            <text x={-8} y={y + h / 2} textAnchor="end" dominantBaseline="middle" fontSize={fontSize} fill="#222d38" textDecoration={oldAreaCatalog[name]?.kind === "removed" ? "line-through" : undefined}>
               {wrapLabel(shortOldName(name), 34).map((line, lineIndex, all) => (
                 <tspan key={line} x={-8} dy={lineIndex === 0 ? `${-(all.length - 1) * 0.6}em` : "1.2em"}>
                   {line}
@@ -1674,17 +1726,31 @@ function BeforeAfterSankey() {
         return (
           <g key={name} onMouseEnter={() => setFocus({ side: "new", name })} opacity={!focus || (focus.side === "new" && focus.name === name) || bands.some((b) => b.to === name && isActive(b)) ? 1 : 0.35}>
             <rect x={width - nodeWidth} y={y} width={nodeWidth} height={h} fill={areaColor(name)} />
-            <text x={width + 8} y={y + h / 2} textAnchor="start" dominantBaseline="middle" fontSize="12" fill="#222d38">
+            <text x={width + 8} y={y + h / 2} textAnchor="start" dominantBaseline="middle" fontSize={fontSize} fill="#222d38" {...halo}>
               {wrapLabel(areaShortName[name] ?? name, 34).map((line, lineIndex, all) => (
                 <tspan key={line} x={width + 8} dy={lineIndex === 0 ? `${-(all.length - 1) * 0.6}em` : "1.2em"}>
                   {line}
-                  {lineIndex === all.length - 1 && <tspan fontWeight="700"> {beforeAfter.after.get(name)?.count ?? 0}</tspan>}
+                  {lineIndex === all.length - 1 && <tspan fontWeight="700"> {newCount(name)}</tspan>}
                 </tspan>
               ))}
             </text>
           </g>
         );
       })}
+      {withKinds &&
+        (["main", "extra"] as const).map((kind) => {
+          const total = kind === "main" ? mainTotal : extraTotal;
+          const h = total * scale;
+          return (
+            <g key={kind}>
+              <rect x={kindX} y={kindY[kind]} width={nodeWidth} height={h} fill={kind === "main" ? treeColors.mainArea : treeColors.extraArea} />
+              <text x={kindX + nodeWidth + 8} y={kindY[kind] + h / 2} dominantBaseline="middle" fontSize={fontSize} fill="#222d38">
+                {kind === "main" ? "Hovedfagområde" : "Ekstra fagområde"}
+                <tspan fontWeight="700"> {total}</tspan>
+              </text>
+            </g>
+          );
+        })}
     </svg>
   );
 }
@@ -2056,11 +2122,6 @@ function BeforeAfterOverview() {
 
   return (
     <div>
-      <p style={{ margin: "0 0 4px", color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>
-        Fra gamle fagområder (til venstre) til nye hovedfagområder (til høyre). Bredden viser antall studier og kurs. Et studie eller kurs med flere gamle
-        fagområder deles likt mellom dem. Hold musepekeren over et fagområde for å se hvor kursene kom fra eller gikk.
-      </p>
-      <BeforeAfterSankey />
       <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 40px minmax(0, 1fr)", gap: "0 16px", margin: "0 0 4px" }}>
         <div>
           <div style={{ fontWeight: 700, color: "var(--bi-color-neutral-text-secondary)" }}>Før (bi.no i dag)</div>
@@ -2202,7 +2263,7 @@ const subcategoryReasons: Record<string, string> = {
   "Finans, økonomi og regnskap › Fintech": "Tverrgående tema mellom finans og teknologi. Studiene og kursene har KI, digitalisering og analytics som hovedfagområde, men skal også være lette å finne under Finans.",
   "Finans, økonomi og regnskap › Logistikk og forsyningskjeder": "Handler om hvordan varer og tjenester flyttes og styres gjennom verdikjeden, fra innkjøp og lager til transport og drift (supply chain management). Et operativt fag om flyt og effektivitet, mens resten av Finans handler om penger, regnskap og investering.",
   "Finans, økonomi og regnskap › Regnskap og revisjon": "Regnskap er et eget yrkesløp med revisor og regnskapsfører, og skal være synlig i både navn og underkategori.",
-  "Finans, økonomi og regnskap › Samfunnsøkonomi": "Teoretisk og analytisk økonomi, som mikroøkonomi og matematikk for økonomer, skiller seg fra de bedriftsrettede temaene.",
+  "Finans, økonomi og regnskap › Samfunnsøkonomi, økonomisk teori og matematikk": "Teoretisk og analytisk økonomi, som mikroøkonomi og matematikk for økonomer, skiller seg fra de bedriftsrettede temaene.",
   "Finans, økonomi og regnskap › Økonomistyring": "Skilt ut fra Bedriftsøkonomi fordi budsjettering, prestasjonsstyring og beslutningsstøtte er et eget tema som ledere søker etter.",
   "HR og organisasjonsutvikling › Arbeidsmiljø": "Samler kurs om motivasjon, arbeidsglede og HMS, som handler om hvordan folk har det på jobb.",
   "HR og organisasjonsutvikling › Endringsledelse": "Egen inngang for endringsarbeid og omstilling, et tema mange leter etter.",
@@ -3228,6 +3289,9 @@ function SearchTest() {
         <div>
           {done ? (
             <div className="st-fade" style={{ display: "grid", gap: 16 }}>
+              <Button size="large" variant="filled" style={{ width: "100%" }} onClick={lastRound ? () => setFinished(true) : nextRandom}>
+                {lastRound ? "Se karakteren din" : "Neste spørsmål"}
+              </Button>
               <div style={{ display: "grid", gap: 20, padding: 20, background: "var(--bi-basic-white)", border: "1px solid var(--bi-color-neutral-stroke-subtle)", borderRadius: "var(--bi-radius-large)" }}>
                 <div>
                   <div style={{ fontWeight: 700, color: "var(--bi-color-neutral-text-secondary)", marginBottom: 8 }}>BI.no i dag</div>
@@ -3291,9 +3355,6 @@ function SearchTest() {
                   })}
                 </div>
               </div>
-              <Button size="large" variant="filled" style={{ width: "100%" }} onClick={lastRound ? () => setFinished(true) : nextRandom}>
-                {lastRound ? "Se karakteren din" : "Neste spørsmål"}
-              </Button>
             </div>
           ) : (
             <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem", paddingTop: 4 }}>
@@ -3342,6 +3403,7 @@ function Feedback() {
 
 export default function Result() {
   const [query, setQuery] = useState("");
+  const [showGrades, setShowGrades] = useState(true);
   const [areaFilter, setAreaFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
   const [levelFilter, setLevelFilter] = useState("");
@@ -3390,11 +3452,35 @@ export default function Result() {
       <section>
         <h2 id="soketest" style={{ scrollMarginTop: 16, margin: "0 0 12px", fontFamily: "var(--bi-font-family-brand)", fontSize: "2rem", lineHeight: 1.2, color: "var(--bi-color-primary-text)" }}>Søketest: Finner du studiet/kurset?</h2>
         <SearchTest />
-      </section>
-
-      <section style={{ margin: "48px 0 0" }}>
-        <h2 style={{ margin: "0 0 12px", fontFamily: "var(--bi-font-family-brand)", fontSize: "2rem", lineHeight: 1.2, color: "var(--bi-color-primary-text)" }}>Karakterer (forhåndsvisning)</h2>
-        <GradePreview />
+        <style>{`
+          .bi-button.grade-toggle { --bic-button-size: 0; --bic-button-padding-block: 0.125rem; --bic-button-padding-inline: 0.75rem; }
+          .grade-toggle[aria-expanded="true"]:not(:focus-visible) { box-shadow: none; }
+        `}</style>
+        <div style={{ display: "flex", justifyContent: "center", margin: "12px 0 0" }}>
+          <Button className="grade-toggle" size="medium" variant="text" aria-expanded={showGrades} aria-controls="grade-preview" onClick={() => setShowGrades((value) => !value)}>
+            {showGrades ? "Skjul" : "Vis"} oversikt over karakterer
+            <ChevronDownIcon
+              aria-hidden="true"
+              style={{ width: "var(--bi-icon-large)", height: "var(--bi-icon-large)", transform: showGrades ? "rotate(180deg)" : "none", transition: "transform 0.2s ease" }}
+            />
+          </Button>
+        </div>
+        <div
+          id="grade-preview"
+          inert={!showGrades}
+          style={{
+            display: "grid",
+            gridTemplateRows: showGrades ? "1fr" : "0fr",
+            opacity: showGrades ? 1 : 0,
+            transition: "grid-template-rows 0.35s ease, opacity 0.25s ease",
+          }}
+        >
+          <div style={{ minHeight: 0, overflow: "hidden" }}>
+            <div style={{ paddingTop: 12 }}>
+              <GradePreview />
+            </div>
+          </div>
+        </div>
       </section>
 
       <section style={{ margin: "48px 0 0" }}>
@@ -3572,8 +3658,29 @@ export default function Result() {
 
         <div style={summaryBox}>
         <Carousel
-          heading={<h3 id="oversikt-endringer" style={{ ...summaryPartHeading, margin: 0 }}>Hvordan ser fordelingen ut?</h3>}
+          heading={<h3 id="oversikt-endringer" style={{ ...summaryPartHeading, margin: 0 }}>Hvordan ser dette ut?</h3>}
           slides={[
+            {
+              title: "Før og etter",
+              content: (
+        <>
+        <h4 style={{ margin: "0 0 4px", color: "var(--bi-color-neutral-text)" }}>Hoved og ekstra fagområder</h4>
+        <p style={{ margin: "0 0 4px", color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>
+          Fra gamle fagområder (til venstre) til nye fagområder (til høyre). Diagrammet viser både hovedfagområdet og alle ekstra fagområder et studie eller
+          kurs nå vises i. Tallet til venstre er antall studier og kurs som hadde det gamle fagområdet. Tallet til høyre er antall studier og kurs som vises
+          i det nye fagområdet, enten som hoved eller som ekstra, så ett studie eller kurs kan telle flere ganger. Bredden viser antall plasseringer, og et
+          studie eller kurs med flere gamle fagområder deles likt mellom dem. Hold musepekeren over et fagområde for å se hvor kursene kom fra eller gikk.
+        </p>
+        <BeforeAfterSankey />
+        <h4 style={{ margin: "8px 0 4px", color: "var(--bi-color-neutral-text)" }}>Kun hovedfagområder</h4>
+        <p style={{ margin: "0 0 4px", color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>
+          Fra gamle fagområder (til venstre) til nye hovedfagområder (til høyre), uten ekstra fagområder. Bredden viser antall studier og kurs. Et studie
+          eller kurs med flere gamle fagområder deles likt mellom dem. Diagrammet har samme høyde som det over.
+        </p>
+        <BeforeAfterSankey mode="main" />
+        </>
+              ),
+            },
             {
               title: "Før og nå",
               content: (
@@ -3639,7 +3746,7 @@ export default function Result() {
                         marginTop: 0,
                       }}
                     />
-                    <span style={{ flex: "0 0 280px", whiteSpace: "nowrap" }}>{name}</span>
+                    <span style={{ flex: "0 0 280px" }}>{name}</span>
                     <TreeNumbers main={subMain} extra={subExtra} />
                     <TreeBar main={subMain} extra={subExtra} height={8} mainColor={treeColors.mainSub} extraColor={treeColors.extraSub} />
                   </div>

@@ -1,9 +1,5 @@
 {
 	"servers": {
-		"bino-designsystem": {
-			"url": "https://designsystem.bi.no/api/mcp",
-			"type": "http"
-		}
 	},
 	"inputs": []
 }

@@ -1,0 +1,11 @@
+{
+	"mcpServers": {
+		"bino-designsystem": {
+			"type": "http",
+			"url": "https://designsystem.bi.no/api/mcp",
+			"tools": [
+				"*"
+			]
+		}
+	}
+}
