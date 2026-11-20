@@ -1,7 +1,9 @@
 // --- generert kode ---
 import { Fragment, useEffect, useRef, useState } from "react";
 import { Button, Link, Badge, Search, Selectfield } from "@bi-digital/react";
-import { ChevronLeftIcon, ChevronRightIcon } from "@bi-digital/icons";
+import { CheckThickIcon, ChevronLeftIcon, ChevronRightIcon, CrossThickIcon, RedoIcon } from "@bi-digital/icons";
+import { AreaIcon, AreaIconInSvg } from "./areaIcons";
+import { placementReasons } from "./placementReasons";
 
 type Status =
   | "Uendret"
@@ -1000,7 +1002,7 @@ const treeColors = {
 
 const treeLine = "#d5dde4";
 
-type TocItem = { id: string; label: string; gap?: boolean; section?: string };
+type TocItem = { id: string; label: string; gap?: boolean; section?: string; area?: string };
 
 const tocAreas = [...new Set(rows.map(([area]) => area))].sort((a, b) => a.localeCompare(b, "nb"));
 const areaAnchor = (area: string) => `fagomrade-${area.toLowerCase().replace(/[^a-z0-9æøå]+/g, "-")}`;
@@ -1011,7 +1013,7 @@ const summaryToc: TocItem[] = [
   { id: "hva-gjores", label: "Hva gjøres?", section: "Forklaring" },
   { id: "hvorfor", label: "Hvorfor gjøres dette?" },
   { id: "oversikt-endringer", label: "Hvordan ser fordelingen ut?" },
-  ...tocAreas.map((area, index) => ({ id: areaAnchor(area), label: area, section: index === 0 ? "Forslag til nye fagområder" : undefined })),
+  ...tocAreas.map((area, index) => ({ id: areaAnchor(area), label: area, area, section: index === 0 ? "Forslag til nye fagområder" : undefined })),
 ];
 
 function SummaryToc() {
@@ -1034,7 +1036,7 @@ function SummaryToc() {
       aria-label="Innhold"
       style={{ position: "sticky", top: 16, flex: "0 0 200px", maxHeight: "calc(100vh - 32px)", overflowY: "auto", paddingTop: 24 }}
     >
-      {summaryToc.map(({ id, label, gap, section }) => (
+      {summaryToc.map(({ id, label, gap, section, area }) => (
         <Fragment key={id}>
           {section && (
             <div style={{ margin: "16px 0 8px 13px", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.04em", textTransform: "uppercase", color: "var(--bi-color-neutral-text-secondary)" }}>
@@ -1050,7 +1052,9 @@ function SummaryToc() {
             history.replaceState(null, "", `#${id}`);
           }}
           style={{
-            display: "block",
+            display: area ? "flex" : "block",
+            alignItems: "flex-start",
+            gap: 8,
             marginTop: gap ? 16 : 0,
             padding: "5px 10px",
             borderLeft: `3px solid ${active === id ? "var(--bi-color-primary-stroke-accent)" : "var(--bi-color-neutral-stroke-subtle)"}`,
@@ -1061,7 +1065,12 @@ function SummaryToc() {
             lineHeight: 1.35,
           }}
         >
-          {label}
+          {area && (
+            <span style={{ display: "flex", marginTop: "0.275em" }}>
+              <AreaIcon area={area} />
+            </span>
+          )}
+          <span>{label}</span>
         </a>
         </Fragment>
       ))}
@@ -1090,6 +1099,14 @@ const summaryPartHeading = {
 } as const;
 type Slide = { title: string; content: React.ReactNode };
 
+const roundButtonStyle = (disabled: boolean) =>
+  ({
+    borderRadius: "50%",
+    "--bic-button-background": "var(--bi-basic-white)",
+    "--bic-button-box-shadow": "0 0 0 1px var(--bi-color-neutral-stroke) inset",
+    opacity: disabled ? 0.45 : 1,
+  }) as React.CSSProperties;
+
 function Carousel({ slides, heading }: { slides: Slide[]; heading: React.ReactNode }) {
   const [rawIndex, setIndex] = useState(0);
   const [heights, setHeights] = useState<number[]>([]);
@@ -1103,13 +1120,7 @@ function Carousel({ slides, heading }: { slides: Slide[]; heading: React.ReactNo
   }, [count]);
   const height = heights[index] || undefined;
   const go = (next: number) => setIndex(Math.min(slides.length - 1, Math.max(0, next)));
-  const roundButton = (disabled: boolean) =>
-    ({
-      borderRadius: "50%",
-      "--bic-button-background": "var(--bi-basic-white)",
-      "--bic-button-box-shadow": "0 0 0 1px var(--bi-color-neutral-stroke) inset",
-      opacity: disabled ? 0.45 : 1,
-    }) as React.CSSProperties;
+  const roundButton = roundButtonStyle;
   return (
     <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 16 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
@@ -1253,14 +1264,14 @@ const englishNames: { area: EnglishName; subcategories: EnglishName[] }[] = [
 
 const blueShades = [
   "var(--bi-primary-90)",
-  "var(--bi-neutral-40)",
-  "var(--bi-primary-60)",
-  "var(--bi-neutral-60)",
   "var(--bi-primary-40)",
-  "var(--bi-primary-10)",
-  "var(--bi-primary-50)",
+  "var(--bi-primary-60)",
   "var(--bi-primary-20)",
-  "var(--bi-neutral-80)",
+  "var(--bi-primary-80)",
+  "var(--bi-primary-30)",
+  "var(--bi-primary-50)",
+  "var(--bi-primary-10)",
+  "var(--bi-primary-70)",
 ];
 
 type OverlapFocus = { from: string; to?: string } | null;
@@ -1826,7 +1837,7 @@ function LedelseSankey() {
   const leftHeight = sources.reduce((sum, source) => sum + sizeOf(source.value), 0) + gap * (sources.length - 1);
   const rightHeight = total * scale;
   const height = Math.max(leftHeight, rightHeight);
-  const colors = ["var(--bi-primary-90)", "var(--bi-primary-60)", "var(--bi-primary-40)", "var(--bi-neutral-40)", "var(--bi-primary-50)", "var(--bi-neutral-60)", "var(--bi-primary-20)", "var(--bi-neutral-20)"];
+  const colors = blueShades;
   const rightY = (height - rightHeight) / 2;
   let leftCursor = (height - leftHeight) / 2;
   let rightCursor = rightY;
@@ -2189,7 +2200,7 @@ const subcategoryReasons: Record<string, string> = {
   "Finans, økonomi og regnskap › Finans og investering": "Kjernen i finansfaget: verdsettelse, investering og finansiell analyse.",
   "Finans, økonomi og regnskap › Finansiell kriminalitet og compliance": "Tverrgående tema som gjør kurs om økonomisk kriminalitet i finansnæringen lette å finne, selv om de har Juss som hovedfagområde.",
   "Finans, økonomi og regnskap › Fintech": "Tverrgående tema mellom finans og teknologi. Studiene og kursene har KI, digitalisering og analytics som hovedfagområde, men skal også være lette å finne under Finans.",
-  "Finans, økonomi og regnskap › Logistikk og forsyningskjeder": "Handler om hvordan varer og tjenester flyttes og styres gjennom verdikjeden, fra innkjøp og lager til transport og drift (supply chain management). Det er et operativt fag om flyt og effektivitet, mens de andre underkategoriene i Finans handler om penger, regnskap og investering. Master in Business-majoren i logistikk ligger her.",
+  "Finans, økonomi og regnskap › Logistikk og forsyningskjeder": "Handler om hvordan varer og tjenester flyttes og styres gjennom verdikjeden, fra innkjøp og lager til transport og drift (supply chain management). Et operativt fag om flyt og effektivitet, mens resten av Finans handler om penger, regnskap og investering.",
   "Finans, økonomi og regnskap › Regnskap og revisjon": "Regnskap er et eget yrkesløp med revisor og regnskapsfører, og skal være synlig i både navn og underkategori.",
   "Finans, økonomi og regnskap › Samfunnsøkonomi": "Teoretisk og analytisk økonomi, som mikroøkonomi og matematikk for økonomer, skiller seg fra de bedriftsrettede temaene.",
   "Finans, økonomi og regnskap › Økonomistyring": "Skilt ut fra Bedriftsøkonomi fordi budsjettering, prestasjonsstyring og beslutningsstøtte er et eget tema som ledere søker etter.",
@@ -2229,58 +2240,115 @@ const subcategoryReasons: Record<string, string> = {
   "Strategi, innovasjon og bærekraft › Strategi": "Strategi er et bredt tema som går på tvers, og få har det som hovedtema, men mange berører det.",
 };
 
-// Fagområder med like mange underkategorier står ved siden av hverandre.
-const subcategoryLayout: string[][][] = [
-  [["Finans, økonomi og regnskap"], ["Ledelse"]],
-  [["Juss, skatt og eiendom"], ["KI, digitalisering og analytics"]],
-  [["HR og organisasjonsutvikling"], ["Markedsføring, kommunikasjon og kultur"]],
-  [["Strategi, innovasjon og bærekraft"], ["Helse, skole og barnehage", "Sikkerhet og beredskap"]],
-];
+type SplitItem = { name: string; main: number; extra: number; total: number; color: string };
 
-function SubcategorySlide() {
-  const { subs } = beforeAfter;
+const wrapWords = (text: string, max: number): string[] => {
+  const lines: string[] = [];
+  let line = "";
+  for (const word of text.split(" ")) {
+    if (line && (line + " " + word).length > max) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = line ? `${line} ${word}` : word;
+    }
+  }
+  if (line) lines.push(line);
+  return lines;
+};
+
+function AreaSplitSankey({ area, items }: { area: string; items: SplitItem[] }) {
+  const width = 300;
+  const nodeWidth = 14;
+  const gap = 12;
+  const scale = 3;
+  const lineHeight = 17;
+  const nameHeight = 24;
+  const total = items.reduce((sum, item) => sum + item.total, 0);
+  const prepared = items.map((item) => {
+    const reasonLines = wrapWords(subcategoryReasons[`${area} › ${item.name}`] ?? "", 92);
+    const textHeight = nameHeight + reasonLines.length * lineHeight;
+    return { ...item, reasonLines, textHeight, size: Math.max(item.total * scale, textHeight + 6) };
+  });
+  const rightHeight = prepared.reduce((sum, item) => sum + item.size, 0) + gap * (prepared.length - 1);
+  const leftHeight = total * scale;
+  const height = Math.max(leftHeight, rightHeight);
+  const leftY = (height - leftHeight) / 2;
+  let rightCursor = (height - rightHeight) / 2;
+  let leftCursor = leftY;
+  const nodes = prepared.map((item) => {
+    const bandHeight = item.total * scale;
+    const node = { ...item, y: rightCursor, y0: leftCursor, y1: rightCursor + (item.size - bandHeight) / 2, bandHeight };
+    rightCursor += item.size + gap;
+    leftCursor += bandHeight;
+    return node;
+  });
   return (
-    <div style={{ display: "grid", gap: 12 }}>
-      <p style={{ margin: 0, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem", maxWidth: 820 }}>
-        Alle underkategoriene, med begrunnelse for hvorfor de bør være en underkategori. Tallet viser antall studier og kurs som har underkategorien som hovedplassering, pluss ekstra.
-      </p>
-      <div style={{ display: "grid", gap: 16 }}>
-        {subcategoryLayout.map((row, rowIndex) => (
-          <div key={rowIndex} style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 16, alignItems: "start" }}>
-            {row.map((cell, cellIndex) => (
-              <div key={cellIndex} style={{ display: "grid", gap: 16 }}>
-        {cell.map((area) => {
-          const entries = [...(subs.get(area) ?? [])].sort((x, y) => y[1].main + y[1].extra - (x[1].main + x[1].extra) || x[0].localeCompare(y[0], "nb"));
-          return (
-            <div key={area} style={{ background: "var(--bi-basic-white)", border: "1px solid var(--bi-color-neutral-stroke-subtle)", borderLeft: `4px solid ${areaColor(area)}`, borderRadius: 8, padding: 16 }}>
-              <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, marginBottom: 10 }}>
-                <strong style={{ color: "var(--bi-color-primary-text-accent)" }}>{area}</strong>
-                <span style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>{entries.length} underkategorier</span>
-              </div>
-              <div style={{ display: "grid", gap: 10 }}>
-                {entries.map(([name, value]) => (
-                  <div key={name} style={{ display: "grid", gap: 2 }}>
-                    <div style={{ display: "flex", alignItems: "baseline", justifyContent: "space-between", gap: 12, fontSize: "0.9375rem" }}>
-                      <strong>{name}</strong>
-                      <span style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem", whiteSpace: "nowrap" }}>
-                        {value.main}
-                        {value.extra > 0 && ` + ${value.extra}`}
-                      </span>
-                    </div>
-                    <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{subcategoryReasons[`${area} › ${name}`]}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })}
-              </div>
+    <svg viewBox={`-290 -10 ${290 + width + 700} ${height + 20}`} role="img" aria-label={`${area} delt opp i underkategorier`} style={{ width: "100%", height: "auto" }}>
+      {nodes.map((node) => {
+        const x0 = nodeWidth;
+        const x1 = width - nodeWidth;
+        const c = (x1 - x0) / 2;
+        const path = `M ${x0} ${node.y0} C ${x0 + c} ${node.y0} ${x1 - c} ${node.y1} ${x1} ${node.y1} L ${x1} ${node.y1 + node.bandHeight} C ${x1 - c} ${node.y1 + node.bandHeight} ${x0 + c} ${node.y0 + node.bandHeight} ${x0} ${node.y0 + node.bandHeight} Z`;
+        return (
+          <path key={node.name} d={path} fill={node.color} fillOpacity={0.5}>
+            <title>{`${node.name}: ${node.total}`}</title>
+          </path>
+        );
+      })}
+      <rect x={0} y={leftY} width={nodeWidth} height={leftHeight} fill="var(--bi-neutral-40)" />
+      {(() => {
+        const labelLines = wrapLabel(area, 20);
+        const boxWidth = 250;
+        const boxRight = -16;
+        const centerX = boxRight - boxWidth / 2;
+        const iconHeight = 34;
+        const lineStep = 22;
+        const boxHeight = 20 + iconHeight + 12 + labelLines.length * lineStep + 14;
+        const boxTop = leftY + leftHeight / 2 - boxHeight / 2;
+        return (
+          <g>
+            <rect x={boxRight - boxWidth} y={boxTop} width={boxWidth} height={boxHeight} rx={6} fill="var(--bi-basic-white)" stroke="var(--bi-neutral-40)" strokeWidth={1.5} strokeDasharray="5 4" />
+            <AreaIconInSvg area={area} centerX={centerX} top={boxTop + 20} height={iconHeight} color="#222d38" />
+            <text x={centerX} y={boxTop + 20 + iconHeight + 12 + 16} textAnchor="middle" fontSize="17" fontWeight="700" fill="#222d38">
+              {labelLines.map((line, lineIndex) => (
+                <tspan key={line} x={centerX} dy={lineIndex === 0 ? 0 : lineStep}>
+                  {line}
+                  {lineIndex === labelLines.length - 1 && ` ${total}`}
+                </tspan>
+              ))}
+            </text>
+          </g>
+        );
+      })()}
+      {nodes.map((node) => (
+        <g key={node.name}>
+          <rect x={width - nodeWidth} y={node.y} width={nodeWidth} height={node.size} fill={node.color} />
+          <text x={width + 8} y={node.y + (node.size - node.textHeight) / 2 + 17} fontSize="13" fill="#222d38">
+            <tspan fontSize="17" fontWeight="700">
+              {node.name} {node.total}
+            </tspan>
+            {node.reasonLines.map((line, lineIndex) => (
+              <tspan key={line} x={width + 8} dy={lineIndex === 0 ? 24 : lineHeight} fill="#475e75">
+                {line}
+              </tspan>
             ))}
-          </div>
-        ))}
-      </div>
-    </div>
+          </text>
+        </g>
+      ))}
+    </svg>
   );
+}
+
+function AreaSubcategorySlide({ area }: { area: string }) {
+  const entry = areaTree.find((candidate) => candidate.area === area);
+  if (!entry) return null;
+  const items: SplitItem[] = entry.subs
+    .map(([name, { main, extra }]) => ({ name, main, extra, total: main + extra }))
+    .filter((item) => item.total > 0)
+    .sort((x, y) => y.total - x.total || x.name.localeCompare(y.name, "nb"))
+    .map((item, index) => ({ ...item, color: blueShades[index % blueShades.length] }));
+  return <AreaSplitSankey area={area} items={items} />;
 }
 
 function CrossCuttingSlide() {
@@ -2437,11 +2505,11 @@ function WhyBetter() {
                 <div style={{ fontWeight: 700, marginTop: 8 }}>Ingen ukategoriserte studier eller kurs</div>
                 <p style={{ margin: 0, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{`${missingRows.length} studier og kurs hadde ikke noe fagområde på bi.no. Nå er de fordelt på ${missingParts.length} fagområder.`}</p>
                 {labelled("Før", <span style={{ lineHeight: "14px" }}>Hadde ikke fagområde</span>)}
-                {labelled("Nå", barWithLegend(missingParts.map(([area, value], index) => ({ key: area, value, color: blueShades[index % blueShades.length], label: area }))))}
+                {labelled("Nå", barWithNumber({ key: "missing-now", value: missingRows.length, color: "#0b4db4", label: "Har fagområde nå" }, 100))}
                 <div style={{ fontWeight: 700, marginTop: 8 }}>Bransjekategorier for B2B</div>
                 <p style={{ margin: 0, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{`${industryTotal} studier og kurs er rettet mot en bestemt bransje. De kan finnes via bransjefilteret og en etikett, uten at bransjen er et eget fagområde.`}</p>
                 {labelled("Før", <span style={{ lineHeight: "14px" }}>Hadde ikke bransjekategori</span>)}
-                {labelled("Nå", barWithLegend(industryParts.map(([name, value], index) => ({ key: name, value, color: blueShades[index % blueShades.length], label: name }))))}
+                {labelled("Nå", barWithNumber({ key: "industry-now", value: industryTotal, color: "#0b4db4", label: "Har bransjekategori nå" }, 100))}
               </div>
               ),
             },
@@ -2726,10 +2794,188 @@ const shuffleIndexes = (length: number) => {
   return order;
 };
 
+const ROUNDS = 10;
+const POINTS_PER_ROUND = 3.5;
+const fmtPoints = (points: number) => points.toLocaleString("nb-NO");
+
+const grades: { min: number; letter: string; emoji: string; motion: string; title: string; text: string }[] = [
+  { min: 31.5, letter: "A", emoji: "🏆", motion: "grade-bounce 1.8s ease-in-out", title: "Fagområde-guru", text: "Du finner studiene og kursene i søvne. Strukturen fungerer for deg!" },
+  { min: 25.5, letter: "B", emoji: "🧭", motion: "grade-sway 3s ease-in-out", title: "Trygg navigatør", text: "Nesten helt i mål. Du leser kartet godt." },
+  { min: 20, letter: "C", emoji: "🔍", motion: "grade-search 3.2s linear", title: "Nysgjerrig oppdager", text: "Du finner det meste, og du er godt på vei. Litt mer utforsking, så sitter strukturen." },
+  { min: 14, letter: "D", emoji: "🗺️", motion: "grade-drift 4s ease-in-out", title: "Turist i landskapet", text: "Du er på rett vei, men noen steder er litt vanskelige å finne." },
+  { min: 8, letter: "E", emoji: "🧪", motion: "grade-wiggle 1.6s ease-in-out", title: "Rask på labben", text: "Du er i gang! Her er det mye å utforske." },
+  { min: 0, letter: "F", emoji: "😵‍💫", motion: "grade-spin 3s ease-in-out", title: "Villfaren, men modig", text: "Det var en tøff runde. Prøv igjen, så sitter det snart." },
+];
+
+const emojiScatter = [
+  { left: 5, top: 7, size: 2.6, rotate: -14, delay: 0 },
+  { left: 90, top: 5, size: 3.2, rotate: 12, delay: 0.7 },
+  { left: 17, top: 27, size: 3.6, rotate: 8, delay: 1.3 },
+  { left: 80, top: 24, size: 2.3, rotate: -20, delay: 0.4 },
+  { left: 4, top: 50, size: 3, rotate: 18, delay: 1.1 },
+  { left: 92, top: 46, size: 3.4, rotate: -8, delay: 1.7 },
+  { left: 14, top: 72, size: 2.4, rotate: -22, delay: 0.5 },
+  { left: 84, top: 70, size: 3.1, rotate: 15, delay: 0.2 },
+  { left: 6, top: 90, size: 3.3, rotate: 10, delay: 1.5 },
+  { left: 93, top: 88, size: 2.5, rotate: -12, delay: 0.9 },
+];
+
+const gradeFor = (score: number) => grades.find((grade) => score >= grade.min) ?? grades[grades.length - 1];
+
+const gradeSuffix = (score: number) => {
+  const index = grades.findIndex((grade) => score >= grade.min);
+  const grade = grades[index] ?? grades[grades.length - 1];
+  if (grade.letter === "F") return "";
+  const max = index === 0 ? ROUNDS * POINTS_PER_ROUND : grades[index - 1].min - 0.5;
+  return score > max - 1 ? "+" : score < grade.min + 1 ? "−" : "";
+};
+
+const confettiColors = ["var(--bi-primary-90)", "var(--bi-primary-60)", "var(--bi-primary-40)", "var(--bi-primary-20)", "var(--bi-secondary-50)", "var(--bi-success-50)", "var(--bi-info-40)"];
+const confettiPieces = Array.from({ length: 44 }, (_, index) => ({
+  left: (index * 53) % 100,
+  delay: ((index * 37) % 20) / 10,
+  duration: 2.4 + ((index * 17) % 15) / 10,
+  size: 6 + ((index * 7) % 7),
+  color: confettiColors[index % confettiColors.length],
+  rotate: (index * 47) % 360,
+}));
+
+function GradeScreen({ score, roundPoints, onRestart }: { score: number; roundPoints: number[]; onRestart: () => void }) {
+  const grade = gradeFor(score);
+  const suffix = gradeSuffix(score);
+  const max = ROUNDS * POINTS_PER_ROUND;
+  const celebrate = grade.min >= 20;
+  const radius = 70;
+  const circumference = 2 * Math.PI * radius;
+  const chipColor = (points: number) => (points >= 3 ? "var(--bi-primary-50)" : points >= 2 ? "var(--bi-primary-40)" : points >= 1 ? "var(--bi-primary-20)" : "var(--bi-neutral-20)");
+  return (
+    <div style={{ position: "relative", overflow: "hidden", background: "var(--bi-color-neutral-surface)", borderRadius: "var(--bi-radius-xl)", padding: "40px 28px 36px" }}>
+      <style>{`
+        @keyframes grade-pop { 0% { transform: scale(0.2) rotate(-12deg); opacity: 0; } 60% { transform: scale(1.18) rotate(4deg); opacity: 1; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+        @keyframes grade-bounce { 0%, 100% { transform: translateY(0) scale(1); } 35% { transform: translateY(-20px) scale(1.12); } 55% { transform: translateY(0) scale(0.94); } }
+        @keyframes grade-sway { 0%, 100% { transform: rotate(-28deg); } 50% { transform: rotate(28deg); } }
+        @keyframes grade-search { 0% { transform: translate(12px, 0); } 25% { transform: translate(0, 12px); } 50% { transform: translate(-12px, 0); } 75% { transform: translate(0, -12px); } 100% { transform: translate(12px, 0); } }
+        @keyframes grade-drift { 0%, 100% { transform: translateX(-14px) rotate(-8deg); } 50% { transform: translateX(14px) rotate(8deg); } }
+        @keyframes grade-wiggle { 0%, 100% { transform: rotate(-14deg); } 50% { transform: rotate(14deg); } }
+        @keyframes grade-spin { 0% { transform: rotate(0deg); } 70%, 100% { transform: rotate(360deg); } }
+        @keyframes grade-fall { 0% { transform: translateY(-30px) rotate(0deg); opacity: 0; } 10% { opacity: 1; } 100% { transform: translateY(420px) rotate(540deg); opacity: 0; } }
+        @keyframes grade-ring { from { stroke-dashoffset: ${circumference}; } }
+        @media (prefers-reduced-motion: reduce) { .grade-anim { animation: none !important; } }
+      `}</style>
+      {celebrate &&
+        confettiPieces.map((piece, index) => (
+          <span
+            key={index}
+            className="grade-anim"
+            aria-hidden="true"
+            style={{
+              position: "absolute",
+              top: 0,
+              left: `${piece.left}%`,
+              width: piece.size,
+              height: piece.size * 0.6,
+              background: piece.color,
+              borderRadius: 2,
+              transform: `rotate(${piece.rotate}deg)`,
+              opacity: 0,
+              animation: `grade-fall ${piece.duration}s ${piece.delay}s ease-in infinite`,
+              pointerEvents: "none",
+            }}
+          />
+        ))}
+      {emojiScatter.map((spot, index) => (
+        <div key={index} aria-hidden="true" style={{ position: "absolute", left: `${spot.left}%`, top: `${spot.top}%`, transform: `rotate(${spot.rotate}deg)`, pointerEvents: "none" }}>
+          <div className="grade-anim" style={{ fontSize: `${spot.size}rem`, lineHeight: 1, animation: `${grade.motion} ${-spot.delay}s infinite` }}>
+            {grade.emoji}
+          </div>
+        </div>
+      ))}
+      <div style={{ position: "relative", display: "grid", justifyItems: "center", gap: 14, textAlign: "center" }}>
+        <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>Ferdig! Her er karakteren din etter {ROUNDS} spørsmål</div>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 36 }}>
+        <div className="grade-anim" style={{ position: "relative", width: 180, height: 180, animation: "grade-pop 0.8s cubic-bezier(0.2, 0.9, 0.3, 1.2) both" }}>
+          <svg width="180" height="180" viewBox="0 0 180 180" aria-hidden="true" style={{ position: "absolute", inset: 0 }}>
+            <circle cx="90" cy="90" r={radius} fill="var(--bi-basic-white)" stroke="var(--bi-color-neutral-stroke-subtle)" strokeWidth="14" />
+            <circle
+              className="grade-anim"
+              cx="90"
+              cy="90"
+              r={radius}
+              fill="none"
+              stroke="var(--bi-primary-50)"
+              strokeWidth="14"
+              strokeLinecap="round"
+              strokeDasharray={circumference}
+              strokeDashoffset={circumference * (1 - Math.max(0, score) / max)}
+              transform="rotate(-90 90 90)"
+              style={{ animation: "grade-ring 1.4s 0.3s ease-out both" }}
+            />
+          </svg>
+          <div style={{ position: "absolute", inset: 0, display: "grid", placeItems: "center", fontFamily: "var(--bi-font-family-brand)", fontSize: "5.5rem", lineHeight: 1, color: "var(--bi-primary-50)" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: 0 }}>
+              <span>{grade.letter}</span>
+              {suffix && <span style={{ fontSize: "0.5em", lineHeight: 1 }}>{suffix}</span>}
+            </span>
+          </div>
+        </div>
+        </div>
+        <div style={{ fontFamily: "var(--bi-font-family-brand)", fontSize: "1.875rem", color: "var(--bi-color-primary-text)" }}>{grade.title}</div>
+        <div style={{ fontSize: "1.125rem", color: "var(--bi-color-neutral-text)" }}>
+          <strong>{fmtPoints(score)}</strong> av {fmtPoints(max)} poeng
+        </div>
+        <p style={{ margin: 0, maxWidth: 520, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{grade.text}</p>
+        <div style={{ display: "grid", gap: 6, justifyItems: "center", marginTop: 6 }}>
+          <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>Poeng per spørsmål</div>
+          <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 6 }}>
+            {roundPoints.map((points, index) => (
+              <span
+                key={index}
+                title={`Spørsmål ${index + 1}: ${fmtPoints(points)} poeng`}
+                style={{ display: "grid", placeItems: "center", minWidth: 34, height: 30, padding: "0 4px", borderRadius: 6, background: chipColor(points), color: points >= 2 ? "var(--bi-basic-white)" : "var(--bi-color-neutral-text)", fontWeight: 700, fontSize: "0.9375rem" }}
+              >
+                {fmtPoints(points)}
+              </span>
+            ))}
+          </div>
+        </div>
+        <div style={{ marginTop: 12 }}>
+          <Button size="large" variant="text" onClick={onRestart}>
+            <RedoIcon aria-hidden="true" />
+            Prøv igjen
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function GradePreview() {
+  const [selected, setSelected] = useState(0);
+  const samples = [35, 33, 31.5, 31, 28.5, 25.5, 25, 22.5, 20, 19.5, 17, 14, 13.5, 11, 8, 4];
+  const score = samples[selected];
+  const halfPoints = score * 2;
+  const roundPoints = Array.from({ length: ROUNDS }, (_, index) => (Math.floor(halfPoints / ROUNDS) + (index < halfPoints % ROUNDS ? 1 : 0)) / 2);
+  return (
+    <div style={{ display: "grid", gap: 12 }}>
+      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: 8 }}>
+        {samples.map((sample, index) => (
+          <Button key={sample} size="small" variant={index === selected ? "filled" : "outlined"} onClick={() => setSelected(index)}>
+            {gradeFor(sample).letter}
+            {gradeSuffix(sample)} ({fmtPoints(sample)})
+          </Button>
+        ))}
+      </div>
+      <GradeScreen key={selected} score={score} roundPoints={roundPoints} onRestart={() => setSelected((selected + 1) % samples.length)} />
+    </div>
+  );
+}
+
 function SearchTest() {
   const [order, setOrder] = useState(() => shuffleIndexes(rows.length));
   const [position, setPosition] = useState(0);
   const [picks, setPicks] = useState<Record<number, { area?: string; sub?: string }>>({});
+  const [finished, setFinished] = useState(false);
+  const [slide, setSlide] = useState<"idle" | "out-next" | "out-prev" | "in-next" | "in-prev">("idle");
   const normalizeTitle = (text: string) => text.replace(/\u00ad|\(-\)/g, "");
 
   const rowIndex = order[position];
@@ -2740,189 +2986,323 @@ function SearchTest() {
   const mainEntries = new Set(sameName.map((candidate) => candidate[6].split("; ")[0]));
   const previous = [...new Set(sameName.flatMap((candidate) => candidate[4].split("; ").filter((p) => p !== "–")))];
   const pick = picks[rowIndex] ?? {};
-  const areaOptions = overlapOrder;
+  const areaOptions = [...overlapOrder].sort((x, y) => x.localeCompare(y, "nb"));
   const subOptions = pick.area ? [...(beforeAfter.subs.get(pick.area)?.keys() ?? [])].sort((x, y) => x.localeCompare(y, "nb")) : [];
   const kindOf = (entry: string) => (mainEntries.has(entry) ? "main" : entries.includes(entry) ? "extra" : "none");
   const areaKind = (area: string) => (sameName.some((candidate) => candidate[0] === area) ? "main" : entries.some((entry) => entryArea(entry) === area) ? "extra" : "none");
 
-  const answered = Object.entries(picks).filter(([, value]) => value.area && value.sub);
-  const score = answered.reduce(
-    (sum, [key, value]) => {
-      const candidate = rows[Number(key)];
-      const name = normalizeTitle(candidate[2]);
-      const set = rows.filter((other) => normalizeTitle(other[2]) === name).flatMap((other) => other[6].split("; "));
-      return {
-        area: sum.area + (set.some((entry) => entryArea(entry) === value.area) ? 1 : 0),
-        sub: sum.sub + (set.includes(`${value.area} › ${value.sub}`) ? 1 : 0),
-      };
-    },
-    { area: 0, sub: 0 },
-  );
-
-  const optionStyle = (state: "idle" | "main" | "extra" | "bad" | "dim", selected: boolean) => ({
-    padding: "8px 12px",
-    borderRadius: "var(--bi-radius-large)",
-    border: selected ? "2px solid var(--bi-color-primary-stroke-accent)" : "1px solid var(--bi-color-neutral-stroke)",
-    background:
-      state === "main"
-        ? "var(--bi-color-success-surface-strong)"
-        : state === "extra"
-          ? "var(--bi-color-success-surface)"
-          : state === "bad"
-            ? "var(--bi-color-alert-surface-strong)"
-            : "var(--bi-color-neutral-surface-subtle)",
-    color: state === "dim" ? "var(--bi-neutral-40)" : "var(--bi-color-neutral-text)",
-    cursor: "pointer",
-    font: "inherit",
-    fontSize: "0.875rem",
-    textAlign: "left" as const,
-  });
-  const nextRandom = () => {
-    if (position < order.length - 1) setPosition(position + 1);
-    else {
-      setOrder(shuffleIndexes(rows.length));
-      setPosition(0);
-    }
+  // Fagområdet gir 1 poeng (1,5 for hovedfagområdet), riktig underkategori gir 1 poeng. Feil valg gir 0 poeng.
+  // Et feil fagområde avslutter spørsmålet uten at man må velge underkategori.
+  const isAnswered = (index: number, value?: { area?: string; sub?: string }) => {
+    if (!value?.area) return false;
+    if (value.sub) return true;
+    const name = normalizeTitle(rows[index][2]);
+    const set = rows.filter((other) => normalizeTitle(other[2]) === name).flatMap((other) => other[6].split("; "));
+    return !set.some((entry) => entryArea(entry) === value.area);
   };
-  const done = Boolean(pick.area && pick.sub);
+  const partsFor = (index: number, value?: { area?: string; sub?: string }) => {
+    if (!value || !isAnswered(index, value)) return { area: 0, sub: 0 };
+    const name = normalizeTitle(rows[index][2]);
+    const same = rows.filter((other) => normalizeTitle(other[2]) === name);
+    const set = same.flatMap((other) => other[6].split("; "));
+    const key = `${value.area} › ${value.sub}`;
+    const areaRight = set.some((entry) => entryArea(entry) === value.area);
+    const subRight = set.includes(key);
+    const mainArea = same.some((other) => other[0] === value.area);
+    return { area: !areaRight ? 0 : mainArea ? 1.5 : 1, sub: subRight ? 1 : 0 };
+  };
+  const pointsFor = (index: number, value?: { area?: string; sub?: string }): number => {
+    const parts = partsFor(index, value);
+    return parts.area + parts.sub;
+  };
+  const rounds = order.slice(0, ROUNDS);
+  const roundPoints = rounds.map((index) => pointsFor(index, picks[index]));
+  const score = roundPoints.reduce((sum, points) => sum + points, 0);
+
+  const optionStyle = (state: "idle" | "main" | "extra" | "bad" | "dim", selected: boolean) => {
+    const palette =
+      state === "main" || state === "extra"
+        ? { border: "var(--bi-primary-50)", text: "var(--bi-primary-90)" }
+        : state === "bad"
+          ? { border: "var(--bi-alert-60)", text: "var(--bi-alert-85)" }
+          : null;
+    return {
+      padding: "6px 14px",
+      display: "flex",
+      alignItems: "center",
+      minHeight: 40,
+      borderRadius: "var(--bi-radius-large)",
+      border: selected ? `2px solid ${palette?.border ?? "var(--bi-color-primary-stroke-accent)"}` : `1px solid ${palette?.border ?? "var(--bi-color-neutral-stroke)"}`,
+      background:
+        state === "main" || state === "extra"
+          ? "var(--bi-primary-0)"
+          : state === "bad"
+            ? "var(--bi-alert-0)"
+            : "var(--bi-color-neutral-surface-subtle)",
+      color: palette?.text ?? (state === "dim" ? "var(--bi-neutral-40)" : "var(--bi-color-neutral-text)"),
+      opacity: state === "dim" ? 0.7 : 1,
+      cursor: state === "dim" ? "default" : "pointer",
+      transition: "background 150ms ease, border-color 150ms ease, color 150ms ease, opacity 150ms ease",
+      font: "inherit",
+      fontSize: "1.125rem",
+      textAlign: "left" as const,
+    };
+  };
+  const mainTag = (label: string) => (
+    <span style={{ marginLeft: 12, padding: "2px 8px", border: "1px solid var(--bi-primary-50)", borderRadius: 4, background: "var(--bi-basic-white)", color: "var(--bi-primary-90)", fontSize: "0.8125rem", fontWeight: 500, lineHeight: 1.3 }}>{label}</span>
+  );
+  const pointDots = (points: number) => {
+    if (points === 0) return null;
+    const wholeCount = Math.floor(Math.abs(points));
+    const hasHalf = Math.abs(points) % 1 !== 0;
+    const circle = (index: number, half: boolean) => {
+      const size = half ? 16 : 24;
+      return (
+        <span key={index} className="st-pop" style={{ display: "grid", placeItems: "center", width: size, height: size, borderRadius: "50%", background: points > 0 ? "var(--bi-primary-50)" : "var(--bi-alert-60)", color: "var(--bi-basic-white)", fontSize: half ? 13 : 20, animationDelay: `${index * 60}ms` }}>
+          {points > 0 ? <CheckThickIcon aria-hidden="true" /> : <CrossThickIcon aria-hidden="true" />}
+        </span>
+      );
+    };
+    return (
+      <span aria-label={points > 0 ? `${fmtPoints(points)} poeng` : "Feil, 0 poeng"} style={{ display: "inline-flex", alignItems: "center", gap: 4, marginLeft: "auto", paddingLeft: 12 }}>
+        {Array.from({ length: wholeCount }, (_, index) => circle(index, false))}
+        {hasHalf && circle(wholeCount, true)}
+      </span>
+    );
+  };
+  const navigate = (target: number) => {
+    if (slide !== "idle" || target === position || target < 0 || target > ROUNDS - 1) return;
+    const forward = target > position;
+    setSlide(forward ? "out-next" : "out-prev");
+    window.setTimeout(() => {
+      setPosition(target);
+      setSlide(forward ? "in-next" : "in-prev");
+      window.setTimeout(() => setSlide("idle"), 220);
+    }, 150);
+  };
+  const nextRandom = () => navigate(position + 1);
+  const restart = () => {
+    setOrder(shuffleIndexes(rows.length));
+    setPosition(0);
+    setPicks({});
+    setFinished(false);
+  };
+  const done = isAnswered(rowIndex, pick);
+  const lastRound = position === ROUNDS - 1;
+  const answeredCount = rounds.filter((index) => isAnswered(index, picks[index])).length;
+
+  if (finished) return <GradeScreen score={score} roundPoints={roundPoints} onRestart={restart} />;
 
   return (
-    <div style={{ background: "var(--bi-color-neutral-surface)", borderRadius: "var(--bi-radius-xl)", padding: 28 }}>
-      <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", gap: 16, marginBottom: 12 }}>
+    <div style={{ display: "flex", flexDirection: "column", background: "var(--bi-color-neutral-surface)", borderRadius: "var(--bi-radius-xl)", padding: 28, overflow: "clip" }}>
+      <style>{`
+        @keyframes st-open { from { max-height: 0; opacity: 0; } to { max-height: 1000px; opacity: 1; } }
+        @keyframes st-sub-in { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes st-pop { 0% { transform: scale(0); } 70% { transform: scale(1.2); } 100% { transform: scale(1); } }
+        @keyframes st-fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes st-out-next { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(-80px); } }
+        @keyframes st-out-prev { from { opacity: 1; transform: translateX(0); } to { opacity: 0; transform: translateX(80px); } }
+        @keyframes st-in-next { from { opacity: 0; transform: translateX(80px); } to { opacity: 1; transform: translateX(0); } }
+        @keyframes st-in-prev { from { opacity: 0; transform: translateX(-80px); } to { opacity: 1; transform: translateX(0); } }
+        .st-out-next { animation: st-out-next 150ms ease-in both; }
+        .st-out-prev { animation: st-out-prev 150ms ease-in both; }
+        .st-in-next { animation: st-in-next 220ms ease-out both; }
+        .st-in-prev { animation: st-in-prev 220ms ease-out both; }
+        .st-subs { animation: st-open 260ms ease-out both; }
+        .st-sub { animation: st-sub-in 200ms ease-out both; }
+        .st-pop { animation: st-pop 260ms cubic-bezier(0.2, 0.9, 0.3, 1.3) both; }
+        .st-fade { animation: st-fade 240ms ease-out both; }
+        @media (prefers-reduced-motion: reduce) { .st-subs, .st-sub, .st-pop, .st-fade, .st-out-next, .st-out-prev, .st-in-next, .st-in-prev { animation: none; } }
+      `}</style>
+      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 16, marginBottom: 12 }}>
         <div>
-          <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>
-            Studie eller kurs {position + 1} av {order.length}
-          </div>
-          <div style={{ fontWeight: 700, fontSize: "1.25rem" }}>Hvor finner du «{title}»?</div>
-        </div>
-        <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.875rem", textAlign: "right" }}>
-          <div>
-            Riktig fagområde: <strong>{score.area}</strong> av {answered.length}
-          </div>
-          <div>
-            Riktig underkategori: <strong>{score.sub}</strong> av {answered.length}
+          <div style={{ display: "flex", alignItems: "baseline", color: "var(--bi-neutral-95)", fontSize: "1.5rem", fontWeight: 500 }}>
+            <strong style={{ fontSize: "3.5rem", lineHeight: 1, fontWeight: 700, color: "var(--bi-primary-50)" }}>{fmtPoints(score)}</strong>
+            <span>/{fmtPoints(answeredCount * POINTS_PER_ROUND)} mulige poeng så langt</span>
           </div>
         </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "var(--bi-scale-3x)" }}>
+          <span style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "1.25rem" }}>
+            Spørsmål {position + 1} / {ROUNDS}
+          </span>
+          <Button icon size="large" variant="outlined" aria-label="Forrige spørsmål" disabled={position === 0} onClick={() => navigate(position - 1)} style={roundButtonStyle(position === 0)}>
+            <ChevronLeftIcon aria-hidden="true" />
+          </Button>
+          <Button
+            icon
+            size="large"
+            variant="outlined"
+            aria-label={lastRound ? "Se karakteren din" : "Neste spørsmål"}
+            disabled={!done}
+            onClick={lastRound ? () => setFinished(true) : nextRandom}
+            style={roundButtonStyle(!done)}
+          >
+            <ChevronRightIcon aria-hidden="true" />
+          </Button>
+        </div>
       </div>
+      <div style={{ display: "grid", gap: 6, marginBottom: 20 }}>
+        <div
+          role="progressbar"
+          aria-valuemin={0}
+          aria-valuemax={ROUNDS * POINTS_PER_ROUND}
+          aria-valuenow={Math.max(0, score)}
+          aria-label={`${fmtPoints(score)} poeng av ${fmtPoints(answeredCount * POINTS_PER_ROUND)} mulige så langt, maks ${fmtPoints(ROUNDS * POINTS_PER_ROUND)}`}
+          style={{ position: "relative", height: 12, borderRadius: 6, background: "var(--bi-color-neutral-stroke-subtle)", overflow: "hidden" }}
+        >
+          <div style={{ position: "absolute", inset: 0, width: `${((answeredCount * POINTS_PER_ROUND) / (ROUNDS * POINTS_PER_ROUND)) * 100}%`, borderRadius: 6, background: "var(--bi-primary-10)", transition: "width 200ms ease" }} />
+          <div style={{ position: "absolute", inset: 0, width: `${(Math.max(0, score) / (ROUNDS * POINTS_PER_ROUND)) * 100}%`, borderRadius: 6, background: "var(--bi-primary-50)", transition: "width 200ms ease" }} />
+        </div>
+      </div>
+      <div className={slide === "idle" ? undefined : `st-${slide}`} style={{ pointerEvents: slide === "idle" ? undefined : "none" }}>
+      <div style={{ fontWeight: 700, fontSize: "1.375rem", marginBottom: 16 }}>Hvor finner du «{title}»?</div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 24, alignItems: "start", marginBottom: 16 }}>
-      <div>
-      <div style={{ fontWeight: 600, marginBottom: 6 }}>1. Velg fagområde</div>
-      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 6 }}>
-        {areaOptions.map((area) => {
-          const chosen = pick.area === area;
-          const kind = areaKind(area);
-          const state = done ? (kind === "main" ? "main" : kind === "extra" ? "extra" : chosen ? "bad" : "dim") : "idle";
-          return (
-            <button
-              key={area}
-              type="button"
-              disabled={done}
-              onClick={() => setPicks((current) => ({ ...current, [rowIndex]: { area } }))}
-              style={optionStyle(state, chosen)}
-            >
-              {done && kind === "main" ? <span style={{ color: "var(--bi-primary-50)", fontWeight: 700 }}>* </span> : null}
-              {area}
-            </button>
-          );
-        })}
-      </div>
-
-      </div>
-      <div>
-      {pick.area ? (
-        <>
-          <div style={{ fontWeight: 600, marginBottom: 6 }}>2. Velg underkategori i {areaShortName[pick.area]}</div>
-          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 6 }}>
-            {subOptions.map((sub) => {
-              const chosen = pick.sub === sub;
-              const kind = kindOf(`${pick.area} › ${sub}`);
-              const state = done ? (kind === "main" ? "main" : kind === "extra" ? "extra" : chosen ? "bad" : "dim") : "idle";
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 32, alignItems: "start", marginBottom: 16 }}>
+        <div>
+          <div style={{ fontWeight: 600, marginBottom: 6 }}>Velg fagområde og underkategori</div>
+          <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 4 }}>
+            {areaOptions.map((area) => {
+              const chosen = pick.area === area;
+              const kind = areaKind(area);
+              const kindState = kind === "main" ? "main" : kind === "extra" ? "extra" : "bad";
+              const state = chosen ? kindState : done ? (kind === "none" ? "dim" : kindState) : pick.area ? "dim" : "idle";
+              const expanded = chosen && kind !== "none";
               return (
-                <button
-                  key={sub}
-                  type="button"
-                  disabled={done}
-                  onClick={() => setPicks((current) => ({ ...current, [rowIndex]: { ...current[rowIndex], sub } }))}
-                  style={optionStyle(state, chosen)}
-                >
-                  {done && kind === "main" ? <span style={{ color: "var(--bi-primary-50)", fontWeight: 700 }}>* </span> : null}
-                  {sub}
-                </button>
+                <div key={area} style={{ display: "grid", gap: 6, margin: expanded ? "10px 0 16px" : undefined }}>
+                  <button
+                    type="button"
+                    disabled={Boolean(pick.area)}
+                    aria-expanded={chosen}
+                    onClick={() => setPicks((current) => ({ ...current, [rowIndex]: { area } }))}
+                    style={{ ...optionStyle(state, chosen), fontSize: "1rem" }}
+                  >
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+                      <AreaIcon area={area} height="0.95em" />
+                      <span style={{ display: "inline-flex", alignItems: "center" }}>
+                        {area}
+                        {state === "main" && mainTag("Hovedfagområde")}
+                      </span>
+                    </span>
+                    {chosen && pointDots(kind === "none" ? -1 : kind === "main" ? 1.5 : 1)}
+                    <span style={{ marginLeft: chosen ? 12 : "auto", display: "flex", transform: expanded ? "rotate(90deg)" : undefined, transition: "transform 100ms ease" }}>
+                      <ChevronRightIcon aria-hidden="true" />
+                    </span>
+                  </button>
+                  {expanded && (
+                    <div className="st-subs" style={{ display: "grid", gap: 4, marginLeft: 20, marginTop: -6, paddingTop: 6, overflow: "hidden" }}>
+                      {subOptions.map((sub, subIndex) => {
+                        const subChosen = pick.sub === sub;
+                        const subKind = kindOf(`${area} › ${sub}`);
+                        const subKindState = subKind === "main" ? "main" : subKind === "extra" ? "extra" : "bad";
+                        const subState = subChosen ? subKindState : done ? (subKind === "none" ? "dim" : subKindState) : "idle";
+                        const treeLine = "2px solid var(--bi-color-neutral-stroke)";
+                        return (
+                          <div key={sub} className="st-sub" style={{ position: "relative", paddingLeft: 20, animationDelay: `${subIndex * 25}ms` }}>
+                            {subIndex < subOptions.length - 1 ? (
+                              <>
+                                <span aria-hidden style={{ position: "absolute", left: 0, top: -4, bottom: 0, borderLeft: treeLine }} />
+                                <span aria-hidden style={{ position: "absolute", left: 0, top: "calc(50% - 1px)", width: 20, borderTop: treeLine }} />
+                              </>
+                            ) : (
+                              <span aria-hidden style={{ position: "absolute", left: 0, top: -4, width: 20, height: "calc(50% + 4px)", borderLeft: treeLine, borderBottom: treeLine, borderBottomLeftRadius: 8, boxSizing: "border-box" }} />
+                            )}
+                            <button
+                              type="button"
+                              disabled={done}
+                              onClick={() => setPicks((current) => ({ ...current, [rowIndex]: { ...current[rowIndex], sub } }))}
+                              style={{ ...optionStyle(subState, subChosen), fontSize: "0.9375rem", width: "100%", boxSizing: "border-box" }}
+                            >
+                              <span style={{ display: "inline-flex", alignItems: "center" }}>{sub}</span>
+                              {subChosen && pointDots(subKind === "none" ? -1 : 1)}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               );
             })}
           </div>
-        </>
-      ) : (
-        <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.875rem", paddingTop: 4 }}>2. Underkategoriene vises når du har valgt fagområde.</div>
-      )}
-      </div>
-      </div>
-
-      {done && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 32, borderTop: "1px solid var(--bi-color-neutral-stroke)", paddingTop: 16 }}>
-          <div>
-            <div style={{ fontWeight: 700, color: "var(--bi-color-neutral-text-secondary)", marginBottom: 8 }}>Før (bi.no i dag)</div>
-            {previous.length === 0 ? (
-              <p style={{ margin: 0, color: "var(--bi-color-neutral-text)" }}>Manglet fagområde. Det kunne ikke finnes via fagområde.</p>
-            ) : (
-              <>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 6 }}>
-                  {previous.map((name) => (
-                    <AreaPill key={name} label={shortOldName(name)} kind={oldAreaCatalog[name]?.kind === "removed" ? "removed" : "old"} />
-                  ))}
+        </div>
+        <div>
+          {done ? (
+            <div className="st-fade" style={{ display: "grid", gap: 16 }}>
+              <div style={{ display: "grid", gap: 20, padding: 20, background: "var(--bi-basic-white)", border: "1px solid var(--bi-color-neutral-stroke-subtle)", borderRadius: "var(--bi-radius-large)" }}>
+                <div>
+                  <div style={{ fontWeight: 700, color: "var(--bi-color-neutral-text-secondary)", marginBottom: 8 }}>BI.no i dag</div>
+                  {previous.length === 0 ? (
+                    <p style={{ margin: 0, color: "var(--bi-color-neutral-text)" }}>Har ikke et fagområde</p>
+                  ) : (
+                    <>
+                      <div style={{ display: "grid", gap: 4, marginBottom: 8 }}>
+                        {previous.map((name) => {
+                          const removed = oldAreaCatalog[name]?.kind === "removed";
+                          return (
+                            <div key={name} style={{ ...optionStyle("idle", false), fontSize: "1rem", cursor: "default", textDecoration: removed ? "line-through" : undefined }}>
+                              {shortOldName(name)}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <p style={{ margin: 0, color: "var(--bi-color-neutral-text)", fontSize: "0.875rem" }}>
+                        {previous.length === 1 ? "Lå i ett fagområde, uten underkategori." : `Lå i ${previous.length} fagområder uten prioritet og uten underkategori.`}
+                      </p>
+                    </>
+                  )}
                 </div>
-                <p style={{ margin: 0, color: "var(--bi-color-neutral-text)", fontSize: "0.875rem" }}>
-                  {previous.length === 1 ? "Lå i ett fagområde, uten underkategori." : `Lå i ${previous.length} fagområder uten prioritet og uten underkategori.`}
-                </p>
-              </>
-            )}
-          </div>
-          <div>
-            <div style={{ fontWeight: 700, color: "var(--bi-color-primary-text-accent)", marginBottom: 8 }}>Nå (forslaget)</div>
-            {row[6].split("; ").map((entry, index) => (
-              <div key={entry} style={{ marginBottom: 8 }}>
-                <AreaWithSubcategory area={entryArea(entry)} subcategory={entrySub(entry)} muted={index > 0} />
+                <div>
+                  <div style={{ fontWeight: 700, color: "var(--bi-color-primary-text-accent)", marginBottom: 8 }}>Nytt forslag</div>
+                  <div style={{ display: "grid", gap: 14 }}>
+                    {row[6].split("; ").map((entry, index) => {
+                      const placementState = index === 0 ? "main" : "extra";
+                      return (
+                        <div key={entry} style={{ display: "grid", gap: 4 }}>
+                          <div style={{ ...optionStyle(placementState, false), fontSize: "1rem", cursor: "default" }}>
+                            <span style={{ display: "inline-flex", alignItems: "center", gap: 10 }}>
+                              <AreaIcon area={entryArea(entry)} height="0.95em" />
+                              {entryArea(entry)}
+                              {index === 0 && mainTag("Hovedfagområde")}
+                            </span>
+                          </div>
+                          <div style={{ position: "relative", marginLeft: 20, paddingLeft: 20 }}>
+                            <span aria-hidden style={{ position: "absolute", left: 0, top: -4, width: 20, height: "calc(50% + 4px)", borderLeft: "2px solid var(--bi-color-neutral-stroke)", borderBottom: "2px solid var(--bi-color-neutral-stroke)", borderBottomLeftRadius: 8, boxSizing: "border-box" }} />
+                            <div style={{ ...optionStyle(placementState, false), fontSize: "0.9375rem", cursor: "default" }}>{entrySub(entry)}</div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+                <div style={{ background: "var(--bi-color-primary-background)", borderRadius: "var(--bi-radius-large)", padding: 12, fontSize: "0.875rem", color: "var(--bi-color-neutral-text)", display: "grid", gap: 10 }}>
+                  <div style={{ fontWeight: 700 }}>Hvorfor ligger det her?</div>
+                  {row[6].split("; ").map((entry, index) => {
+                    const reason = placementReasons[`${row[2]}|${entry}`];
+                    if (!reason) return null;
+                    return (
+                      <div key={entry} style={{ display: "grid", gap: 3, paddingTop: index === 0 ? 0 : 8, borderTop: index === 0 ? undefined : "1px solid var(--bi-color-neutral-stroke-subtle)" }}>
+                        <div style={{ fontWeight: 600 }}>
+                          {entryArea(entry)} › {entrySub(entry)}
+                          <span style={{ marginLeft: 8, fontWeight: 400, color: "var(--bi-color-neutral-text-secondary)" }}>{index === 0 ? "Hovedfagområde" : "Ekstra fagområde"}</span>
+                        </div>
+                        <p style={{ margin: 0 }}>{reason}</p>
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            ))}
-            <div style={{ marginBottom: 10 }}>
-              <SuggestedTitle row={row} />
+              <Button size="large" variant="filled" style={{ width: "100%" }} onClick={lastRound ? () => setFinished(true) : nextRandom}>
+                {lastRound ? "Se karakteren din" : "Neste spørsmål"}
+              </Button>
             </div>
-            <div style={{ background: "var(--bi-color-primary-background)", borderRadius: "var(--bi-radius-large)", padding: 12, margin: "0 0 10px", fontSize: "0.875rem", color: "var(--bi-color-neutral-text)" }}>
-              <div style={{ fontWeight: 700, marginBottom: 4 }}>Hvorfor ligger det her?</div>
-              {row[7] && <p style={{ margin: "0 0 6px" }}>{row[7]}</p>}
-              {row[6].split("; ").some((entry) => entryArea(entry) !== row[0]) && (
-                <p style={{ margin: "0 0 6px" }}>
-                  <strong>Ekstra:</strong> temaet overlapper også med{" "}
-                  {[...new Set(row[6].split("; ").filter((entry) => entryArea(entry) !== row[0]).map((entry) => areaShortName[entryArea(entry)]))].join(" og ")}, så{" "}
-                  {row[3].toLowerCase().includes("kurs") ? "kurset" : "studiet"} kan også finnes der.
-                </p>
-              )}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, alignItems: "center" }}>
-                {row[1].map((status) => (
-                  <StatusBadge key={status} status={status} wide />
-                ))}
-              </div>
+          ) : (
+            <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem", paddingTop: 4 }}>
+              Trykk på et fagområde, så faller underkategoriene ut under det. Når du har valgt underkategori, vises forklaringen her.
             </div>
-            <p style={{ margin: 0, color: "var(--bi-color-neutral-text)", fontSize: "0.875rem" }}>
-              {areaKind(pick.area ?? "") === "none"
-                ? "Du valgte et fagområde der kurset ikke ligger."
-                : areaKind(pick.area ?? "") === "main"
-                  ? "Du valgte hovedfagområdet (*)."
-                  : "Du valgte et ekstra fagområde."}{" "}
-              {kindOf(`${pick.area} › ${pick.sub}`) === "none" ? "Underkategorien var ikke riktig." : kindOf(`${pick.area} › ${pick.sub}`) === "main" ? "Underkategorien er hovedkategorien." : "Underkategorien er en ekstra plassering."}
-            </p>
-          </div>
+          )}
         </div>
-      )}
-
-      {done && (
-        <div style={{ display: "flex", justifyContent: "center", marginTop: 28 }}>
-          <Button size="large" variant="filled" onClick={nextRandom}>
-            Gi meg en til!
-          </Button>
-        </div>
-      )}
+      </div>
+      </div>
     </div>
   );
 }
@@ -3013,6 +3393,11 @@ export default function Result() {
       </section>
 
       <section style={{ margin: "48px 0 0" }}>
+        <h2 style={{ margin: "0 0 12px", fontFamily: "var(--bi-font-family-brand)", fontSize: "2rem", lineHeight: 1.2, color: "var(--bi-color-primary-text)" }}>Karakterer (forhåndsvisning)</h2>
+        <GradePreview />
+      </section>
+
+      <section style={{ margin: "48px 0 0" }}>
         <h2 id="tilbakemelding" style={{ scrollMarginTop: 16, margin: "0 0 12px", fontFamily: "var(--bi-font-family-brand)", fontSize: "2rem", lineHeight: 1.2, color: "var(--bi-color-primary-text)" }}>Tilbakemelding</h2>
         <Feedback />
       </section>
@@ -3024,35 +3409,6 @@ export default function Result() {
         <Carousel
           heading={<h3 id="hva-gjores" style={{ ...summaryPartHeading, margin: 0 }}>Hva gjøres?</h3>}
           slides={[
-            {
-              title: "Fagområder uten endring i navn",
-              content: (
-        <ChangeGroup>
-          <ChangeRow
-            from="Ledelse"
-            fromKind="same"
-            equal
-            to={[{ label: "Ledelse", count: areaCount("Ledelse") }]}
-            toKind="same"
-          />
-          <ChangeRow
-            from="Strategi, innovasjon og bærekraft"
-            fromKind="same"
-            equal
-            to={[{ label: "Strategi, innovasjon og bærekraft", count: areaCount("Strategi, innovasjon og bærekraft") }]}
-            toKind="same"
-          />
-          <ChangeRow
-            from="Markedsføring, kommunikasjon og kultur"
-            fromKind="same"
-            equal
-            to={[{ label: "Markedsføring, kommunikasjon og kultur", count: areaCount("Markedsføring, kommunikasjon og kultur") }]}
-            toKind="same"
-          />
-
-        </ChangeGroup>
-              ),
-            },
             {
               title: "Fagområder med nytt navn",
               content: (
@@ -3127,8 +3483,42 @@ export default function Result() {
               ),
             },
             {
+              title: "Fagområder uten endring i navn",
+              content: (
+        <ChangeGroup>
+          <ChangeRow
+            from="Ledelse"
+            fromKind="same"
+            equal
+            to={[{ label: "Ledelse", count: areaCount("Ledelse") }]}
+            toKind="same"
+          />
+          <ChangeRow
+            from="Strategi, innovasjon og bærekraft"
+            fromKind="same"
+            equal
+            to={[{ label: "Strategi, innovasjon og bærekraft", count: areaCount("Strategi, innovasjon og bærekraft") }]}
+            toKind="same"
+          />
+          <ChangeRow
+            from="Markedsføring, kommunikasjon og kultur"
+            fromKind="same"
+            equal
+            to={[{ label: "Markedsføring, kommunikasjon og kultur", count: areaCount("Markedsføring, kommunikasjon og kultur") }]}
+            toKind="same"
+          />
+        </ChangeGroup>
+              ),
+            },
+            {
               title: "Underkategorier og begrunnelse",
-              content: <SubcategorySlide />,
+              content: (
+                <div style={{ display: "grid", gap: 40 }}>
+                  {areaTree.map(({ area }) => (
+                    <AreaSubcategorySlide key={area} area={area} />
+                  ))}
+                </div>
+              ),
             },
             {
               title: "Tverrgående temaer har egne underkategorier",
@@ -3427,7 +3817,7 @@ export default function Result() {
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(6, minmax(0, 1fr))", alignItems: "end", gap: 16, margin: "0 0 16px" }}>
         <Selectfield fullwidth label="Nivå" value={levelFilter} onChange={(event) => setLevelFilter(event.target.value)}>
-          <option value="">Alle nivåer</option>
+          <option value="">Alle</option>
           {levels.map((level) => (
             <option key={level} value={level}>
               {level}
@@ -3435,7 +3825,7 @@ export default function Result() {
           ))}
         </Selectfield>
         <Selectfield fullwidth label="Bransje" value={industryFilter} onChange={(event) => setIndustryFilter(event.target.value)}>
-          <option value="">Alle bransjer</option>
+          <option value="">Alle</option>
           {industries.map((industry) => (
             <option key={industry} value={industry}>
               {industry}
@@ -3443,7 +3833,7 @@ export default function Result() {
           ))}
         </Selectfield>
         <Selectfield fullwidth label="Tidligere fagområde" value={previousFilter} onChange={(event) => setPreviousFilter(event.target.value)}>
-          <option value="">Alle tidligere fagområder</option>
+          <option value="">Alle</option>
           {previousAreas.map((previous) => (
             <option key={previous} value={previous}>
               {previous === "–" ? "Manglet fagområde" : previous}
@@ -3451,7 +3841,7 @@ export default function Result() {
           ))}
         </Selectfield>
         <Selectfield fullwidth label="Fagområde" value={areaFilter} onChange={(event) => setAreaFilter(event.target.value)}>
-          <option value="">Alle fagområder</option>
+          <option value="">Alle</option>
           {areas.map((area) => (
             <option key={area} value={area}>
               {area}
@@ -3459,7 +3849,7 @@ export default function Result() {
           ))}
         </Selectfield>
         <Selectfield fullwidth label="Underkategori" value={subcategoryFilter} onChange={(event) => setSubcategoryFilter(event.target.value)}>
-          <option value="">Alle underkategorier</option>
+          <option value="">Alle</option>
           {subcategoryGroups.map(({ area, subcategories }) => (
             <optgroup key={area} label={area}>
               {subcategories.map((entry) => (
@@ -3471,7 +3861,7 @@ export default function Result() {
           ))}
         </Selectfield>
         <Selectfield fullwidth label="Status" value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-          <option value="">Alle statuser</option>
+          <option value="">Alle</option>
           {statusOrder.map((status) => (
             <option key={status} value={status}>
               {status}
@@ -3501,7 +3891,8 @@ export default function Result() {
             <tbody key={area}>
               <tr>
                 <td colSpan={5} style={{ padding: "28px 12px 12px" }}>
-                  <h2 id={areaAnchor(area)} style={{ scrollMarginTop: 16, margin: 0, fontFamily: "var(--bi-font-family-brand)", fontSize: "1.5rem", color: "var(--bi-color-primary-text)" }}>
+                  <h2 id={areaAnchor(area)} style={{ scrollMarginTop: 16, margin: 0, display: "flex", alignItems: "center", gap: 12, fontFamily: "var(--bi-font-family-brand)", fontSize: "1.5rem", color: "var(--bi-color-primary-text)" }}>
+                    <AreaIcon area={area} />
                     {area}
                   </h2>
                 </td>
