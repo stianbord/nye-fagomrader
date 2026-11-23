@@ -60,7 +60,7 @@ const rawRows: Row[] = [
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Samfunnsøkonomi II", "Bachelorkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Samfunnsøkonomi, økonomisk teori og matematikk", "Handler om økonomisk teori og samfunnsøkonomi.", false, "–", true],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Strategisk økonomistyring", "Bachelorkurs", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Økonomistyring", "Handler om bedriftsøkonomi, budsjett og beslutningsstøtte, eller er en bred økonomiutdanning.", false, "–", true],
   ["Finans, økonomi og regnskap", ["1 fagområde prioritert", "Fagområde fjernet"], "Styrekompetanse", "Bachelorkurs", "Finans, økonomi og styring; Organisasjonsutvikling og Human Resource Management", "Ledelse; Strategi, innovasjon og bærekraft; Juss, skatt og eiendom", "Finans, økonomi og regnskap › Bedriftsøkonomi; Ledelse › Strategisk ledelse; Strategi, innovasjon og bærekraft › Strategi; Juss, skatt og eiendom › Forretningsjus og rettsvitenskap", "Handler om styrearbeid, eierstyring og governance.", false, "–", false],
-  ["Finans, økonomi og regnskap", ["1 fagområde prioritert", "Fagområde fjernet"], "Business", "Master", "Finans, økonomi og styring; Ledelse; Markedsføring, kommunikasjon og kultur; Organisasjonsutvikling og Human Resource Management; Eiendom, varehandel og forretningsjus; Strategi, innovasjon og bærekraft", "Markedsføring, kommunikasjon og kultur; Strategi, innovasjon og bærekraft; Ledelse; HR og organisasjonsutvikling", "Finans, økonomi og regnskap › Bedriftsøkonomi; Markedsføring, kommunikasjon og kultur › Markedsføring; Strategi, innovasjon og bærekraft › Strategi; Ledelse › Generell ledelse og lederutdanning; HR og organisasjonsutvikling › HR og personalledelse", "Handler om bedriftsøkonomi, budsjett og beslutningsstøtte, eller er en bred økonomiutdanning.", false, "–", false],
+  ["Finans, økonomi og regnskap", ["1 fagområde prioritert", "Fagområde fjernet"], "Business", "Master", "Finans, økonomi og styring; Ledelse; Markedsføring, kommunikasjon og kultur; Organisasjonsutvikling og Human Resource Management; Eiendom, varehandel og forretningsjus; Strategi, innovasjon og bærekraft", "Ledelse", "Finans, økonomi og regnskap › Bedriftsøkonomi; Ledelse › Generell ledelse og lederutdanning", "Handler om bedriftsøkonomi, budsjett og beslutningsstøtte, eller er en bred økonomiutdanning. Fagområder som markedsføring og HR kommer i tillegg gjennom hvilken major man velger.", false, "–", false],
   ["Finans, økonomi og regnskap", ["1 fagområde prioritert"], "Bærekraft og finans", "Master", "Finans, økonomi og styring; Strategi, innovasjon og bærekraft", "Strategi, innovasjon og bærekraft", "Finans, økonomi og regnskap › Bærekraftig finans; Strategi, innovasjon og bærekraft › Bærekraft", "Handler om finans og investering, med bærekraft som tema.", true, "–", false],
   ["Finans, økonomi og regnskap", ["Endret navn på fagområde"], "Finans", "Master", "Finans, økonomi og styring", "–", "Finans, økonomi og regnskap › Finans og investering", "Handler om finans, investering, bank eller finansnæringen.", false, "–", false],
   ["Finans, økonomi og regnskap", ["1 fagområde prioritert", "Fagområde fjernet"], "Major in Accounting and Business Control", "Master", "Finans, økonomi og styring; Strategi, innovasjon og bærekraft", "–", "Finans, økonomi og regnskap › Regnskap og revisjon", "Handler om regnskap, bokføring eller revisjon.", false, "–", false],
@@ -281,10 +281,24 @@ const renamedAreas: Record<string, string> = {
 /** Strategikurs som er for fagspesifikke til å ligge i Strategisk ledelse. De blir i fagområdene de allerede har. */
 const keepOutOfStrategicLeadership = new Set(["Finansiell strategi", "Markedsstrategi - innsikt, posisjonering og vekst"]);
 const strategyEntry = `${strategyArea} › Strategi`;
+/** Underkategorier som er tatt bort. Kursene beholder de andre plasseringene sine. */
+const droppedEntries = new Set(["Finans, økonomi og regnskap › Finansiell kriminalitet og compliance"]);
 const strategicLeadershipEntry = `${renamedAreas[leadershipArea]} › Strategisk ledelse`;
 const renamedEntries: Record<string, string> = {
   // Logistikk flyttes fra Finans, økonomi og regnskap til Innovasjon, bærekraft og logistikk
   "Finans, økonomi og regnskap › Logistikk og forsyningskjeder": `${renamedAreas[strategyArea]} › Logistikk og forsyningskjeder`,
+  "Finans, økonomi og regnskap › Samfunnsøkonomi, økonomisk teori og matematikk": "Finans, økonomi og regnskap › Samfunnsøkonomi og matematikk",
+  // Bedriftsøkonomi og økonomistyring er slått sammen
+  "Finans, økonomi og regnskap › Bedriftsøkonomi": "Finans, økonomi og regnskap › Bedriftsøkonomi og økonomistyring",
+  "Finans, økonomi og regnskap › Økonomistyring": "Finans, økonomi og regnskap › Bedriftsøkonomi og økonomistyring",
+  "KI, digitalisering og analytics › Ansvarlig KI og personvern": "KI, digitalisering og analytics › KI-etikk, regulering og personvern",
+  // Team-, medarbeider- og endringsledelse er slått sammen
+  [`${leadershipArea} › Teamledelse og prestasjon`]: `${renamedAreas[leadershipArea]} › HR-ledelse og endringsledelse`,
+  [`${leadershipArea} › Medarbeiderledelse og arbeidsmiljø`]: `${renamedAreas[leadershipArea]} › HR-ledelse og endringsledelse`,
+  [`${leadershipArea} › Endringsledelse`]: `${renamedAreas[leadershipArea]} › HR-ledelse og endringsledelse`,
+  // Generell ledelse og lederferdigheter er slått sammen
+  [`${leadershipArea} › Generell ledelse og lederutdanning`]: `${renamedAreas[leadershipArea]} › Generell ledelse og lederutvikling`,
+  [`${leadershipArea} › Lederferdigheter og kommunikasjon`]: `${renamedAreas[leadershipArea]} › Generell ledelse og lederutvikling`,
 };
 
 const renameEntry = (entry: string) => {
@@ -293,11 +307,28 @@ const renameEntry = (entry: string) => {
   return `${renamedAreas[area] ?? area} › ${sub}`;
 };
 
+/** Hvilket nytt fagområde et tidligere fagområde tilsvarer (samme innhold, evt. nytt navn). */
+const nameEquivalents: Record<string, string> = {
+  "Finans, økonomi og styring": "Finans, økonomi og regnskap",
+  [leadershipArea]: renamedAreas[leadershipArea],
+  "Markedsføring, kommunikasjon og kultur": "Markedsføring, kommunikasjon og kultur",
+  "Organisasjonsutvikling og Human Resource Management": "HR og organisasjonsutvikling",
+  "Eiendom, varehandel og forretningsjus": "Juss, skatt og eiendom",
+  [strategyArea]: renamedAreas[strategyArea],
+  "Digitalisering og Analytics": "KI, digitalisering og analytics",
+};
+/** Tidligere fagområder som nå lever videre som underkategori i et annet fagområde. */
+const mergedIntoAreas: Record<string, string> = {
+  [strategyArea]: renamedAreas[leadershipArea],
+  Prosjektledelse: renamedAreas[leadershipArea],
+};
+
 const rows: Row[] = rawRows.map((row): Row => {
   const entries = row[6].split("; ");
   const hasLeadership = entries.some((entry) => entry.startsWith(`${leadershipArea} › `));
   const migrated = entries
     .flatMap((entry) => {
+      if (droppedEntries.has(entry)) return [];
       if (entry !== strategyEntry) return [renameEntry(entry)];
       // Strategi blir Strategisk ledelse, men ikke en ekstra gang når kurset allerede ligger i Ledelse og strategi
       return hasLeadership || keepOutOfStrategicLeadership.has(row[2]) ? [] : [strategicLeadershipEntry];
@@ -306,12 +337,21 @@ const rows: Row[] = rawRows.map((row): Row => {
     .filter((entry, index, all) => all.findIndex((other) => other.split(" › ")[0] === entry.split(" › ")[0]) === index);
   const main = migrated[0].split(" › ")[0];
   const alternatives = [...new Set(migrated.slice(1).map((entry) => entry.split(" › ")[0]))].filter((area) => area !== main);
-  const keepsMain = main === (renamedAreas[row[0]] ?? row[0]);
-  const statuses = row[1].map((status): Status => {
-    if (status !== "Uendret" && status !== "Endret navn på fagområde") return status;
-    if (!keepsMain) return "Flyttet til nytt fagområde";
-    return row[0] in renamedAreas && status === "Uendret" ? "Endret navn på fagområde" : status;
-  });
+  // Statusene gjelder uavhengig av hverandre, så et studie eller kurs har alle som passer
+  const previous = row[4].split("; ").filter((area) => area !== "–");
+  const keepsMain = previous.some((area) => nameEquivalents[area] === main);
+  const newAreas = [main, ...alternatives];
+  const carriedOver = (area: string) => newAreas.includes(nameEquivalents[area]) || newAreas.includes(mergedIntoAreas[area]);
+  const statuses: Status[] = [];
+  if (previous.length === 0) statuses.push("Manglet fagområde");
+  else if (!keepsMain) statuses.push("Flyttet til nytt fagområde");
+  if (keepsMain && previous.length > 1) statuses.push("1 fagområde prioritert");
+  if (keepsMain) statuses.push(previous.includes(main) ? "Uendret" : "Endret navn på fagområde");
+  // «Lagt til» gjelder bare ekstra fagområder kurset ikke hadde fra før (selv med nytt navn). Et kurs som manglet fagområde har naturlig nok fått ekstra fagområder, så det teller ikke
+  const hadBefore = (area: string) => previous.some((old) => nameEquivalents[old] === area || mergedIntoAreas[old] === area);
+  if (previous.length > 0 && alternatives.some((area) => !hadBefore(area))) statuses.push("Lagt til ekstra fagområde");
+  // Fagområde fjernet: kurset hadde et fagområde som fortsatt finnes, men har det ikke lenger. Områder som er borte som helhet (Offentlig sektor osv.) gir bare «Flyttet»
+  if (previous.some((area) => area in nameEquivalents && !carriedOver(area))) statuses.push("Fagområde fjernet");
   return [main, statuses, row[2], row[3], row[4], alternatives.join("; ") || "–", migrated.join("; "), row[7], row[8], row[9], row[10]];
 });
 
@@ -320,7 +360,12 @@ const reasonEntries = Object.entries(placementReasons).map(([key, reason]) => {
   const split = key.indexOf("|");
   return { title: key.slice(0, split), entry: key.slice(split + 1), reason };
 });
-for (const { title, entry, reason } of reasonEntries.filter((item) => item.entry !== strategyEntry)) migratedReasons[`${title}|${renameEntry(entry)}`] = reason;
+for (const { title, entry, reason } of reasonEntries.filter((item) => item.entry !== strategyEntry)) {
+  // Begrunnelsene nevner underkategorien ved navn, så et nytt navn følger med i teksten
+  const renamed = renameEntry(entry);
+  const [oldSub, newSub] = [entry.split(" › ")[1], renamed.split(" › ")[1]];
+  migratedReasons[`${title}|${renamed}`] = renamed === entry || !oldSub ? reason : reason.split(oldSub).join(newSub);
+}
 for (const { title, reason } of reasonEntries.filter((item) => item.entry === strategyEntry)) migratedReasons[`${title}|${strategicLeadershipEntry}`] ??= reason;
 
 const statusStyle: Record<Status, { background: string; text: string }> = {
@@ -336,16 +381,18 @@ const statusStyle: Record<Status, { background: string; text: string }> = {
 const statusLines: Record<Status, string[]> = {
   Uendret: ["Uendret"],
   "Endret navn på fagområde": ["Endret navn på", "fagområde"],
-  "1 fagområde prioritert": ["1 fagområde prioritert"],
+  "1 fagområde prioritert": ["Valgt hovedfagområde"],
   "Manglet fagområde": ["Manglet fagområde"],
   "Lagt til ekstra fagområde": ["Lagt til ekstra", "fagområde"],
   "Flyttet til nytt fagområde": ["Flyttet til nytt", "fagområde"],
   "Fagområde fjernet": ["Fagområde fjernet"],
 };
 
-function StatusBadge({ status, wide = false }: { status: Status; wide?: boolean }) {
-  const { background, text } = statusStyle[status];
-  const lines = wide ? [status] : statusLines[status];
+const statusLabel = (status: Status) => (status === "1 fagområde prioritert" ? "Valgt hovedfagområde" : status);
+
+function StatusBadge({ status, wide = false, card = false }: { status: Status; wide?: boolean; card?: boolean }) {
+  const { background, text } = (card && statusCardStyle[status]) || statusStyle[status];
+  const lines = wide ? [statusLabel(status)] : statusLines[status];
   return (
     <Badge
       data-color="neutral"
@@ -373,10 +420,11 @@ function StatusBadge({ status, wide = false }: { status: Status; wide?: boolean 
   );
 }
 
-function AreaWithSubcategory({ area, subcategory, muted = false }: { area: string; subcategory: string; muted?: boolean }) {
+function AreaWithSubcategory({ area, subcategory, muted = false, lineColor = treeLine, wrap = false }: { area: string; subcategory: string; muted?: boolean; lineColor?: string; wrap?: boolean }) {
+  const whiteSpace = wrap ? "normal" : "nowrap";
   return (
     <>
-      <div style={{ position: "relative", whiteSpace: "nowrap", fontSize: muted ? "0.875rem" : undefined, color: muted ? "var(--bi-color-neutral-text-secondary)" : undefined }}>
+      <div style={{ position: "relative", whiteSpace, fontSize: muted ? "0.875rem" : undefined, color: muted ? "var(--bi-color-neutral-text-secondary)" : undefined }}>
         {!muted && (
           <span aria-label="Hovedfagområde" title="Hovedfagområde" style={{ position: "absolute", left: -12, color: "var(--bi-primary-50)", fontWeight: 700 }}>
             *
@@ -385,9 +433,9 @@ function AreaWithSubcategory({ area, subcategory, muted = false }: { area: strin
         {area}
       </div>
       <div style={{ position: "relative", display: "flex", alignItems: "center", gap: 8, margin: "2px 0 0 10px", padding: "3px 0" }}>
-        <span style={{ position: "absolute", left: 0, top: 0, bottom: "50%", width: 1, background: treeLine }} />
-        <span style={{ flex: "0 0 14px", height: 1, background: treeLine }} />
-        <span style={{ fontSize: muted ? "0.8125rem" : "0.875rem", color: muted ? "var(--bi-neutral-40)" : undefined, whiteSpace: "nowrap" }}>{subcategory}</span>
+        <span style={{ position: "absolute", left: 0, top: 0, bottom: "50%", width: 1, background: lineColor }} />
+        <span style={{ flex: "0 0 14px", height: 1, background: lineColor }} />
+        <span style={{ fontSize: muted ? "0.8125rem" : "0.875rem", color: muted ? "var(--bi-neutral-40)" : undefined, whiteSpace }}>{subcategory}</span>
       </div>
     </>
   );
@@ -605,60 +653,122 @@ function TreeBar({
 }
 
 const statusOrder: Status[] = [
-  "Lagt til ekstra fagområde",
   "Flyttet til nytt fagområde",
   "Manglet fagområde",
   "1 fagområde prioritert",
   "Endret navn på fagområde",
   "Uendret",
+  "Lagt til ekstra fagområde",
   "Fagområde fjernet",
 ];
 
-const statusPieColors: Record<Status, string> = {
-  "Lagt til ekstra fagområde": "#c5d9f7",
-  "Flyttet til nytt fagområde": "#6196f4",
-  "Manglet fagområde": "#042f5b",
-  "1 fagområde prioritert": "#0b4db4",
-  "Endret navn på fagområde": "#9ec0f1",
-  Uendret: "#c8d1db",
-  "Fagområde fjernet": "#475e75",
+// Kun statuskortet: Uendret og Endret navn får hver sin gråtone, og diagrammet bruker sterkere farger
+const statusCardStyle: Partial<Record<Status, { background: string; text: string }>> = {
+  Uendret: { background: "#f1f4f7", text: "#6b7f95" },
+  "Endret navn på fagområde": { background: "#d5dde4", text: "#2c3e50" },
 };
 
-function StatusPie({ rows: list }: { rows: Row[] }) {
-  const pieStatuses = statusOrder.filter((status) => status !== "Fagområde fjernet");
-  const counts = pieStatuses.map((status) => ({ status, count: list.filter(([, s]) => s[0] === status).length }));
-  const removedCount = list.filter(([, s]) => s.includes("Fagområde fjernet")).length;
-  const total = counts.reduce((sum, { count }) => sum + count, 0);
-  let angle = 0;
-  const stops = counts.map(({ status, count }) => {
-    const start = angle;
-    angle += (count / total) * 360;
-    return `${statusPieColors[status]} ${start}deg ${angle}deg`;
+const statusPieStrong: Record<Status, string> = {
+  "Lagt til ekstra fagområde": "#3f9b5a",
+  "Flyttet til nytt fagområde": "#e3ad1c",
+  "Manglet fagområde": "#8a5cd0",
+  "1 fagområde prioritert": "#2f6fd6",
+  "Endret navn på fagområde": "#5f7490",
+  Uendret: "#c3ccd6",
+  "Fagområde fjernet": "#d8493d",
+};
+
+function StatusOverview({ rows: list }: { rows: Row[] }) {
+  const total = list.length;
+  // Statuser som hører sammen vises i samme søyle, med en boks per status til venstre. Statusene i en søyle overlapper ikke,
+  // så søylen og resten til høyre utgjør alle studiene og kursene
+  const groups: { statuses: Status[]; rest: string }[] = [
+    { statuses: ["Uendret", "Endret navn på fagområde"], rest: "har ikke beholdt hovedfagområdet" },
+    { statuses: ["1 fagområde prioritert"], rest: "har ikke valgt hovedfagområde blant flere" },
+    { statuses: ["Manglet fagområde", "Lagt til ekstra fagområde"], rest: "hadde fagområde før og har ikke fått ekstra fagområde" },
+    { statuses: ["Flyttet til nytt fagområde"], rest: "er ikke flyttet til nytt fagområde" },
+    { statuses: ["Fagområde fjernet"], rest: "har ikke fått fjernet fagområde" },
+  ];
+  const countOf = (status: Status) => list.filter((row) => row[1].includes(status)).length;
+  // Avrunder så prosentene alltid summerer til 100
+  const percentages = (values: number[]) => {
+    const exact = values.map((value) => (value / total) * 100);
+    const result = exact.map(Math.floor);
+    const order = exact.map((value, index) => ({ index, remainder: value - Math.floor(value) })).sort((a, b) => b.remainder - a.remainder);
+    const missing = 100 - result.reduce((sum, value) => sum + value, 0);
+    for (let i = 0; i < missing; i++) result[order[i].index] += 1;
+    return result;
+  };
+  const used = new Set<Row>();
+  const usedCombinations = new Set<string>();
+  const exampleFor = (status: Status) => {
+    const candidates = list.filter((row) => row[1].includes(status) && !used.has(row));
+    // Foretrekker en kombinasjon av statuser som ikke allerede er vist, så eksemplene ikke blir like
+    const fresh = candidates.filter((row) => !usedCombinations.has(row[1].join()));
+    const byPattern = new Map<string, { row: Row; count: number }>();
+    (fresh.length ? fresh : candidates).forEach((row) => {
+      const key = `${row[4]}|${row[0]}|${row[1].join()}`;
+      byPattern.set(key, { row: byPattern.get(key)?.row ?? row, count: (byPattern.get(key)?.count ?? 0) + 1 });
+    });
+    const row = [...byPattern.values()].sort((a, b) => b.count - a.count)[0]?.row;
+    if (row) {
+      used.add(row);
+      usedCombinations.add(row[1].join());
+    }
+    return row;
+  };
+  const examples: BeforeAfterExample[] = groups.flatMap((group) => group.statuses).flatMap((status) => {
+    const row = exampleFor(status);
+    return row ? [{ title: row[2].replace(/\u00ad|\(-\)/g, ""), level: row[3], statuses: row[1] }] : [];
   });
-  const legendRow = (status: Status, count: number) => (
-    <div key={status} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-      <span style={{ width: 9, height: 9, borderRadius: 2, background: statusPieColors[status], boxShadow: hairline(statusPieColors[status]) }} />
-      <StatusBadge status={status} wide />
-      <span>
-        {count} <span style={{ color: "var(--bi-color-neutral-text-secondary)" }}>({Math.round((count / total) * 100)} %)</span>
-      </span>
-    </div>
-  );
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 24, margin: "0 0 8px" }}>
-      <div
-        role="img"
-        aria-label="Fordeling av status"
-        style={{ flex: "0 0 auto", width: 140, height: 140, borderRadius: "50%", background: `conic-gradient(${stops.join(", ")})` }}
-      />
-      <div style={{ display: "grid", gap: 6 }}>
-        {counts.map(({ status, count }) => legendRow(status, count))}
-        <div style={{ borderTop: "1px solid var(--bi-color-neutral-stroke)", margin: "4px 0 2px" }} />
-        {legendRow("Fagområde fjernet", removedCount)}
-        <span style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>
-          Kommer i tillegg til en av statusene over. Et tidligere fagområde er verken videreført som hoved, ekstra eller underkategori.
-        </span>
+    <div style={{ display: "grid", gap: 16 }}>
+      <p style={{ margin: 0, maxWidth: 820, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>
+        Statusene gjelder hver for seg, og et studie eller kurs har alle statusene som passer. Hver søyle viser alle studiene og kursene: statusene i søylen, og resten til høyre.
+      </p>
+      <div style={{ display: "grid", gap: 14 }}>
+        {groups.map(({ statuses, rest }) => {
+          const counts = statuses.map(countOf);
+          const restCount = total - counts.reduce((sum, value) => sum + value, 0);
+          const shares = percentages([...counts, restCount]);
+          return (
+            <div key={statuses.join()} style={{ display: "grid", gridTemplateColumns: "440px minmax(0, 1fr) 300px", gap: 16, alignItems: "center" }}>
+              <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "6px 16px" }}>
+                {statuses.map((status, index) => (
+                  <span key={status} style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
+                    <StatusBadge status={status} wide card />
+                    <strong>{shares[index]} %</strong>
+                  </span>
+                ))}
+              </div>
+              <div
+                style={{ display: "flex", height: 28, borderRadius: 14, overflow: "hidden", background: "var(--bi-color-neutral-stroke-subtle)" }}
+                role="img"
+                aria-label={statuses.map((status, index) => `${statusLabel(status)}: ${shares[index]} %`).join(", ")}
+              >
+                {statuses.map((status, index) => (
+                  <div
+                    key={status}
+                    title={`${statusLabel(status)}: ${shares[index]} %`}
+                    style={{
+                      width: `${(counts[index] / total) * 100}%`,
+                      minWidth: 4,
+                      background: statusPieStrong[status],
+                      boxShadow: hairline(statusPieStrong[status]),
+                      borderRight: "2px solid var(--bi-basic-white)",
+                    }}
+                  />
+                ))}
+              </div>
+              <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>
+                <strong style={{ color: "var(--bi-color-neutral-text)" }}>{shares[statuses.length]} %</strong> {rest}
+              </div>
+            </div>
+          );
+        })}
       </div>
+      <div style={{ fontWeight: 700 }}>Eksempel på hver status</div>
+      <BeforeAfterExamples examples={examples} showLocations />
     </div>
   );
 }
@@ -726,6 +836,9 @@ function originNote(area: string): string {
   const fromPublic = summaryRows.filter((row) => row[0] === area && row[4].split("; ").includes("Offentlig sektor")).length;
   return `${fromPublic} av ${areaCount(area)} studier og kurs kom fra Offentlig sektor.`;
 }
+
+/** Antall studier og kurs som tidligere lå i et fagområde som nå er fjernet. */
+const wasIn = (oldArea: string) => summaryRows.filter((row) => row[4].split("; ").includes(oldArea)).length;
 
 // Tre fargeroller: fagområde (kategorisk, areaColors), før/nå/ekstra (sammenligning) og relaterte kategorier i ett diagram (blå rampe, pieColors).
 const areaColors: Record<string, string> = {
@@ -1233,14 +1346,12 @@ const englishNames: { area: EnglishName; subcategories: EnglishName[] }[] = [
   {
     area: { no: "Finans, økonomi og regnskap", en: "Finance, Economics and Accounting", terms: "Major in Finance, Major in Economics, Major in Accounting and Business Control" },
     subcategories: [
-      { no: "Bedriftsøkonomi", en: "Business Administration", terms: "Business Administration, Business" },
-      { no: "Økonomistyring", en: "Management Accounting and Control", terms: "Accounting and Business Control" },
+      { no: "Bedriftsøkonomi og økonomistyring", en: "Business Administration and Management Accounting", terms: "Business Administration, Business, Accounting and Business Control" },
       { no: "Finans og investering", en: "Finance and Investment", terms: "Major in Finance, Quantitative Finance" },
       { no: "Bærekraftig finans", en: "Sustainable Finance", terms: "Sustainable Finance, ESG" },
       { no: "Fintech", en: "Fintech", terms: "Fintech, AI in Financial Services" },
-      { no: "Finansiell kriminalitet og compliance", en: "Financial Crime and Compliance", terms: "Anti-Money Laundering, Compliance, Financial Crime" },
       { no: "Regnskap og revisjon", en: "Accounting and Auditing", terms: "Accounting, Auditing" },
-      { no: "Samfunnsøkonomi, økonomisk teori og matematikk", en: "Economics, Economic Theory and Mathematics", terms: "Major in Economics, Applied Microeconomics, Mathematics for Economists" },
+      { no: "Samfunnsøkonomi og matematikk", en: "Economics and Mathematics", terms: "Major in Economics, Applied Microeconomics, Mathematics for Economists" },
     ],
   },
   {
@@ -1248,9 +1359,9 @@ const englishNames: { area: EnglishName; subcategories: EnglishName[] }[] = [
     subcategories: [
       { no: "Digital transformasjon", en: "Digital Transformation", terms: "Digital Transformation, Digital Business" },
       { no: "Data science og analytics", en: "Data Science and Analytics", terms: "Data Science for Business, Business Analytics" },
-      { no: "KI", en: "Artificial Intelligence", terms: "Generative AI for Business, AI for Strategic Management" },
+      { no: "KI", en: "AI", terms: "Generative AI for Business, AI for Strategic Management" },
       { no: "Statistikk og metode", en: "Statistics and Quantitative Methods", terms: "Statistics, Data Analysis" },
-      { no: "Ansvarlig KI og personvern", en: "Responsible AI and Data Privacy", terms: "Responsible AI Leadership, GDPR" },
+      { no: "KI-etikk, regulering og personvern", en: "AI Ethics, Regulation and Data Privacy", terms: "Responsible AI Leadership, AI Act, GDPR" },
     ],
   },
   {
@@ -1299,13 +1410,10 @@ const englishNames: { area: EnglishName; subcategories: EnglishName[] }[] = [
   {
     area: { no: "Ledelse og strategi", en: "Leadership and Strategy", terms: "Bachelor in Management, Master of Management, Leadership in Action, Major in Strategy" },
     subcategories: [
-      { no: "Generell ledelse og lederutdanning", en: "General Management and Leadership Education", terms: "Bachelor in Management, Executive MBA, Master of Management" },
+      { no: "Generell ledelse og lederutvikling", en: "General Management and Leadership Development", terms: "Bachelor in Management, Executive MBA, Master of Management, Leadership in Action, Coaching, Negotiation, Leadership Communication" },
       { no: "Prosjektledelse", en: "Project Management", terms: "Project Management, Agile" },
       { no: "Sikkerhets- og beredskapsledelse", en: "Security and Emergency Leadership", terms: "Security Management, Crisis Management" },
-      { no: "Teamledelse og prestasjon", en: "Team Leadership and Performance", terms: "Team Leadership, Organisational Psychology" },
-      { no: "Medarbeiderledelse og arbeidsmiljø", en: "People Leadership and Work Environment", terms: "HRM, Work Environment, Health-promoting Leadership" },
-      { no: "Endringsledelse", en: "Leading Change", terms: "Change Management, Leadership, Change and Analytics" },
-      { no: "Lederferdigheter og kommunikasjon", en: "Leadership Skills and Communication", terms: "Leadership in Action, Coaching, Negotiation, Leadership Communication" },
+      { no: "HR-ledelse og endringsledelse", en: "HR Leadership and Change Management", terms: "Team Leadership, Organisational Psychology, HRM, Work Environment, Change Management, Leadership, Change and Analytics" },
       { no: "Strategisk ledelse", en: "Strategy and Strategic Management", terms: "Major in Strategy, Strategic Management, Ocean Industry Leadership" },
       { no: "Helse-, skole- og barnehageledelse", en: "Healthcare, School and Early Childhood Leadership", terms: "Healthcare Management, Educational Leadership" },
     ],
@@ -1593,13 +1701,13 @@ function OverlapSection() {
         ))}
       </div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: "0 24px", alignItems: "center" }}>
-        <div style={{ alignSelf: "start", minHeight: 76 }}>
+        <div style={{ alignSelf: "start", height: 100 }}>
           <div style={{ fontWeight: 700, color: "var(--bi-color-neutral-text-secondary)" }}>Fagområder</div>
           <p style={{ margin: "2px 0 0", color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>
             {describe(areaFocus, "Hold musepekeren over et fagområde eller en strek.")}
           </p>
         </div>
-        <div style={{ alignSelf: "start", minHeight: 76 }}>
+        <div style={{ alignSelf: "start", height: 100 }}>
           <div style={{ fontWeight: 700, color: "var(--bi-color-neutral-text-secondary)" }}>Underkategorier</div>
           <p style={{ margin: "2px 0 0", color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>
             {describe(subFocus, "Hold musepekeren over en underkategori eller en strek.")}
@@ -1639,7 +1747,7 @@ const sankeyRight = [
   "Sikkerhet og beredskap",
 ];
 
-function BeforeAfterSankey({ mode = "all" }: { mode?: "main" | "all" }) {
+function BeforeAfterSankey() {
   const [focus, setFocus] = useState<{ side: "old" | "new"; name: string } | null>(null);
   const width = 640;
   const nodeWidth = 14;
@@ -1648,23 +1756,21 @@ function BeforeAfterSankey({ mode = "all" }: { mode?: "main" | "all" }) {
   const leftCounts = new Map<string, number>();
   const rightCounts = new Map<string, number>();
   let totalFlow = 0;
-  let allFlow = 0;
   for (const row of summaryRows) {
     const previous = row[4].split("; ").filter((p) => p !== "–");
     const keys = previous.length ? previous : [noOldArea];
     const extraTargets = row[6].split("; ").slice(1).map((entry) => entry.split(" › ")[0]).filter((area) => area !== row[0]);
-    allFlow += 1 + extraTargets.length;
-    for (const target of mode === "main" ? [row[0]] : [row[0], ...extraTargets]) {
+    for (const target of [row[0], ...extraTargets]) {
       for (const key of keys) flows.set(`${key}|${target}`, (flows.get(`${key}|${target}`) ?? 0) + 1 / keys.length);
       rightCounts.set(target, (rightCounts.get(target) ?? 0) + 1);
       totalFlow++;
     }
     for (const key of keys) leftCounts.set(key, (leftCounts.get(key) ?? 0) + 1);
   }
-  // Begge modusene har samme høyde, slik at kun hovedfagområder får bredere bånd
+  // Skalaen gir et høyere diagram enn før, og høyden vokser med antall ekstra plasseringer
   const gaps = gap * (sankeyLeft.length - 1);
-  const height = (allFlow * (520 - gaps)) / summaryRows.length + gaps;
-  const scale = (height - gaps) / totalFlow;
+  const scale = (720 - gaps) / summaryRows.length;
+  const height = totalFlow * scale + gaps;
   const leftTotals = new Map(sankeyLeft.map((name) => [name, sankeyRight.reduce((sum, to) => sum + (flows.get(`${name}|${to}`) ?? 0), 0)]));
   const rightTotals = new Map(sankeyRight.map((name) => [name, sankeyLeft.reduce((sum, from) => sum + (flows.get(`${from}|${name}`) ?? 0), 0)]));
   const rightHeight = totalFlow * scale + gap * (sankeyRight.length - 1);
@@ -1708,23 +1814,59 @@ function BeforeAfterSankey({ mode = "all" }: { mode?: "main" | "all" }) {
   const newCount = (name: string) => rightCounts.get(name) ?? 0;
 
   // Tredje nivå (kun hoved og ekstra samlet): fra totalen i hvert nye fagområde videre til bare dem som har det som hovedfagområde
-  const withKinds = mode === "all";
   const kindGap = 380;
   const kindX = width + kindGap;
-  const viewWidth = withKinds ? 330 + kindX + nodeWidth + 520 : width + 640;
+  const viewWidth = 330 + kindX + nodeWidth + 520;
   const fontSize = (12 * viewWidth) / (width + 640);
   const mainCount = (name: string) => beforeAfter.after.get(name)?.count ?? 0;
-  const kindBands = withKinds ? sankeyRight.filter((area) => mainCount(area) > 0).map((area) => ({ area, value: mainCount(area), y: rightY.get(area) ?? 0 })) : [];
+  // Båndet starter like høyt som hele fagområdet og smalner gradvis inn til de som har det som hovedfagområde. Hovedfagområdet står midt for fagområdet.
+  const kindBands = sankeyRight
+    .filter((area) => mainCount(area) > 0)
+    .map((area) => {
+      const fullHeight = (rightTotals.get(area) ?? 0) * scale;
+      const mainHeight = mainCount(area) * scale;
+      const top = rightY.get(area) ?? 0;
+      return { area, value: mainCount(area), top, fullHeight, mainHeight, y: top + (fullHeight - mainHeight) / 2 };
+    });
   const isKindActive = (area: string) =>
     !focus || (focus.side === "new" ? area === focus.name : (flows.get(`${focus.name}|${area}`) ?? 0) > 0);
-  const bandPath = (x0: number, x1: number, y0: number, y1: number, h: number) => {
+  const bandPath = (x0: number, x1: number, y0: number, y1: number, h: number, endHeight = h) => {
     const c = (x1 - x0) / 2;
-    return `M ${x0} ${y0} C ${x0 + c} ${y0} ${x1 - c} ${y1} ${x1} ${y1} L ${x1} ${y1 + h} C ${x1 - c} ${y1 + h} ${x0 + c} ${y0 + h} ${x0} ${y0 + h} Z`;
+    return `M ${x0} ${y0} C ${x0 + c} ${y0} ${x1 - c} ${y1} ${x1} ${y1} L ${x1} ${y1 + endHeight} C ${x1 - c} ${y1 + endHeight} ${x0 + c} ${y0 + h} ${x0} ${y0 + h} Z`;
   };
-  const halo = withKinds ? { stroke: "#fff", strokeWidth: 4, paintOrder: "stroke" as const } : {};
+  const halo = { stroke: "#fff", strokeWidth: 4, paintOrder: "stroke" as const };
+  // Kolonnetitlene står midt over teksten til fagområdene i hver kolonne, med en strek under som viser kolonnebredden
+  const textWidth = (lines: string[]) => Math.max(...lines.map((line) => line.length)) * fontSize * 0.55;
+  const columnWidth = (lines: string[][]) => Math.max(...lines.map(textWidth));
+  const leftWidth = columnWidth(sankeyLeft.map((name) => [...wrapLabel(shortOldName(name), 34).slice(0, -1), `${wrapLabel(shortOldName(name), 34).slice(-1)[0]} ${count(name)}`]));
+  const rightWidth = columnWidth(kindBands.map(({ area, value }) => [`${wrapLabel(`Hovedfagområde: ${areaShortName[area] ?? area}`, 42).slice(-1)[0]} ${value}`, ...wrapLabel(`Hovedfagområde: ${areaShortName[area] ?? area}`, 42)]));
+  const headers = [
+    { label: "BI.no nå", center: -8 - leftWidth / 2 },
+    { label: "Migrering", center: (nodeWidth + width - nodeWidth) / 2 },
+    { label: "Hovedfagområde + Ekstra fagområder", center: (width - nodeWidth + kindX) / 2 },
+    { label: "Kun hovedfagområde", center: kindX + nodeWidth + 8 + rightWidth / 2 },
+  ];
+  // Tittelraden er en tabellrad: skillelinjene ligger der kolonnene i diagrammet starter og slutter
+  const headerDividers = [nodeWidth, width - nodeWidth, kindX];
+  const headerLeft = -330;
+  const headerRight = viewWidth - 330;
 
   return (
-    <svg viewBox={`-330 -10 ${viewWidth} ${height + 20}`} role="img" aria-label={mode === "main" ? "Fra gamle fagområder til nye hovedfagområder" : "Fra gamle fagområder til nye fagområder, både hoved og ekstra, og videre til bare hovedfagområdene"} style={{ width: "100%", height: "auto", margin: "0 0 20px" }} onMouseLeave={() => setFocus(null)}>
+    <svg viewBox={`-330 -60 ${viewWidth} ${height + 70}`} role="img" aria-label="Fra gamle fagområder til nye fagområder, både hoved og ekstra, og videre til bare hovedfagområdene" style={{ width: "100%", height: "auto", margin: "0 0 20px" }} onMouseLeave={() => setFocus(null)}>
+      <g stroke="#90a3b7" strokeWidth={2}>
+        <line x1={headerLeft} x2={headerRight} y1={-56} y2={-56} />
+        <line x1={headerLeft} x2={headerRight} y1={-6} y2={-6} />
+        {headerDividers.map((x) => (
+          <line key={x} x1={x} x2={x} y1={-56} y2={-6} />
+        ))}
+      </g>
+      <g fontSize={fontSize * 1.1} fontWeight={700} fill="#222d38" textAnchor="middle" dominantBaseline="middle">
+        {headers.map(({ label, center }) => (
+          <text key={label} x={center} y={-31}>
+            {label}
+          </text>
+        ))}
+      </g>
       {bands.map((band) => {
         const h = band.value * scale;
         const path = bandPath(nodeWidth, width - nodeWidth, band.y0, band.y1, h);
@@ -1735,7 +1877,7 @@ function BeforeAfterSankey({ mode = "all" }: { mode?: "main" | "all" }) {
         );
       })}
       {kindBands.map((band) => (
-        <path key={band.area} d={bandPath(width, kindX, band.y, band.y, band.value * scale)} fill={areaColor(band.area)} fillOpacity={isKindActive(band.area) ? (focus ? 0.8 : 0.5) : 0.06}>
+        <path key={band.area} d={bandPath(width, kindX, band.top, band.y, band.fullHeight, band.mainHeight)} fill={areaColor(band.area)} fillOpacity={isKindActive(band.area) ? (focus ? 0.8 : 0.5) : 0.06}>
           <title>{`${band.area} → Hovedfagområde for ${areaShortName[band.area] ?? band.area}: ${band.value} av ${newCount(band.area)}`}</title>
         </path>
       ))}
@@ -1763,7 +1905,7 @@ function BeforeAfterSankey({ mode = "all" }: { mode?: "main" | "all" }) {
           <g key={name} onMouseEnter={() => setFocus({ side: "new", name })} opacity={!focus || (focus.side === "new" && focus.name === name) || bands.some((b) => b.to === name && isActive(b)) ? 1 : 0.35}>
             <rect x={width - nodeWidth} y={y} width={nodeWidth} height={h} fill={areaColor(name)} />
             <text x={width + 8} y={y + h / 2} textAnchor="start" dominantBaseline="middle" fontSize={fontSize} fill="#222d38" {...halo}>
-              {wrapLabel(areaShortName[name] ?? name, withKinds ? 28 : 34).map((line, lineIndex, all) => (
+              {wrapLabel(areaShortName[name] ?? name, 28).map((line, lineIndex, all) => (
                 <tspan key={line} x={width + 8} dy={lineIndex === 0 ? `${-(all.length - 1) * 0.6}em` : "1.2em"}>
                   {line}
                   {lineIndex === all.length - 1 && <tspan fontWeight="700"> {newCount(name)}</tspan>}
@@ -1773,20 +1915,194 @@ function BeforeAfterSankey({ mode = "all" }: { mode?: "main" | "all" }) {
           </g>
         );
       })}
-      {withKinds &&
-        kindBands.map(({ area, value, y }) => (
-          <g key={area} opacity={isKindActive(area) ? 1 : 0.35}>
-            <rect x={kindX} y={y} width={nodeWidth} height={Math.max(value * scale, 2)} fill={areaColor(area)} />
-            <text x={kindX + nodeWidth + 8} y={y + (value * scale) / 2} dominantBaseline="middle" fontSize={fontSize} fill="#222d38">
-              {wrapLabel(`Hovedfagområde: ${areaShortName[area] ?? area}`, 42).map((line, lineIndex, all) => (
-                <tspan key={line} x={kindX + nodeWidth + 8} dy={lineIndex === 0 ? `${-(all.length - 1) * 0.6}em` : "1.2em"}>
+      {kindBands.map(({ area, value, y }) => (
+        <g key={area} onMouseEnter={() => setFocus({ side: "new", name: area })} opacity={isKindActive(area) ? 1 : 0.35}>
+          <rect x={kindX} y={y} width={nodeWidth} height={Math.max(value * scale, 2)} fill={areaColor(area)} />
+          <text x={kindX + nodeWidth + 8} y={y + (value * scale) / 2} dominantBaseline="middle" fontSize={fontSize} fill="#222d38">
+            {wrapLabel(`Hovedfagområde: ${areaShortName[area] ?? area}`, 42).map((line, lineIndex, all) => (
+              <tspan key={line} x={kindX + nodeWidth + 8} dy={lineIndex === 0 ? `${-(all.length - 1) * 0.6}em` : "1.2em"}>
+                {line}
+                {lineIndex === all.length - 1 && <tspan fontWeight="700"> {value}</tspan>}
+              </tspan>
+            ))}
+          </text>
+        </g>
+      ))}
+    </svg>
+  );
+}
+
+/** Som BeforeAfterSankey, men fra gamle fagområder til de nye underkategoriene (hoved + ekstra) og videre til bare hovedplasseringene. */
+function SubcategoryMigrationSankey() {
+  const [focus, setFocus] = useState<{ side: "old" | "new"; name: string } | null>(null);
+  const width = 640;
+  const nodeWidth = 14;
+  const gap = 5;
+  const areaGap = 14;
+  const scale = 3;
+  const kindGap = 380;
+  const kindX = width + kindGap;
+  const viewWidth = 330 + kindX + nodeWidth + 520;
+  const fontSize = (12 * viewWidth) / (width + 640);
+  const minNode = fontSize * 1.25;
+
+  const flows = new Map<string, number>();
+  const leftCounts = new Map<string, number>();
+  const placements = new Map<string, { total: number; main: number }>();
+  for (const row of summaryRows) {
+    const previous = row[4].split("; ").filter((p) => p !== "–");
+    const keys = previous.length ? previous : [noOldArea];
+    row[6].split("; ").forEach((entry, index) => {
+      const current = placements.get(entry) ?? { total: 0, main: 0 };
+      current.total += 1;
+      if (index === 0) current.main += 1;
+      placements.set(entry, current);
+      for (const key of keys) flows.set(`${key}|${entry}`, (flows.get(`${key}|${entry}`) ?? 0) + 1 / keys.length);
+    });
+    for (const key of keys) leftCounts.set(key, (leftCounts.get(key) ?? 0) + 1);
+  }
+  const rightList = sankeyRight.flatMap((area) =>
+    [...placements.keys()]
+      .filter((entry) => entry.startsWith(`${area} › `))
+      .sort((a, b) => (placements.get(b)?.total ?? 0) - (placements.get(a)?.total ?? 0) || a.localeCompare(b, "nb")),
+  );
+  const subName = (entry: string) => entry.split(" › ")[1];
+  const areaOf = (entry: string) => entry.split(" › ")[0];
+  const leftTotals = new Map(sankeyLeft.map((name) => [name, rightList.reduce((sum, to) => sum + (flows.get(`${name}|${to}`) ?? 0), 0)]));
+  const rightSize = (entry: string) => Math.max((placements.get(entry)?.total ?? 0) * scale, minNode);
+
+  const leftY = new Map<string, number>();
+  let cursor = 0;
+  for (const name of sankeyLeft) {
+    leftY.set(name, cursor);
+    cursor += (leftTotals.get(name) ?? 0) * scale + 9;
+  }
+  const leftHeight = cursor - 9;
+  const rightY = new Map<string, number>();
+  cursor = 0;
+  rightList.forEach((entry, index) => {
+    if (index > 0) cursor += areaOf(entry) === areaOf(rightList[index - 1]) ? gap : areaGap;
+    rightY.set(entry, cursor);
+    cursor += rightSize(entry);
+  });
+  const rightHeight = cursor;
+  const height = Math.max(leftHeight, rightHeight);
+  const leftShift = (height - leftHeight) / 2;
+  const rightShift = (height - rightHeight) / 2;
+  const leftTop = (name: string) => (leftY.get(name) ?? 0) + leftShift;
+  const rightTop = (entry: string) => (rightY.get(entry) ?? 0) + rightShift;
+
+  const leftCursor = new Map(sankeyLeft.map((name) => [name, leftTop(name)]));
+  const rightCursor = new Map(rightList.map((entry) => [entry, rightTop(entry) + (rightSize(entry) - (placements.get(entry)?.total ?? 0) * scale) / 2]));
+  const bands: { from: string; to: string; value: number; y0: number; y1: number }[] = [];
+  for (const from of sankeyLeft) {
+    for (const to of rightList) {
+      const value = flows.get(`${from}|${to}`) ?? 0;
+      if (value <= 0) continue;
+      bands.push({ from, to, value, y0: leftCursor.get(from) ?? 0, y1: 0 });
+      leftCursor.set(from, (leftCursor.get(from) ?? 0) + value * scale);
+    }
+  }
+  for (const to of rightList) {
+    for (const band of bands.filter((candidate) => candidate.to === to).sort((a, b) => sankeyLeft.indexOf(a.from) - sankeyLeft.indexOf(b.from))) {
+      band.y1 = rightCursor.get(to) ?? 0;
+      rightCursor.set(to, (rightCursor.get(to) ?? 0) + band.value * scale);
+    }
+  }
+  const isActive = (band: { from: string; to: string }) => !focus || (focus.side === "old" ? band.from === focus.name : band.to === focus.name);
+  const isKindActive = (entry: string) => !focus || (focus.side === "new" ? entry === focus.name : (flows.get(`${focus.name}|${entry}`) ?? 0) > 0);
+  const leftColor = (name: string) => {
+    const target = oldAreaCatalog[name]?.to;
+    return target ? areaColor(target) : name === noOldArea ? "#d5dde4" : "#c8d1db";
+  };
+  const bandPath = (x0: number, x1: number, y0: number, y1: number, h: number, endHeight = h) => {
+    const c = (x1 - x0) / 2;
+    return `M ${x0} ${y0} C ${x0 + c} ${y0} ${x1 - c} ${y1} ${x1} ${y1} L ${x1} ${y1 + endHeight} C ${x1 - c} ${y1 + endHeight} ${x0 + c} ${y0 + h} ${x0} ${y0 + h} Z`;
+  };
+  const kindNodes = rightList
+    .filter((entry) => (placements.get(entry)?.main ?? 0) > 0)
+    .map((entry) => {
+      const fullHeight = (placements.get(entry)?.total ?? 0) * scale;
+      const mainHeight = (placements.get(entry)?.main ?? 0) * scale;
+      const center = rightTop(entry) + rightSize(entry) / 2;
+      return { entry, fullHeight, mainHeight, top: center - fullHeight / 2, y: center - mainHeight / 2, main: placements.get(entry)?.main ?? 0 };
+    });
+  const halo = { stroke: "#fff", strokeWidth: 4, paintOrder: "stroke" as const };
+
+  const textWidth = (text: string) => text.length * fontSize * 0.55;
+  const leftWidth = Math.max(...sankeyLeft.map((name) => textWidth(`${shortOldName(name)} ${leftCounts.get(name) ?? 0}`)));
+  const kindWidth = Math.max(...kindNodes.map(({ entry, main }) => textWidth(`${subName(entry)} ${main}`)));
+  const headers = [
+    { label: "BI.no nå", center: -8 - Math.min(leftWidth, 300) / 2 },
+    { label: "Migrering", center: width / 2 },
+    { label: "Underkategorier (hoved + ekstra)", center: (width - nodeWidth + kindX) / 2 },
+    { label: "Kun hovedplassering", center: kindX + nodeWidth + 8 + kindWidth / 2 },
+  ];
+  const headerDividers = [nodeWidth, width - nodeWidth, kindX];
+  const headerLeft = -330;
+  const headerRight = viewWidth - 330;
+
+  return (
+    <svg viewBox={`-330 -60 ${viewWidth} ${height + 70}`} role="img" aria-label="Fra gamle fagområder til nye underkategorier, både hoved og ekstra, og videre til bare hovedplasseringene" style={{ width: "100%", height: "auto", margin: "0 0 20px" }} onMouseLeave={() => setFocus(null)}>
+      <g stroke="#90a3b7" strokeWidth={2}>
+        <line x1={headerLeft} x2={headerRight} y1={-56} y2={-56} />
+        <line x1={headerLeft} x2={headerRight} y1={-6} y2={-6} />
+        {headerDividers.map((x) => (
+          <line key={x} x1={x} x2={x} y1={-56} y2={-6} />
+        ))}
+      </g>
+      <g fontSize={fontSize * 1.1} fontWeight={700} fill="#222d38" textAnchor="middle" dominantBaseline="middle">
+        {headers.map(({ label, center }) => (
+          <text key={label} x={center} y={-31}>
+            {label}
+          </text>
+        ))}
+      </g>
+      {bands.map((band) => (
+        <path key={`${band.from}|${band.to}`} d={bandPath(nodeWidth, width - nodeWidth, band.y0, band.y1, band.value * scale)} fill={areaColor(areaOf(band.to))} fillOpacity={isActive(band) ? (focus ? 0.8 : 0.5) : 0.06}>
+          <title>{`${band.from} → ${band.to}: ${Math.round(band.value * 10) / 10}`}</title>
+        </path>
+      ))}
+      {kindNodes.map(({ entry, top, y, fullHeight, mainHeight }) => (
+        <path key={entry} d={bandPath(width, kindX, top, y, fullHeight, mainHeight)} fill={areaColor(areaOf(entry))} fillOpacity={isKindActive(entry) ? (focus ? 0.8 : 0.5) : 0.06}>
+          <title>{`${entry}: ${placements.get(entry)?.main} av ${placements.get(entry)?.total} har den som hovedplassering`}</title>
+        </path>
+      ))}
+      {sankeyLeft.map((name) => {
+        const y = leftTop(name);
+        const h = Math.max((leftTotals.get(name) ?? 0) * scale, 2);
+        return (
+          <g key={name} onMouseEnter={() => setFocus({ side: "old", name })} opacity={!focus || (focus.side === "old" && focus.name === name) || bands.some((b) => b.from === name && isActive(b)) ? 1 : 0.35}>
+            <rect x={0} y={y} width={nodeWidth} height={h} fill={leftColor(name)} />
+            <text x={-8} y={y + h / 2} textAnchor="end" dominantBaseline="middle" fontSize={fontSize} fill="#222d38" textDecoration={oldAreaCatalog[name]?.kind === "removed" ? "line-through" : undefined}>
+              {wrapLabel(shortOldName(name), 34).map((line, lineIndex, all) => (
+                <tspan key={line} x={-8} dy={lineIndex === 0 ? `${-(all.length - 1) * 0.6}em` : "1.2em"}>
                   {line}
-                  {lineIndex === all.length - 1 && <tspan fontWeight="700"> {value}</tspan>}
+                  {lineIndex === all.length - 1 && <tspan fontWeight="700"> {leftCounts.get(name) ?? 0}</tspan>}
                 </tspan>
               ))}
             </text>
           </g>
-        ))}
+        );
+      })}
+      {rightList.map((entry) => (
+        <g key={entry} onMouseEnter={() => setFocus({ side: "new", name: entry })} opacity={!focus || (focus.side === "new" && focus.name === entry) || bands.some((b) => b.to === entry && isActive(b)) ? 1 : 0.35}>
+          <rect x={width - nodeWidth} y={rightTop(entry)} width={nodeWidth} height={rightSize(entry)} fill={areaColor(areaOf(entry))} />
+          <text x={width + 8} y={rightTop(entry) + rightSize(entry) / 2} dominantBaseline="middle" fontSize={fontSize} fill="#222d38" {...halo}>
+            {subName(entry)}
+            <tspan fontWeight="700"> {placements.get(entry)?.total}</tspan>
+          </text>
+        </g>
+      ))}
+      {kindNodes.map(({ entry, y, mainHeight, main }) => (
+        <g key={entry} onMouseEnter={() => setFocus({ side: "new", name: entry })} opacity={isKindActive(entry) ? 1 : 0.35}>
+          <rect x={kindX} y={y} width={nodeWidth} height={Math.max(mainHeight, 2)} fill={areaColor(areaOf(entry))} />
+          <text x={kindX + nodeWidth + 8} y={y + mainHeight / 2} dominantBaseline="middle" fontSize={fontSize} fill="#222d38">
+            {subName(entry)}
+            <tspan fontWeight="700"> {main}</tspan>
+          </text>
+        </g>
+      ))}
     </svg>
   );
 }
@@ -1986,7 +2302,7 @@ function LedelseSankey() {
   );
 }
 
-type BeforeAfterExample = { title: string; level: string };
+type BeforeAfterExample = { title: string; level: string; statuses?: Status[] };
 
 const beforeAfterExamples: BeforeAfterExample[] = [
   { title: "Juss for ledere", level: "Masterkurs" },
@@ -1994,47 +2310,95 @@ const beforeAfterExamples: BeforeAfterExample[] = [
   { title: "Helseledelse", level: "Masterkurs" },
 ];
 
-const sectorLeadershipExamples: BeforeAfterExample[] = [
-  { title: "Helseledelse", level: "Masterkurs" },
-  { title: "Nasjonal rektorutdanning", level: "Masterkurs" },
-  { title: "Sikkerhetsledelse", level: "Bachelorkurs" },
-  { title: "Digital sikkerhet for ledere", level: "Masterkurs" },
-];
-
-function BeforeAfterExamples({ examples = beforeAfterExamples }: { examples?: BeforeAfterExample[] }) {
+function BeforeAfterExamples({ examples = beforeAfterExamples, showLocations = false }: { examples?: BeforeAfterExample[]; showLocations?: boolean }) {
   const normalizeTitle = (text: string) => text.replace(/\u00ad|\(-\)/g, "");
+  const locationBadge = (primary: boolean) => (
+    <span
+      style={{
+        flex: "0 0 auto",
+        padding: "2px 8px",
+        borderRadius: 10,
+        fontSize: "0.75rem",
+        fontWeight: 600,
+        whiteSpace: "nowrap",
+        background: primary ? "var(--bi-primary-60)" : "var(--bi-basic-white)",
+        color: primary ? "var(--bi-basic-white)" : "var(--bi-color-neutral-text-secondary)",
+        border: primary ? "1px solid var(--bi-primary-60)" : "1px dashed var(--bi-neutral-40)",
+      }}
+    >
+      {primary ? "Hovedfagområde" : "Vises også her"}
+    </span>
+  );
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: 16, margin: "0 0 20px" }}>
-      {examples.map(({ title, level }) => {
-        const row = summaryRows.find((candidate) => normalizeTitle(candidate[2]) === title && candidate[3] === level);
-        if (!row) return null;
-        const previous = row[4].split("; ").filter((p) => p !== "–");
-        const entries = row[6].split("; ");
-        return (
-          <div key={title} style={{ background: "var(--bi-basic-white)", border: "1px solid var(--bi-color-neutral-stroke-subtle)", borderRadius: 8, padding: 16 }}>
-            <div style={{ fontWeight: 700 }}>{title}</div>
-            <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem", marginBottom: 10 }}>{level}</div>
-            <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem", marginBottom: 4 }}>
-              Før: {previous.length > 1 ? `${previous.length} fagområder uten prioritet` : previous.length === 1 ? "1 fagområde" : "manglet fagområde"}
-            </div>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
-              {previous.length ? previous.map((name) => <AreaPill key={name} label={shortOldName(name)} kind={oldAreaCatalog[name]?.kind === "removed" ? "removed" : "old"} />) : <AreaPill label="Manglet fagområde" kind="added" />}
-            </div>
-            <div style={{ color: "var(--bi-color-primary-text-accent)", fontSize: "0.8125rem", fontWeight: 600, marginBottom: 4 }}>
-              Nå: 1 hovedfagområde{entries.length > 1 ? ` + ${new Set(entries.slice(1).map((entry) => entry.split(" › ")[0])).size} ekstra` : ""}
-            </div>
-            {entries.map((entry, index) => {
-              const [entryArea, entrySub] = entry.split(" › ");
-              return (
-                <div key={entry} style={{ position: "relative", marginBottom: 8, paddingLeft: 0 }}>
-                  <AreaWithSubcategory area={entryArea} subcategory={entrySub} muted={index > 0} />
+    <>
+      <div style={{ display: "grid", gridTemplateColumns: `repeat(auto-fit, minmax(${showLocations ? 270 : 300}px, 1fr))`, gap: 16, margin: "0 0 20px" }}>
+        {examples.map(({ title, level, statuses }) => {
+          const row = summaryRows.find((candidate) => normalizeTitle(candidate[2]) === title && candidate[3] === level);
+          if (!row) return null;
+          const previous = row[4].split("; ").filter((p) => p !== "–");
+          const entries = row[6].split("; ");
+          return (
+            <div key={`${title}|${level}`} style={{ background: "var(--bi-basic-white)", border: "1px solid var(--bi-color-neutral-stroke-subtle)", borderRadius: 8, padding: 16 }}>
+              {statuses && (
+                <div style={{ marginBottom: 10, display: "flex", flexWrap: "wrap", gap: 4 }}>
+                  {statuses.map((status) => (
+                    <StatusBadge key={status} status={status} wide card />
+                  ))}
                 </div>
-              );
-            })}
-          </div>
-        );
-      })}
-    </div>
+              )}
+              <div style={{ fontWeight: 700 }}>{title}</div>
+              <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem", marginBottom: 10 }}>{level}</div>
+              <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem", marginBottom: 4 }}>
+                Før: {previous.length > 1 ? `${previous.length} fagområder uten prioritet` : previous.length === 1 ? "1 fagområde" : "manglet fagområde"}
+              </div>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginBottom: 10 }}>
+                {previous.length ? previous.map((name) => <AreaPill key={name} label={shortOldName(name)} kind={oldAreaCatalog[name]?.kind === "removed" ? "removed" : "old"} />) : <AreaPill label="Manglet fagområde" kind="added" />}
+              </div>
+              <div style={{ color: "var(--bi-color-primary-text-accent)", fontSize: "0.8125rem", fontWeight: 600, marginBottom: showLocations ? 8 : 4 }}>
+                {showLocations
+                  ? `Nå: finnes i ${entries.length} lister`
+                  : `Nå: 1 hovedfagområde${entries.length > 1 ? ` + ${new Set(entries.slice(1).map((entry) => entry.split(" › ")[0])).size} ekstra` : ""}`}
+              </div>
+              {showLocations ? (
+                <div style={{ display: "grid", gap: 8 }}>
+                  {entries.map((entry, index) => {
+                    const [entryAreaName, entrySub] = entry.split(" › ");
+                    return (
+                      <div
+                        key={entry}
+                        style={{
+                          display: "grid",
+                          gap: 6,
+                          justifyItems: "start",
+                          padding: "8px 10px 8px 22px",
+                          borderRadius: 6,
+                          background: index === 0 ? "var(--bi-primary-5)" : "var(--bi-color-neutral-surface)",
+                          border: index === 0 ? "1px solid var(--bi-primary-20)" : "1px dashed var(--bi-neutral-40)",
+                        }}
+                      >
+                        {locationBadge(index === 0)}
+                        <div style={{ paddingLeft: index === 0 ? 12 : 0 }}>
+                          <AreaWithSubcategory area={entryAreaName} subcategory={entrySub} muted={index > 0} wrap lineColor={index === 0 ? "var(--bi-primary-50)" : "#9fb0c2"} />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                entries.map((entry, index) => {
+                  const [entryAreaName, entrySub] = entry.split(" › ");
+                  return (
+                    <div key={entry} style={{ position: "relative", marginBottom: 8, paddingLeft: 0 }}>
+                      <AreaWithSubcategory area={entryAreaName} subcategory={entrySub} muted={index > 0} />
+                    </div>
+                  );
+                })
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </>
   );
 }
 
@@ -2045,6 +2409,147 @@ function beforeAfterScale() {
   const maxCount = Math.max(...[...before.values()].map((v) => v.count), ...[...after.values()].map((v) => v.count), ...[...after.entries()].map(([area, value]) => value.count + extraTotal(area)));
   const percent = (value: number) => `${Math.round((value / total) * 100)} %`;
   return { total, extraTotal, maxCount, percent };
+}
+
+/** Fagområdene som liggende søyler etter størrelse, delt opp i underkategorier. Navnet på underkategorien vises når man holder musepekeren over segmentet. */
+function AreaSizeBars() {
+  const areas = areaTree
+    .map(({ area, subs }) => {
+      const items = subs
+        .map(([name, { main, extra }]) => ({ name, value: main + extra }))
+        .filter((item) => item.value > 0)
+        .sort((x, y) => y.value - x.value || x.name.localeCompare(y.name, "nb"));
+      return { area, items, total: items.reduce((sum, item) => sum + item.value, 0) };
+    })
+    .sort((x, y) => y.total - x.total);
+  const nameWidth = 300;
+  const barHeight = 34;
+  const tooltipSpace = 34;
+  const blockGap = 22;
+  const scale = 10;
+  const charWidth = 6.8;
+  const [hovered, setHovered] = useState<string | null>(null);
+  const largest = areas[0]?.total ?? 1;
+  const chartWidth = nameWidth + largest * scale + 40;
+  let blockTop = tooltipSpace;
+  const blocks = areas.map(({ area, items, total }) => {
+    const barY = blockTop;
+    blockTop = barY + barHeight + blockGap;
+    const segments = items.map((item, index) => ({
+      ...item,
+      index,
+      key: `${area}|${item.name}`,
+      x: nameWidth + items.slice(0, index).reduce((sum, previous) => sum + previous.value * scale, 0),
+      width: item.value * scale,
+      label: `${item.name} (${item.value})`,
+    }));
+    return { area, total, barY, segments };
+  });
+  const height = blockTop - blockGap;
+  return (
+    <svg viewBox={`0 -4 ${chartWidth} ${height + 8}`} role="img" aria-label="Fagområdene etter størrelse, delt opp i underkategorier. Hold musepekeren over et segment for å se navnet" style={{ width: "100%", height: "auto" }}>
+      {blocks.map(({ area, total, barY, segments }) => {
+        const nameLines = wrapWords(area, 26);
+        const active = segments.find((segment) => segment.key === hovered);
+        const tooltipWidth = active ? active.label.length * charWidth + 18 : 0;
+        return (
+          <g key={area}>
+            <AreaIconInSvg area={area} centerX={20} top={barY + (barHeight - 26) / 2} height={26} color="#597694" />
+            <text x={48} y={barY + barHeight / 2 - ((nameLines.length - 1) * 17) / 2 + 5} fontSize="15" fontWeight="700" fill="#0b49a1">
+              {nameLines.map((line, lineIndex) => (
+                <tspan key={line} x={48} dy={lineIndex === 0 ? 0 : 17}>
+                  {line}
+                  {lineIndex === nameLines.length - 1 && <tspan fontWeight="400" fill="#475e75">{` (${total})`}</tspan>}
+                </tspan>
+              ))}
+            </text>
+            {segments.map((segment) => (
+              <rect
+                key={segment.name}
+                x={segment.x}
+                y={barY}
+                width={segment.width}
+                height={barHeight}
+                fill={blueShades[segment.index % blueShades.length]}
+                fillOpacity={active && active.key !== segment.key ? 0.55 : 1}
+                stroke="var(--bi-basic-white)"
+                strokeWidth={1.5}
+                onMouseEnter={() => setHovered(segment.key)}
+                onMouseLeave={() => setHovered(null)}
+                style={{ cursor: "default" }}
+              >
+                <title>{segment.label}</title>
+              </rect>
+            ))}
+            {active && (
+              <g pointerEvents="none">
+                <rect x={Math.min(active.x, chartWidth - tooltipWidth - 4)} y={barY - 29} width={tooltipWidth} height={24} rx={4} fill="var(--bi-basic-white)" stroke="#9fb0c2" />
+                <text x={Math.min(active.x, chartWidth - tooltipWidth - 4) + 9} y={barY - 12.5} fontSize="12.5" fontWeight="600" fill="#222d38">
+                  {active.label}
+                </text>
+              </g>
+            )}
+          </g>
+        );
+      })}
+    </svg>
+  );
+}
+
+/** Fagområdene som liggende søyler etter størrelse, delt i studier og kurs som har fagområdet som hovedplassering og som ekstra. */
+function AreaMainExtraBars() {
+  const areas = [...areaTree].map(({ area, main, extra }) => ({ area, main, extra, total: main + extra })).sort((x, y) => y.total - x.total);
+  const nameWidth = 300;
+  const barHeight = 34;
+  const blockGap = 22;
+  const scale = 10;
+  const largest = areas[0]?.total ?? 1;
+  const chartWidth = nameWidth + largest * scale + 220;
+  const rowStep = barHeight + blockGap;
+  return (
+    <svg viewBox={`0 -4 ${chartWidth} ${areas.length * rowStep - blockGap + 8}`} role="img" aria-label="Fagområdene etter størrelse, delt i hovedplassering og ekstra" style={{ width: "100%", height: "auto" }}>
+      {areas.map(({ area, main, extra, total }, index) => {
+        const barY = index * rowStep;
+        const nameLines = wrapWords(area, 26);
+        const mainWidth = main * scale;
+        const extraWidth = extra * scale;
+        return (
+          <g key={area}>
+            <AreaIconInSvg area={area} centerX={20} top={barY + (barHeight - 26) / 2} height={26} color="#597694" />
+            <text x={48} y={barY + barHeight / 2 - ((nameLines.length - 1) * 17) / 2 + 5} fontSize="15" fontWeight="700" fill="#0b49a1">
+              {nameLines.map((line, lineIndex) => (
+                <tspan key={line} x={48} dy={lineIndex === 0 ? 0 : 17}>
+                  {line}
+                  {lineIndex === nameLines.length - 1 && <tspan fontWeight="400" fill="#475e75">{` (${total})`}</tspan>}
+                </tspan>
+              ))}
+            </text>
+            <rect x={nameWidth} y={barY} width={mainWidth} height={barHeight} fill={treeColors.mainArea} stroke="var(--bi-basic-white)" strokeWidth={1.5}>
+              <title>{`${main} med ${area} som hovedfagområde`}</title>
+            </rect>
+            <rect x={nameWidth + mainWidth} y={barY} width={extraWidth} height={barHeight} fill={treeColors.extraArea} stroke="var(--bi-basic-white)" strokeWidth={1.5}>
+              <title>{`${extra} med ${area} som ekstra fagområde`}</title>
+            </rect>
+            {mainWidth >= 28 && (
+              <text x={nameWidth + mainWidth / 2} y={barY + barHeight / 2 + 5} textAnchor="middle" fontSize="13" fontWeight="700" fill="#ffffff">
+                {main}
+              </text>
+            )}
+            {extraWidth >= 28 && (
+              <text x={nameWidth + mainWidth + extraWidth / 2} y={barY + barHeight / 2 + 5} textAnchor="middle" fontSize="13" fontWeight="700" fill={treeColors.extraText}>
+                {extra}
+              </text>
+            )}
+            <text x={nameWidth + total * scale + 12} y={barY + barHeight / 2 + 5} fontSize="13" fill="#475e75">
+              <tspan fontWeight="700" fill={treeColors.mainArea}>{`${main} hoved`}</tspan>
+              {" + "}
+              <tspan fontWeight="700" fill={treeColors.extraText}>{`${extra} ekstra`}</tspan>
+            </text>
+          </g>
+        );
+      })}
+    </svg>
+  );
 }
 
 function BeforeAfterOverview() {
@@ -2269,71 +2774,410 @@ const barWithNumber = (segment: BarSegment, widthPercent: number) => (
   </div>
 );
 
+/** Før ble fagområder delt ut ujevnt (ingen for noen, mange for andre). Her vises hvordan hovedfagområde og ekstra fagområder gir både presisjon og bredde. */
+function ConsistentCategorisationSlide() {
+  const previousCount = (row: Row) => row[4].split("; ").filter((area) => area !== "–").length;
+  const countBy = (counter: (row: Row) => number) => {
+    const counts = new Map<number, number>();
+    summaryRows.forEach((row) => counts.set(counter(row), (counts.get(counter(row)) ?? 0) + 1));
+    return [...counts].sort((a, b) => a[0] - b[0]);
+  };
+  const beforeCounts = countBy(previousCount);
+  const afterCounts = countBy((row) => row[6].split("; ").length - 1);
+  const numberWords = ["ingen", "ett", "to", "tre", "fire", "fem", "seks", "sju", "åtte", "ni", "ti"];
+  const numberWord = (n: number) => numberWords[n] ?? String(n);
+  const beforeColors = ["#c8d1db", "#0b4db4", "#6196f4", "#9ec0f1", "#f2b84b", "#e07b39", "#b5472f", "#7a2e5f"];
+  const afterColors = ["#0b4db4", "#6196f4", "#9ec0f1", "#c5d9f7", "#f2b84b", "#e07b39", "#b5472f", "#7a2e5f"];
+  const mostBefore = Math.max(...summaryRows.map(previousCount));
+  const missingExample = summaryRows.find((row) => row[2] === "Personvern og GDPR" && row[3] === "Bachelor");
+  const manyExample = summaryRows.find((row) => row[2] === "Business" && row[3] === "Master");
+  const exampleCard = (heading: string, why: string, row: Row | undefined) => {
+    if (!row) return null;
+    const olds = row[4].split("; ").filter((area) => area !== "–");
+    return (
+      <div style={{ display: "grid", gap: 12, padding: 16, background: "var(--bi-basic-white)", border: "1px solid var(--bi-color-neutral-stroke-subtle)", borderRadius: "var(--bi-radius-large)", alignContent: "start" }}>
+        <div>
+          <div style={{ fontWeight: 700 }}>{heading}</div>
+          <div style={{ marginTop: 2, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.875rem" }}>«{row[2]}», {row[3].toLowerCase()}</div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 44px minmax(0, 1.4fr)", columnGap: 8, alignItems: "start" }}>
+          <div style={{ display: "grid", gap: 6, justifyItems: "start" }}>
+            <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>Før</div>
+            {olds.length === 0 ? <AreaPill label="Ingen fagområde" kind="old" /> : olds.map((area) => <AreaPill key={area} label={shortOldName(area)} kind="old" />)}
+          </div>
+          <div style={{ paddingTop: 24 }}>
+            <ChangeArrow />
+          </div>
+          <div style={{ display: "grid", gap: 4 }}>
+            <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>Nå</div>
+            {row[6].split("; ").map((entry, index) => {
+              const [area, sub] = entry.split(" › ");
+              return (
+                <div key={entry} style={{ paddingLeft: index === 0 ? 12 : 0 }}>
+                  <AreaWithSubcategory area={area} subcategory={sub} muted={index > 0} />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+        <p style={{ margin: 0, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{why}</p>
+      </div>
+    );
+  };
+  return (
+    <div style={{ display: "grid", gap: 16, maxWidth: 820 }}>
+      <p style={{ margin: 0, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>
+        Før fantes det ingen felles regel for hvor mange fagområder et studie eller kurs skulle ha. Noen fikk ingen eller bare ett som ikke passet, for å holde fagområdene spisse. Andre fikk mange (opptil {mostBefore}), for å
+        finnes overalt. Det ga inkonsekvent kategorisering. Nå har alle ett hovedfagområde med underkategori, så de blir spisse, og ekstra fagområder kan legges til for bredden.
+      </p>
+      {labelled(
+        "Før",
+        barWithLegend(
+          beforeCounts.map(([n, value]) => ({
+            key: String(n),
+            value,
+            color: beforeColors[n] ?? beforeColors[beforeColors.length - 1],
+            label: n === 0 ? "Ingen fagområde" : n === 1 ? "Ett fagområde" : `${numberWord(n)[0].toUpperCase()}${numberWord(n).slice(1)} fagområder`,
+            legend: n === 0 ? "ingen fagområde" : n === 1 ? "ett fagområde" : `${numberWord(n)} fagområder`,
+          })),
+        ),
+      )}
+      {labelled(
+        "Nå",
+        barWithLegend(
+          afterCounts.map(([n, value]) => ({
+            key: String(n),
+            value,
+            color: afterColors[n] ?? afterColors[afterColors.length - 1],
+            label: n === 0 ? "Bare hovedfagområde" : `Hoved + ${numberWord(n)} ekstra`,
+            legend: n === 0 ? "bare hovedfagområde" : `hoved + ${numberWord(n)} ekstra`,
+          })),
+        ),
+      )}
+      <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 16, marginTop: 4 }}>
+        {exampleCard("For få: ett fagområde som ikke passet", "Hadde bare Finans, økonomi og styring, selv om temaet er juss og personvern. Nå får det riktig hovedfagområde, og KI som ekstra, begge med underkategori.", missingExample)}
+        {exampleCard("For mange: delt ut overalt", "Ble delt ut til alle fagområder så det skulle finnes overalt. Nå er det Finans som hovedfagområde og Ledelse som ekstra. Resten kommer som tillegg gjennom hvilken major man velger.", manyExample)}
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 12 }}>
+        <div style={{ padding: "10px 14px", background: "var(--bi-primary-5)", border: "1px solid var(--bi-primary-20)", borderRadius: "var(--bi-radius-large)" }}>
+          <strong>Spiss:</strong> ett hovedfagområde og én underkategori sier hva studiet eller kurset først og fremst handler om.
+        </div>
+        <div style={{ padding: "10px 14px", background: "var(--bi-primary-5)", border: "1px solid var(--bi-primary-20)", borderRadius: "var(--bi-radius-large)" }}>
+          <strong>Bredt:</strong> ekstra fagområder med egne underkategorier gjør at det kan finnes der det også er relevant.
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Siste kort i hver forklaringsseksjon: kort oppsummering av argumentet i hvert av kortene foran. */
+function SectionSummary({ items }: { items: { title: string; text: string }[] }) {
+  return (
+    <div style={{ display: "grid", gap: 14, maxWidth: 820 }}>
+      {items.map(({ title, text }, index) => (
+        <div key={title} style={{ display: "grid", gridTemplateColumns: "28px minmax(0, 1fr)", gap: 12, alignItems: "start" }}>
+          <span
+            aria-hidden="true"
+            style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 28, height: 28, borderRadius: "50%", background: "var(--bi-primary-5)", color: "var(--bi-color-primary-text-accent)", fontWeight: 700, fontSize: "0.875rem" }}
+          >
+            {index + 1}
+          </span>
+          <div>
+            <div style={{ fontWeight: 700 }}>{title}</div>
+            <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{text}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/** Første kort i «Hva gjøres?»: de fem stegene som er gjort for å stramme opp strukturen, med skisser uten navn. */
+function StepsSlide() {
+  type Variant = "old" | "merged" | "removed" | "new" | "main" | "extraBefore" | "extraNow" | "sub";
+  const labelStyles = {
+    main: { background: "var(--bi-primary-5)", border: "1px solid var(--bi-primary-20)", color: "var(--bi-color-primary-text-accent)" },
+    neutral: { background: "var(--bi-basic-white)", border: "1px solid var(--bi-neutral-40)", color: "var(--bi-color-neutral-text-secondary)" },
+  };
+  const tagStyles = {
+    removed: { background: "var(--bi-alert-5)", border: "1px solid var(--bi-alert-20)", color: "var(--bi-alert-80)" },
+    extraNow: { background: "var(--bi-success-5)", border: "1px solid var(--bi-success-20)", color: "var(--bi-success-80)" },
+    merged: { background: "var(--bi-warning-5)", border: "1px solid var(--bi-warning-40)", color: "var(--bi-warning-80)" },
+  };
+  /** En skisse av en boks. Med etikett ligger etiketten halvveis over øvre kant. */
+  const sketch = (variant: Variant, options: { width?: number | string; label?: string; tag?: string; text?: string } = {}) => {
+    const { width = "100%", label, tag, text } = options;
+    const hasLabel = Boolean(label || tag);
+    const styles = {
+      old: { background: "var(--bi-basic-white)", border: "1.5px dashed var(--bi-neutral-40)" },
+      merged: { background: "var(--bi-warning-5)", border: "1.5px solid var(--bi-warning-40)" },
+      removed: { background: "var(--bi-alert-5)", border: "1.5px solid var(--bi-alert-20)" },
+      new: { background: "var(--bi-primary-5)", border: "1.5px solid var(--bi-primary-20)" },
+      main: { background: "#0b4db4", border: "1.5px solid #0b4db4" },
+      extraBefore: { background: "var(--bi-basic-white)", border: "1.5px solid var(--bi-primary-40)" },
+      extraNow: { background: "var(--bi-success-5)", border: "1.5px solid var(--bi-success-20)" },
+      sub: { background: "var(--bi-basic-white)", border: "1.5px solid var(--bi-primary-20)" },
+    }[variant];
+    return (
+      <div style={{ position: "relative", width, marginTop: hasLabel ? 8 : 0 }}>
+        {label && (
+          <span style={{ position: "absolute", top: -8, left: 8, zIndex: 1, padding: "1px 6px", borderRadius: 4, ...(variant === "main" ? labelStyles.main : labelStyles.neutral), fontWeight: 700, fontSize: "0.6875rem", lineHeight: 1.3 }}>{label}</span>
+        )}
+        {tag && (variant === "removed" || variant === "extraNow" || variant === "merged") && (
+          <span style={{ position: "absolute", top: -8, ...(label ? { right: 8 } : { left: 8 }), zIndex: 1, padding: "1px 6px", borderRadius: 4, ...tagStyles[variant], fontWeight: 700, fontSize: "0.6875rem", lineHeight: 1.3 }}>{tag}</span>
+        )}
+        <div style={{ position: "relative", boxSizing: "border-box", width: "100%", height: hasLabel && text ? 34 : 26, borderRadius: 5, ...styles }}>
+          {variant === "removed" && <span style={{ position: "absolute", left: 6, right: 6, top: hasLabel ? "calc(50% + 4px)" : "50%", height: 2, background: "var(--bi-alert-60)" }} />}
+          {text && (
+            <span style={{ position: "absolute", left: 8, right: 6, top: hasLabel ? "calc(50% + 4px)" : "50%", transform: "translateY(-50%)", fontSize: "0.75rem", lineHeight: 1.35, color: variant === "removed" ? "var(--bi-alert-80)" : variant === "main" ? "var(--bi-basic-white)" : "var(--bi-color-neutral-text-secondary)", whiteSpace: "nowrap", overflow: "hidden" }}>{text}</span>
+          )}
+        </div>
+      </div>
+    );
+  };
+  const caption = (text: string, twoLines = false) => <div style={{ minHeight: twoLines ? 36 : undefined, fontSize: "0.8125rem", lineHeight: 1.3, fontWeight: 700, color: "var(--bi-color-neutral-text-secondary)" }}>{text}</div>;
+  const stack = (title: string, children: React.ReactNode, width = 150, twoLines = false) => (
+    <div style={{ display: "grid", gap: 6, width, alignContent: "start" }}>
+      {title && caption(title, twoLines)}
+      {children}
+    </div>
+  );
+  const arrow = (twoLines = false, extra = 0) => (
+    <div style={{ paddingTop: (twoLines ? 46 : 30) + extra }}>
+      <ChangeArrow />
+    </div>
+  );
+  /** Ramme rundt alle fagområdene til ett studie. */
+  const studyBox = (title: string, children: React.ReactNode) => (
+    <div style={{ display: "grid", gap: 6, padding: 10, boxSizing: "border-box", background: "var(--bi-basic-white)", border: "1.5px solid var(--bi-neutral-40)", borderRadius: 8 }}>
+      <div style={{ fontSize: "0.75rem", fontWeight: 700, lineHeight: 1.3, color: "var(--bi-color-neutral-text-secondary)" }}>{title}</div>
+      {children}
+    </div>
+  );
+  const subBoxes = (count: number) => (
+    <div style={{ position: "relative", display: "grid", gap: 10, paddingLeft: 26 }}>
+      <span style={{ position: "absolute", left: 9, top: -6, bottom: 13, width: 1, background: "#9fb0c2" }} />
+      {Array.from({ length: count }, (_, index) => (
+        <div key={index} style={{ position: "relative" }}>
+          <span style={{ position: "absolute", left: -17, top: 13, width: 17, height: 1, background: "#9fb0c2" }} />
+          {sketch("sub", { text: `Underkategori ${index + 1}` })}
+        </div>
+      ))}
+    </div>
+  );
+  const step = (number: number, title: string, text: string, visual: React.ReactNode, options: { first?: boolean; last?: boolean } = {}) => (
+    <div style={{ display: "grid", gridTemplateColumns: "40px minmax(0, 1fr)", columnGap: 16, alignItems: "stretch" }}>
+      <div style={{ position: "relative", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <span style={{ position: "absolute", left: "calc(50% - 1px)", width: 2, top: options.first ? "50%" : 0, bottom: options.last ? "50%" : 0, background: "var(--bi-primary-20)" }} />
+        <span
+          aria-hidden="true"
+          style={{ position: "relative", display: "inline-flex", alignItems: "center", justifyContent: "center", width: 32, height: 32, borderRadius: "50%", background: "var(--bi-primary-10)", color: "#0b4db4", fontWeight: 700 }}
+        >
+          {number}
+        </span>
+      </div>
+      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "12px 32px", padding: "16px 0", minWidth: 0 }}>
+        <div style={{ flex: "1 1 340px", maxWidth: 520, display: "grid", gap: 8 }}>
+          <div style={{ fontWeight: 700, fontSize: "1.0625rem" }}>{title}</div>
+          <p style={{ margin: 0, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{text}</p>
+        </div>
+        <div style={{ flex: "0 0 402px", display: "grid", gap: 8, padding: 16, maxWidth: "100%", boxSizing: "border-box", background: "var(--bi-color-neutral-surface)", border: "1px solid var(--bi-color-neutral-stroke-subtle)", borderRadius: "var(--bi-radius-large)" }}>{visual}</div>
+      </div>
+    </div>
+  );
+  return (
+    <div style={{ display: "grid" }}>
+      {step(
+        1,
+        "Færre og tydeligere fagområder",
+        "Fagområdene har fått nye navn, og enkelte er byttet ut eller slått sammen. Det gir en tydeligere og mer konsekvent struktur. Offentlig sektor, Prosjektledelse og Internasjonal Business er ikke lenger egne fagområder, og studiene og kursene er fordelt på fagområder som passer bedre.",
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+          {stack(
+            "Fagområder nå",
+            <>
+              {sketch("old", { text: "Fagområde 1" })}
+              {sketch("merged", { tag: "Utydelig", text: "Fagområde 2 og 3" })}
+              {sketch("removed", { tag: "Fjernet", text: "Fagområde 3" })}
+            </>,
+          )}
+          {arrow()}
+          {stack(
+            "Nytt forslag",
+            <>
+              {sketch("new", { text: "Fagområde 1" })}
+              {sketch("new", { text: "Fagområde 2" })}
+            </>,
+          )}
+        </div>,
+        { first: true },
+      )}
+      {step(
+        2,
+        "Ett hovedfagområde for alle",
+        "Alle studier og kurs har fått ett valgt hovedfagområde. Det er spesielt viktig for de som hadde flere fagområder, siden det gir et hierarki mellom hovedfagområdet og de ekstra. Studier og kurs som manglet fagområde, har også fått et hovedfagområde.",
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+          {stack(
+            "",
+            studyBox(
+              "Studie 1 nå",
+              <>
+                {sketch("old", { text: "Fagområde 1" })}
+                {sketch("old", { text: "Fagområde 2" })}
+              </>,
+            ),
+          )}
+          {arrow(false, 8)}
+          {stack(
+            "",
+            studyBox(
+              "Studie 1 nytt forslag",
+              <>
+                {sketch("main", { label: "Hoved", text: "Fagområde 1" })}
+                {sketch("extraBefore", { text: "Fagområde 2" })}
+              </>,
+            ),
+          )}
+        </div>,
+      )}
+      {step(
+        3,
+        "Fagområder lagt til, fjernet eller flyttet",
+        "Studier og kurs kan ha ekstra fagområder i tillegg til hovedfagområdet. Noen hadde ekstra fra før, og andre har fått det nå. Fagområder er lagt til der de passer, fjernet der de ikke lenger passet, og flyttet fra et annet sted når de hørte bedre hjemme i et annet fagområde. Studier og kurs som manglet fagområde, har fått fagområder lagt til.",
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+          {stack(
+            "",
+            studyBox(
+              "Studie 1 nå",
+              <>
+                {sketch("old", { text: "Fagområde 1" })}
+                {sketch("removed", { tag: "Fjernet", text: "Fagområde 3" })}
+              </>,
+            ),
+          )}
+          {arrow(false, 8)}
+          {stack(
+            "",
+            studyBox(
+              "Studie 1 nytt forslag",
+              <>
+                {sketch("main", { label: "Hoved", text: "Fagområde 1" })}
+                {sketch("extraNow", { tag: "Nytt", text: "Fagområde 4" })}
+              </>,
+            ),
+          )}
+        </div>,
+      )}
+      {step(
+        4,
+        "Underkategorier i alle fagområder",
+        "Hvert fagområde er delt inn i underkategorier som gir en finere inndeling av fagfeltet. Underkategoriene er laget for alle fagområdene, slik at det blir lettere å se hva som ligger innenfor hvert av dem.",
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 16, width: "100%" }}>
+          <div style={{ display: "grid", gap: 8, flex: 1, alignContent: "start" }}>
+            {sketch("new", { text: "Fagområde 1" })}
+            {subBoxes(3)}
+          </div>
+          <div style={{ display: "grid", gap: 8, flex: 1, alignContent: "start" }}>
+            {sketch("new", { text: "Fagområde 2" })}
+            {subBoxes(2)}
+          </div>
+        </div>,
+      )}
+      {step(
+        5,
+        "Én underkategori per fagområde",
+        "Alle studier og kurs er plassert i et fagområde og har fått en underkategori i det fagområdet. Det gjelder både hovedfagområdet og hvert ekstra fagområde de er plassert i.",
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+          {stack(
+            "",
+            studyBox(
+              "Studie 1 nå",
+              <>
+                {sketch("old", { text: "Fagområde 1" })}
+                {sketch("old", { text: "Fagområde 2" })}
+              </>,
+            ),
+          )}
+          {arrow(false, 8)}
+          {stack(
+            "",
+            studyBox(
+              "Studie 1 nytt forslag",
+              <>
+                {sketch("main", { label: "Hoved", text: "Fagområde 1" })}
+                {subBoxes(1)}
+                <div style={{ height: 4 }} />
+                {sketch("extraBefore", { text: "Fagområde 2" })}
+                {subBoxes(1)}
+              </>,
+            ),
+          )}
+        </div>,
+        { last: true },
+      )}
+    </div>
+  );
+}
+
 function KeepAreaSlide() {
   const total = summaryRows.length;
-  const statusCount = (status: Status) => summaryRows.filter((row) => row[1][0] === status).length;
-  const keptCount = statusCount("Uendret") + statusCount("Endret navn på fagområde");
-  const prioritisedCount = statusCount("1 fagområde prioritert");
-  const extraCount = statusCount("Lagt til ekstra fagområde");
-  const movedCount = statusCount("Flyttet til nytt fagområde");
-  const missingCount = statusCount("Manglet fagområde");
+  const count = (test: (statuses: Status[]) => boolean) => summaryRows.filter((row) => test(row[1])).length;
+  const prioritisedCount = count((statuses) => statuses.includes("1 fagområde prioritert"));
+  const keptCount = count((statuses) => !statuses.includes("1 fagområde prioritert") && (statuses.includes("Uendret") || statuses.includes("Endret navn på fagområde")));
+  const movedCount = count((statuses) => statuses.includes("Flyttet til nytt fagområde"));
+  const missingCount = count((statuses) => statuses.includes("Manglet fagområde"));
+  const extraCount = count((statuses) => statuses.includes("Lagt til ekstra fagområde"));
+  const percent = (value: number) => Math.round((value / total) * 100);
   return (
     <div style={{ display: "grid", gap: 12, maxWidth: 820 }}>
-      <p style={{ margin: 0, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{`Bare ${Math.round((movedCount / total) * 100)} % er flyttet helt til et annet fagområde. ${Math.round(((keptCount + prioritisedCount) / total) * 100)} % har beholdt ett av fagområdene sine som hovedfagområde, ${Math.round((extraCount / total) * 100)} % har fått et nytt hovedfagområde, men beholder det gamle som ekstra, og ${Math.round((missingCount / total) * 100)} % har fått et fagområde for første gang.`}</p>
+      <p style={{ margin: 0, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{`Bare ${percent(movedCount)} % har fått et annet hovedfagområde enn før. ${percent(keptCount + prioritisedCount)} % har beholdt ett av fagområdene sine som hovedfagområde, og ${percent(missingCount)} % har fått et fagområde for første gang. I tillegg har ${extraCount} av dem som hadde fagområder fra før fått ett eller flere ekstra.`}</p>
       {barWithLegend([
-        { key: "kept", value: keptCount, color: statusPieColors.Uendret, label: "Beholdt fagområdet (uendret eller nytt navn)", legend: "beholdt" },
-        { key: "prio", value: prioritisedCount, color: statusPieColors["1 fagområde prioritert"], label: "Ett fagområde prioritert", legend: "ett prioritert" },
-        { key: "extra", value: extraCount, color: statusPieColors["Lagt til ekstra fagområde"], label: "Lagt til ekstra fagområde", legend: "lagt til ekstra fagområde" },
-        { key: "moved", value: movedCount, color: statusPieColors["Flyttet til nytt fagområde"], label: "Flyttet til nytt fagområde", legend: "flyttet" },
-        { key: "missing", value: missingCount, color: statusPieColors["Manglet fagområde"], label: "Manglet fagområde", legend: "manglet" },
+        { key: "kept", value: keptCount, color: statusPieStrong.Uendret, label: "Beholdt fagområdet (uendret eller nytt navn)", legend: "beholdt" },
+        { key: "prio", value: prioritisedCount, color: statusPieStrong["1 fagområde prioritert"], label: "Valgt hovedfagområde", legend: "valgt hovedfagområde" },
+        { key: "moved", value: movedCount, color: statusPieStrong["Flyttet til nytt fagområde"], label: "Flyttet til nytt fagområde", legend: "flyttet" },
+        { key: "missing", value: missingCount, color: statusPieStrong["Manglet fagområde"], label: "Manglet fagområde", legend: "manglet" },
       ])}
     </div>
   );
 }
 
 const subcategoryReasons: Record<string, string> = {
-  "Finans, økonomi og regnskap › Bedriftsøkonomi": "Brede økonomi- og administrasjonsstudier som gir en grunnleggende forståelse av hvordan virksomheter drives økonomisk.",
-  "Finans, økonomi og regnskap › Bærekraftig finans": "Skilt ut fra Finans og investering fordi bærekraft og finans er et eget, voksende tema med egne kurs.",
-  "Finans, økonomi og regnskap › Finans og investering": "Kjernen i finansfaget: verdsettelse, investering og finansiell analyse.",
-  "Finans, økonomi og regnskap › Finansiell kriminalitet og compliance": "Tverrgående tema som gjør kurs om økonomisk kriminalitet i finansnæringen lette å finne, selv om de har Juss som hovedfagområde.",
-  "Finans, økonomi og regnskap › Fintech": "Tverrgående tema mellom finans og teknologi. Studiene og kursene har KI, digitalisering og analytics som hovedfagområde, men skal også være lette å finne under Finans.",
-  "Innovasjon, bærekraft og logistikk › Logistikk og forsyningskjeder": "Handler om hvordan varer og tjenester flyttes og styres gjennom verdikjeden, fra innkjøp og lager til transport og drift (supply chain management). Et operativt fag om flyt og effektivitet, og bærekraftige forsyningskjeder og innovasjon i verdikjeden hører naturlig sammen med resten av fagområdet.",
-  "Finans, økonomi og regnskap › Regnskap og revisjon": "Regnskap er et eget yrkesløp med revisor og regnskapsfører, og skal være synlig i både navn og underkategori.",
-  "Finans, økonomi og regnskap › Samfunnsøkonomi, økonomisk teori og matematikk": "Teoretisk og analytisk økonomi, som mikroøkonomi og matematikk for økonomer, skiller seg fra de bedriftsrettede temaene.",
-  "Finans, økonomi og regnskap › Økonomistyring": "Skilt ut fra Bedriftsøkonomi fordi budsjettering, prestasjonsstyring og beslutningsstøtte er et eget tema som ledere søker etter.",
-  "HR og organisasjonsutvikling › Arbeidsmiljø": "Samler kurs om motivasjon, arbeidsglede og HMS, som handler om hvordan folk har det på jobb.",
-  "HR og organisasjonsutvikling › Endringsledelse": "Egen inngang for endringsarbeid og omstilling, et tema mange leter etter.",
-  "HR og organisasjonsutvikling › HR og personalledelse": "Kjernen i HR: rekruttering, onboarding og oppfølging av ansatte.",
-  "HR og organisasjonsutvikling › Organisasjonspsykologi": "Eget fagfelt om atferd og samspill i organisasjoner.",
-  "Helse, skole og barnehage › Helse": "Ledelse i helse- og omsorgstjenesten er en egen bransje med egne behov og målgruppe.",
-  "Helse, skole og barnehage › Skole og barnehage": "Rektor- og styrerutdanning og pedagogisk ledelse har en annen målgruppe enn helse.",
-  "Juss, skatt og eiendom › Arbeidsrett": "Eget rettsområde som er viktig for både HR og ledere.",
-  "Juss, skatt og eiendom › Compliance": "Regelverk, personvern og risikostyring er et tema som trenger en egen oversikt.",
-  "Juss, skatt og eiendom › Eiendomsmegling": "Egen yrkesutdanning for eiendomsmeglere.",
-  "Juss, skatt og eiendom › Forretningsjus og rettsvitenskap": "Generell juss for næringslivet, fra rettsvitenskap til foretaksrett.",
-  "Juss, skatt og eiendom › Skatt og avgift": "Skatt og avgift var gjemt rundt på flere fagområder, og er nå samlet og synlig.",
-  "KI, digitalisering og analytics › Ansvarlig KI og personvern": "Etikk, regulering og personvern i bruk av KI er et eget tema som skiller seg fra de tekniske kursene.",
-  "KI, digitalisering og analytics › Data science og analytics": "Dataanalyse og maskinlæring i forretning, med egne metoder og verktøy.",
-  "KI, digitalisering og analytics › Digital transformasjon": "Hvordan virksomheter omstiller seg digitalt, med mer vekt på organisasjon og strategi enn teknikk.",
-  "KI, digitalisering og analytics › KI": "KI er hovedtema for flest studier og kurs, og fortjener en egen inngang.",
-  "KI, digitalisering og analytics › Statistikk og metode": "Grunnleggende metodefag som brukes på tvers av fagområdene.",
-  "Ledelse og strategi › Generell ledelse og lederutdanning": "Brede lederutdanninger som ikke passer i et bestemt tema, og som er inngangen for de fleste ledere.",
+  "Finans, økonomi og regnskap › Bedriftsøkonomi og økonomistyring": "Bedriftsøkonomi og økonomistyring er store og vanlige begreper. Her ligger brede økonomi- og administrasjonsstudier som gir en grunnleggende forståelse av hvordan virksomheter drives økonomisk, og kurs i budsjettering, prestasjonsstyring og beslutningsstøtte som ledere søker etter.",
+  "Finans, økonomi og regnskap › Bærekraftig finans": "Skilt ut fra Finans og investering fordi bærekraft og finans er et eget, voksende tema med egne kurs, og et begrep mange søker på.",
+  "Finans, økonomi og regnskap › Finans og investering": "Kjernen i finansfaget: verdsettelse, investering og finansiell analyse. Finans og investering er store og vanlige begreper.",
+  "Finans, økonomi og regnskap › Fintech": "Fintech er et vanlig begrep mellom finans og teknologi. Studiene og kursene har KI, digitalisering og analytics som hovedfagområde, men skal også være lette å finne under Finans.",
+  "Innovasjon, bærekraft og logistikk › Logistikk og forsyningskjeder": "Logistikk og supply chain er vanlige begreper, og var tidligere gjemt inne i Finans. Handler om hvordan varer og tjenester flyttes og styres gjennom verdikjeden, fra innkjøp og lager til transport og drift. Bærekraftige forsyningskjeder og innovasjon i verdikjeden hører naturlig sammen med resten av fagområdet.",
+  "Finans, økonomi og regnskap › Regnskap og revisjon": "Regnskap er et stort og vanlig søkeord og et eget yrkesløp med revisor og regnskapsfører, og skal være synlig i både navn og underkategori.",
+  "Finans, økonomi og regnskap › Samfunnsøkonomi og matematikk": "Samfunnsøkonomi er et eget og kjent fagbegrep. Teoretisk og analytisk økonomi, som mikroøkonomi og matematikk for økonomer, skiller seg fra de bedriftsrettede temaene.",
+  "HR og organisasjonsutvikling › Arbeidsmiljø": "Arbeidsmiljø er et vanlig begrep. Handler om hvordan folk har det på jobb: motivasjon, arbeidsglede, HMS og helsefremmende ledelse. Gjelder den enkelte medarbeideren og trivsel, ikke organisasjonen som helhet.",
+  "HR og organisasjonsutvikling › Endringsledelse": "Endringsledelse er et stort og vanlig søkeord. Egen inngang for endringsarbeid og omstilling, et tema mange leter etter.",
+  "HR og organisasjonsutvikling › HR og personalledelse": "HR er et stort og vanlig begrep, og kjernen i fagområdet: rekruttering, onboarding og oppfølging av ansatte.",
+  "HR og organisasjonsutvikling › Organisasjonspsykologi": "Hvordan grupper og organisasjoner fungerer: atferd, samspill, team og kultur. Handler om organisasjonen som helhet, ikke om den enkelte medarbeiderens trivsel.",
+  "Helse, skole og barnehage › Helse": "Helse er et stort og vanlig begrep. Ledelse i helse- og omsorgstjenesten er en egen bransje med egne behov og målgruppe.",
+  "Helse, skole og barnehage › Skole og barnehage": "Skole og barnehage er vanlige begreper. Rektor- og styrerutdanning og pedagogisk ledelse har en annen målgruppe enn helse.",
+  "Juss, skatt og eiendom › Arbeidsrett": "Arbeidsrett er et eget og kjent rettsområde som er viktig for både HR og ledere.",
+  "Juss, skatt og eiendom › Compliance": "Compliance er et vanlig begrep. Regelverk, personvern og risikostyring er et tema som trenger en egen oversikt.",
+  "Juss, skatt og eiendom › Eiendomsmegling": "Eiendomsmegling er en egen yrkesutdanning for eiendomsmeglere, og et begrep de fleste kjenner igjen.",
+  "Juss, skatt og eiendom › Forretningsjus og rettsvitenskap": "Juss er et stort og vanlig begrep. Generell juss for næringslivet, fra rettsvitenskap til foretaksrett.",
+  "Juss, skatt og eiendom › Skatt og avgift": "Skatt og avgift er store og vanlige søkeord. Temaet var gjemt rundt på flere fagområder, og er nå samlet og synlig.",
+  "KI, digitalisering og analytics › KI-etikk, regulering og personvern": "Etikk, regulering og personvern i bruk av KI er et eget tema med vanlige søkeord som personvern og regulering, og skiller seg fra de tekniske kursene.",
+  "KI, digitalisering og analytics › Data science og analytics": "Data science og analytics er vanlige begreper. Dataanalyse og maskinlæring i forretning, med egne metoder og verktøy.",
+  "KI, digitalisering og analytics › Digital transformasjon": "Digital transformasjon er et vanlig begrep. Handler om hvordan virksomheter omstiller seg digitalt, med mer vekt på organisasjon og strategi enn teknikk.",
+  "KI, digitalisering og analytics › KI": "KI er et stort og vanlig begrep, og hovedtema for flest studier og kurs i fagområdet. Fortjener en egen inngang.",
+  "KI, digitalisering og analytics › Statistikk og metode": "Statistikk og metode er grunnleggende fag som brukes på tvers av fagområdene.",
+  "Ledelse og strategi › Generell ledelse og lederutvikling": "Ledelse og lederutvikling er de største og mest vanlige begrepene. Brede lederutdanninger og personlig lederutvikling som coaching, påvirkning og kommunikasjon, og inngangen for de fleste ledere.",
   "Ledelse og strategi › Helse-, skole- og barnehageledelse": "Tverrgående tema: ledelse i helse og skole har Helse, skole og barnehage som hovedfagområde, men skal også kunne finnes under Ledelse og strategi.",
-  "Ledelse og strategi › Endringsledelse": "Tverrgående tema: endringsledelse har HR og organisasjonsutvikling som hovedfagområde, men er også ledelse.",
-  "Ledelse og strategi › Lederferdigheter og kommunikasjon": "Personlig lederutvikling som forhandling, coaching, påvirkning og ledertrening.",
-  "Ledelse og strategi › Medarbeiderledelse og arbeidsmiljø": "Tverrgående tema: å lede og følge opp medarbeidere har HR og organisasjonsutvikling som hovedfagområde, men er også ledelse.",
-  "Ledelse og strategi › Prosjektledelse": "Var tidligere et eget fagområde, men var for lite og hører hjemme i Ledelse og strategi.",
+  "Ledelse og strategi › HR-ledelse og endringsledelse": "Tverrgående tema: å lede team og medarbeidere gjennom prestasjon, arbeidsmiljø og endring har HR og organisasjonsutvikling som hovedfagområde, men er også ledelse.",
+  "Ledelse og strategi › Prosjektledelse": "Prosjektledelse er et vanlig begrep. Var tidligere et eget fagområde, men var for lite og overlapper mye med ledelse, så det hører hjemme i Ledelse og strategi.",
   "Ledelse og strategi › Sikkerhets- og beredskapsledelse": "Tverrgående tema: sikkerhetsledelse har Sikkerhet og beredskap som hovedfagområde, men er også ledelse.",
-  "Ledelse og strategi › Strategisk ledelse": "Strategi og ledelse på toppnivå, som styrearbeid, strategiarbeid og prestasjonsstyring. Strategi er et tema som går på tvers, og få har det som hovedtema, men mange berører det.",
-  "Ledelse og strategi › Teamledelse og prestasjon": "Å lede team og skape prestasjon, skilt ut fra Team-, medarbeider- og endringsledelse som var for bredt.",
-  "Markedsføring, kommunikasjon og kultur › Kommunikasjon": "Kommunikasjon er et eget fag, ikke bare en del av markedsføring.",
+  "Ledelse og strategi › Strategisk ledelse": "Strategi er et vanlig søkeord, men har mye overlapp med ledelse, noe som gjør det vanskelig å skille dem. Strategi og ledelse på toppnivå, som styrearbeid, strategiarbeid og prestasjonsstyring. Få har det som hovedtema, men mange berører det.",
+  "Markedsføring, kommunikasjon og kultur › Kommunikasjon": "Kommunikasjon er et stort og vanlig begrep, og et eget fag, ikke bare en del av markedsføring.",
   "Markedsføring, kommunikasjon og kultur › Kultur og internasjonal business": "Internasjonal profil er en egenskap ved studiene og kursene, ikke et fagområde. Det som handler om kultur og internasjonal forståelse samles her.",
-  "Markedsføring, kommunikasjon og kultur › Kunde- og markedsinnsikt": "Forbrukerpsykologi, kunderelasjoner og metode for å forstå kunder og marked.",
-  "Markedsføring, kommunikasjon og kultur › Markedsføring": "Kjernen i fagområdet, og den største underkategorien.",
-  "Sikkerhet og beredskap › Beredskap og krisehåndtering": "Å forberede seg på og håndtere kriser, terror og det uventede.",
-  "Sikkerhet og beredskap › Sikkerhetsledelse og cybersikkerhet": "Sikkerhetsledelse og digital sikkerhet for ledere.",
-  "Innovasjon, bærekraft og logistikk › Bærekraft": "Bærekraft går på tvers av alle fagområder, og mange studier og kurs har det som ekstra fagområde.",
-  "Innovasjon, bærekraft og logistikk › Innovasjon og entreprenørskap": "Nyskaping, forretningsutvikling og entreprenørskap er et eget tema med egne kurs.",
+  "Markedsføring, kommunikasjon og kultur › Kunde- og markedsinnsikt": "Forbrukerpsykologi, kunderelasjoner og metode for å forstå kunder og marked. Kundeinnsikt er et vanlig begrep.",
+  "Markedsføring, kommunikasjon og kultur › Markedsføring": "Markedsføring er et stort og vanlig begrep, og kjernen i fagområdet.",
+  "Sikkerhet og beredskap › Beredskap og krisehåndtering": "Beredskap og krisehåndtering er vanlige begreper. Handler om å forberede seg på og håndtere kriser, terror og det uventede.",
+  "Sikkerhet og beredskap › Sikkerhetsledelse og cybersikkerhet": "Cybersikkerhet er et stort og vanlig begrep. Sikkerhetsledelse og digital sikkerhet for ledere.",
+  "Innovasjon, bærekraft og logistikk › Bærekraft": "Bærekraft er et stort og vanlig begrep som går på tvers av alle fagområder, og mange studier og kurs har det som ekstra fagområde.",
+  "Innovasjon, bærekraft og logistikk › Innovasjon og entreprenørskap": "Innovasjon og entreprenørskap er vanlige begreper. Nyskaping, forretningsutvikling og entreprenørskap er et eget tema med egne kurs.",
 };
 
 type SplitItem = { name: string; main: number; extra: number; total: number; color: string };
@@ -2357,12 +3201,19 @@ function AreaSplitSankey({ area, items }: { area: string; items: SplitItem[] }) 
   const width = 300;
   const nodeWidth = 14;
   const gap = 12;
-  const scale = 3;
-  const lineHeight = 17;
-  const nameHeight = 24;
+  const lineHeight = 20;
+  const nameHeight = 26;
+  const labelLines = wrapLabel(area, 20);
+  const areaGray = "var(--bi-neutral-50)";
+  const iconHeight = 34;
+  const lineStep = 22;
+  const boxContentHeight = 20 + iconHeight + 12 + labelLines.length * lineStep + 14;
   const total = items.reduce((sum, item) => sum + item.total, 0);
+  const gradientPrefix = `split-${area.replace(/\W/g, "")}`;
+  // Boksen har samme høyde som firkanten alt går ut fra, så skalaen økes til firkanten er stor nok til ikon og navn
+  const scale = Math.max(3, boxContentHeight / total);
   const prepared = items.map((item) => {
-    const reasonLines = wrapWords(subcategoryReasons[`${area} › ${item.name}`] ?? "", 92);
+    const reasonLines = wrapWords(subcategoryReasons[`${area} › ${item.name}`] ?? "", 80);
     const textHeight = nameHeight + reasonLines.length * lineHeight;
     return { ...item, reasonLines, textHeight, size: Math.max(item.total * scale, textHeight + 6) };
   });
@@ -2387,30 +3238,35 @@ function AreaSplitSankey({ area, items }: { area: string; items: SplitItem[] }) 
         const c = (x1 - x0) / 2;
         const path = `M ${x0} ${node.y0} C ${x0 + c} ${node.y0} ${x1 - c} ${node.y1} ${x1} ${node.y1} L ${x1} ${node.y1 + node.bandHeight} C ${x1 - c} ${node.y1 + node.bandHeight} ${x0 + c} ${node.y0 + node.bandHeight} ${x0} ${node.y0 + node.bandHeight} Z`;
         return (
-          <path key={node.name} d={path} fill={node.color} fillOpacity={0.5}>
-            <title>{`${node.name}: ${node.total}`}</title>
-          </path>
+          <g key={node.name}>
+            <defs>
+              <linearGradient id={`${gradientPrefix}-${node.name.replace(/\W/g, "")}`} gradientUnits="userSpaceOnUse" x1={x0} y1={0} x2={x1} y2={0}>
+                <stop offset="0%" stopColor="#597694" />
+                <stop offset="100%" stopColor={node.color} />
+              </linearGradient>
+            </defs>
+            <path d={path} fill={`url(#${gradientPrefix}-${node.name.replace(/\W/g, "")})`} fillOpacity={0.5}>
+              <title>{`${node.name}: ${node.total}`}</title>
+            </path>
+          </g>
         );
       })}
-      <rect x={0} y={leftY} width={nodeWidth} height={leftHeight} fill="var(--bi-neutral-40)" />
+      <rect x={0} y={leftY} width={nodeWidth} height={leftHeight} fill={areaGray} />
       {(() => {
-        const labelLines = wrapLabel(area, 20);
-        const boxWidth = 250;
-        const boxRight = -16;
-        const centerX = boxRight - boxWidth / 2;
-        const iconHeight = 34;
-        const lineStep = 22;
-        const boxHeight = 20 + iconHeight + 12 + labelLines.length * lineStep + 14;
-        const boxTop = leftY + leftHeight / 2 - boxHeight / 2;
+        // Tittelen står tett inntil firkanten i stedet for langt ut til venstre
+        const textWidth = Math.max(...labelLines.map((line, index) => (index === labelLines.length - 1 ? `${line} (${total})` : line).length)) * 9.6;
+        const lineStart = -(textWidth + 32);
+        const centerX = lineStart / 2 - 8;
+        const textHeight = iconHeight + 12 + labelLines.length * lineStep;
+        const contentTop = leftY + (leftHeight - textHeight) / 2;
         return (
           <g>
-            <rect x={boxRight - boxWidth} y={boxTop} width={boxWidth} height={boxHeight} rx={6} fill="var(--bi-basic-white)" stroke="var(--bi-neutral-40)" strokeWidth={1.5} strokeDasharray="5 4" />
-            <AreaIconInSvg area={area} centerX={centerX} top={boxTop + 20} height={iconHeight} color="#222d38" />
-            <text x={centerX} y={boxTop + 20 + iconHeight + 12 + 16} textAnchor="middle" fontSize="17" fontWeight="700" fill="#222d38">
+            <AreaIconInSvg area={area} centerX={centerX} top={contentTop} height={iconHeight} color={areaGray} />
+            <text x={centerX} y={contentTop + iconHeight + 12 + 16} textAnchor="middle" fontSize="17" fontWeight="700" fill="#222d38">
               {labelLines.map((line, lineIndex) => (
                 <tspan key={line} x={centerX} dy={lineIndex === 0 ? 0 : lineStep}>
                   {line}
-                  {lineIndex === labelLines.length - 1 && ` ${total}`}
+                  {lineIndex === labelLines.length - 1 && ` (${total})`}
                 </tspan>
               ))}
             </text>
@@ -2420,12 +3276,12 @@ function AreaSplitSankey({ area, items }: { area: string; items: SplitItem[] }) 
       {nodes.map((node) => (
         <g key={node.name}>
           <rect x={width - nodeWidth} y={node.y} width={nodeWidth} height={node.size} fill={node.color} />
-          <text x={width + 8} y={node.y + (node.size - node.textHeight) / 2 + 17} fontSize="13" fill="#222d38">
+          <text x={width + 8} y={node.y + (node.size - node.textHeight) / 2 + 17} fontSize="15" fill="#222d38">
             <tspan fontSize="17" fontWeight="700">
-              {node.name} {node.total}
+              {node.name} ({node.total})
             </tspan>
             {node.reasonLines.map((line, lineIndex) => (
-              <tspan key={line} x={width + 8} dy={lineIndex === 0 ? 24 : lineHeight} fill="#475e75">
+              <tspan key={line} x={width + 8} dy={lineIndex === 0 ? nameHeight : lineHeight} fill="#475e75">
                 {line}
               </tspan>
             ))}
@@ -2447,35 +3303,248 @@ function AreaSubcategorySlide({ area }: { area: string }) {
   return <AreaSplitSankey area={area} items={items} />;
 }
 
+const crossCuttingExamples: BeforeAfterExample[] = [
+  { title: "Helseledelse", level: "Masterkurs" },
+  { title: "Bachelor fintech", level: "Bachelorkurs" },
+  { title: "Sikkerhetsledelse", level: "Bachelorkurs" },
+];
+
 function CrossCuttingSlide() {
-  const crossCutting = [...beforeAfter.subs]
-    .flatMap(([area, map]) => [...map].filter(([, value]) => value.main === 0 && value.extra > 0).map(([name, value]) => ({ area, name, count: value.extra })))
-    .sort((x, y) => y.count - x.count);
   return (
-    <div style={{ display: "grid", gap: 12, maxWidth: 820 }}>
-      <p style={{ margin: 0, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{`${crossCutting.length} underkategorier har ingen studier som hovedplassering, bare ekstra. De gjør at temaer som går på tvers, som fintech og ledelse i helse, kan finnes samlet.`}</p>
-      <div style={{ display: "grid", gap: 6 }}>
-        {crossCutting.map(({ area, name, count }) => (
-          <div key={`${area}|${name}`} style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 24px", gap: 8, alignItems: "center", fontSize: "0.9375rem" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
-              <span style={{ padding: "2px 8px", borderRadius: 4, background: "var(--bi-basic-white)", border: "1px solid var(--bi-color-neutral-stroke-subtle)", borderLeft: "4px solid #6196f4" }}>{name}</span>
-              <span style={{ color: "var(--bi-color-neutral-text-secondary)" }}>i {area}</span>
-            </div>
-            <strong style={{ textAlign: "right" }}>{count}</strong>
-          </div>
-        ))}
-      </div>
+    <div style={{ display: "grid", gap: 12 }}>
+      <p style={{ margin: 0, maxWidth: 820, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>
+        Studier og kurs som går på tvers kan finnes flere steder. Hovedfagområdet bestemmer hvor de står i den grupperte lista, med fagområde og underkategori som overskrifter.
+        De ekstra fagområdene gjør at de også vises under de andre fagområdene, så de blir funnet uansett hvilken inngang man velger.
+      </p>
+      <BeforeAfterExamples examples={crossCuttingExamples} showLocations />
+      <SubcategoryOverlap />
     </div>
   );
 }
 
+/** Blå og grå toner per fagområde i overlappdiagrammet. */
+const overlapColors: Record<string, string> = {
+  "Finans, økonomi og regnskap": "#042f5b",
+  "Ledelse og strategi": "#0b4db4",
+  "Innovasjon, bærekraft og logistikk": "#3a7be0",
+  "KI, digitalisering og analytics": "#6196f4",
+  "Markedsføring, kommunikasjon og kultur": "#9ec0f1",
+  "HR og organisasjonsutvikling": "#597694",
+  "Helse, skole og barnehage": "#90a3b7",
+  "Sikkerhet og beredskap": "#2c3e50",
+  "Juss, skatt og eiendom": "#b4c0cd",
+};
+const overlapColor = (area: string) => overlapColors[area] ?? "#c8d1db";
+
+/** Underkategorier som oftest står sammen på det samme studiet eller kurset. */function SubcategoryOverlap() {
+  const [focus, setFocus] = useState<string | null>(null);
+  const flowMap = new Map<string, { from: string; to: string; count: number }>();
+  summaryRows.forEach((row) => {
+    const [main, ...extras] = [...new Set(row[6].split("; "))];
+    extras.forEach((extra) => {
+      const key = `${main}|${extra}`;
+      flowMap.set(key, { from: main, to: extra, count: (flowMap.get(key)?.count ?? 0) + 1 });
+    });
+  });
+  const flows = [...flowMap.values()].sort((x, y) => y.count - x.count || x.from.localeCompare(y.from, "nb")).slice(0, 14);
+  const totalOf = (side: "from" | "to") => {
+    const totals = new Map<string, number>();
+    flows.forEach((flow) => totals.set(flow[side], (totals.get(flow[side]) ?? 0) + flow.count));
+    return totals;
+  };
+  const leftTotals = totalOf("from");
+  const rightTotals = totalOf("to");
+  const crossings = (leftOrder: string[], rightOrder: string[]) => {
+    let count = 0;
+    flows.forEach((a, i) =>
+      flows.slice(i + 1).forEach((b) => {
+        const left = leftOrder.indexOf(a.from) - leftOrder.indexOf(b.from);
+        const right = rightOrder.indexOf(a.to) - rightOrder.indexOf(b.to);
+        if (left * right < 0) count += a.count * b.count;
+      }),
+    );
+    return count;
+  };
+  const areaOrder = ["Ledelse og strategi", "Finans, økonomi og regnskap", "Innovasjon, bærekraft og logistikk", ...Object.keys(areaColors)];
+  const rightRank = (name: string) => areaOrder.indexOf(name.split(" › ")[0]);
+  const barycenter = (names: string[], side: "from" | "to", otherOrder: string[]) => {
+    const other = side === "from" ? "to" : "from";
+    const position = (name: string) => {
+      const related = flows.filter((flow) => flow[side] === name);
+      return related.reduce((sum, flow) => sum + otherOrder.indexOf(flow[other]) * flow.count, 0) / (related.reduce((sum, flow) => sum + flow.count, 0) || 1);
+    };
+    return [...names].sort((x, y) => (side === "to" ? rightRank(x) - rightRank(y) : 0) || position(x) - position(y));
+  };
+  let left = [...leftTotals.keys()].sort((x, y) => (leftTotals.get(y) ?? 0) - (leftTotals.get(x) ?? 0));
+  let right = [...rightTotals.keys()];
+  for (let pass = 0; pass < 6; pass++) {
+    right = barycenter(right, "to", left);
+    left = barycenter(left, "from", right);
+  }
+  // Bytter nabonoder så lenge det gir færre kryssende bånd. Til høyre holdes fagområdene samlet i fast rekkefølge.
+  let improved = true;
+  while (improved) {
+    improved = false;
+    for (const side of ["left", "right"] as const) {
+      const order = side === "left" ? left : right;
+      for (let i = 0; i < order.length - 1; i++) {
+        if (side === "right" && rightRank(order[i]) !== rightRank(order[i + 1])) continue;
+        const swapped = [...order];
+        [swapped[i], swapped[i + 1]] = [swapped[i + 1], swapped[i]];
+        const before = crossings(left, right);
+        const after = side === "left" ? crossings(swapped, right) : crossings(left, swapped);
+        if (after < before) {
+          if (side === "left") left = swapped;
+          else right = swapped;
+          improved = true;
+          break;
+        }
+      }
+    }
+  }
+
+  const width = 420;
+  const nodeWidth = 14;
+  const gap = 12;
+  const scale = 7;
+  const minNode = 30;
+  const sizeOf = (totals: Map<string, number>) => (name: string) => Math.max((totals.get(name) ?? 0) * scale, minNode);
+  const leftSize = sizeOf(leftTotals);
+  const rightSize = sizeOf(rightTotals);
+  const columnHeight = (names: string[], size: (name: string) => number) => names.reduce((sum, name) => sum + size(name), 0) + gap * (names.length - 1);
+  const height = Math.max(columnHeight(left, leftSize), columnHeight(right, rightSize));
+  const place = (names: string[], size: (name: string) => number) => {
+    const offset = (height - columnHeight(names, size)) / 2;
+    const positions = new Map<string, number>();
+    let cursor = offset;
+    names.forEach((name) => {
+      positions.set(name, cursor);
+      cursor += size(name) + gap;
+    });
+    return positions;
+  };
+  const leftY = place(left, leftSize);
+  const rightY = place(right, rightSize);
+  const leftCursor = new Map(left.map((name) => [name, (leftY.get(name) ?? 0) + (leftSize(name) - (leftTotals.get(name) ?? 0) * scale) / 2]));
+  const rightCursor = new Map(right.map((name) => [name, (rightY.get(name) ?? 0) + (rightSize(name) - (rightTotals.get(name) ?? 0) * scale) / 2]));
+  const bands = new Map<string, { y0: number; y1: number }>();
+  left.forEach((from) =>
+    [...flows]
+      .filter((flow) => flow.from === from)
+      .sort((x, y) => right.indexOf(x.to) - right.indexOf(y.to))
+      .forEach((flow) => {
+        bands.set(`${flow.from}|${flow.to}`, { y0: leftCursor.get(from) ?? 0, y1: 0 });
+        leftCursor.set(from, (leftCursor.get(from) ?? 0) + flow.count * scale);
+      }),
+  );
+  right.forEach((to) =>
+    [...flows]
+      .filter((flow) => flow.to === to)
+      .sort((x, y) => (bands.get(`${x.from}|${x.to}`)?.y0 ?? 0) - (bands.get(`${y.from}|${y.to}`)?.y0 ?? 0))
+      .forEach((flow) => {
+        const band = bands.get(`${flow.from}|${flow.to}`);
+        if (band) band.y1 = rightCursor.get(to) ?? 0;
+        rightCursor.set(to, (rightCursor.get(to) ?? 0) + flow.count * scale);
+      }),
+  );
+  const split = (entry: string) => {
+    const [area, sub] = entry.split(" › ");
+    return { area, sub };
+  };
+  const isActive = (flow: { from: string; to: string }) => focus === null || focus === `L|${flow.from}` || focus === `R|${flow.to}`;
+  const nodeLabel = (entry: string, x: number, anchor: "start" | "end", y: number, h: number, total: number) => {
+    const { area, sub } = split(entry);
+    const lines = wrapLabel(sub, 30);
+    const lineHeight = 14;
+    const startY = y + h / 2 - ((lines.length + 1) * lineHeight) / 2 + lineHeight / 2;
+    return (
+      <text x={x} textAnchor={anchor} fontSize="12" fill="#222d38">
+        {lines.map((line, index) => (
+          <tspan key={line} x={x} y={startY + index * lineHeight} fontWeight="700">
+            {line}
+            {index === lines.length - 1 && <tspan fill="#597694" fontWeight="400"> ({total})</tspan>}
+          </tspan>
+        ))}
+        <tspan x={x} y={startY + lines.length * lineHeight} fontSize="11" fill="#597694">
+          {areaShortName[area] ?? area}
+        </tspan>
+      </text>
+    );
+  };
+  return (
+    <div style={{ display: "grid", gap: 10, maxWidth: 980, marginTop: 12 }}>
+      <div style={{ fontWeight: 700 }}>Underkategorier som oftest overlapper</div>
+      <p style={{ margin: 0, maxWidth: 820, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>
+        Til venstre er underkategorien studiet eller kurset har som hovedplassering, til høyre er underkategorien det også vises under som ekstra. Bredden viser antall studier og kurs. De {flows.length} vanligste
+        kombinasjonene vises. Hold musepekeren over en underkategori for å se koblingene.
+      </p>
+      <svg viewBox={`-260 -44 ${width + 520} ${height + 54}`} role="img" aria-label="Overlapp mellom underkategorier" style={{ width: "100%", height: "auto" }} onMouseLeave={() => setFocus(null)}>
+        <text x={-8} y={-22} textAnchor="end" fontSize="13" fontWeight="700" fill="#222d38">
+          Hovedfagområde
+        </text>
+        <text x={width + 8} y={-22} textAnchor="start" fontSize="13" fontWeight="700" fill="#222d38">
+          Ekstra fagområde
+        </text>
+        {flows.map((flow) => {
+          const band = bands.get(`${flow.from}|${flow.to}`);
+          if (!band) return null;
+          const h = flow.count * scale;
+          const x0 = nodeWidth;
+          const x1 = width - nodeWidth;
+          const c = (x1 - x0) / 2;
+          const gradientId = `overlap-${flows.indexOf(flow)}`;
+          const path = `M ${x0} ${band.y0} C ${x0 + c} ${band.y0} ${x1 - c} ${band.y1} ${x1} ${band.y1} L ${x1} ${band.y1 + h} C ${x1 - c} ${band.y1 + h} ${x0 + c} ${band.y0 + h} ${x0} ${band.y0 + h} Z`;
+          return (
+            <g key={`${flow.from}|${flow.to}`}>
+              <defs>
+                <linearGradient id={gradientId} gradientUnits="userSpaceOnUse" x1={x0} y1={0} x2={x1} y2={0}>
+                  <stop offset="0%" stopColor={overlapColor(split(flow.from).area)} />
+                  <stop offset="100%" stopColor={overlapColor(split(flow.to).area)} />
+                </linearGradient>
+              </defs>
+              <path d={path} fill={`url(#${gradientId})`} fillOpacity={isActive(flow) ? 0.5 : 0.1} style={{ transition: "fill-opacity 150ms" }}>
+                <title>{`${split(flow.from).sub} + ${split(flow.to).sub}: ${flow.count}`}</title>
+              </path>
+            </g>
+          );
+        })}
+        {left.map((name) => {
+          const y = leftY.get(name) ?? 0;
+          const h = leftSize(name);
+          return (
+            <g key={name} onMouseEnter={() => setFocus(`L|${name}`)} style={{ cursor: "default" }}>
+              <rect x={0} y={y} width={nodeWidth} height={h} fill={overlapColor(split(name).area)} />
+              {nodeLabel(name, -8, "end", y, h, leftTotals.get(name) ?? 0)}
+            </g>
+          );
+        })}
+        {right.map((name) => {
+          const y = rightY.get(name) ?? 0;
+          const h = rightSize(name);
+          return (
+            <g key={name} onMouseEnter={() => setFocus(`R|${name}`)} style={{ cursor: "default" }}>
+              <rect x={width - nodeWidth} y={y} width={nodeWidth} height={h} fill={overlapColor(split(name).area)} />
+              {nodeLabel(name, width + 8, "start", y, h, rightTotals.get(name) ?? 0)}
+            </g>
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
+
+/** Antall studier og kurs som har en gitt underkategori, enten som hoved eller ekstra. */
+const placedInSub = (area: string, sub: string) => summaryRows.filter((row) => row[6].split("; ").includes(`${area} › ${sub}`)).length;
+/** Antall studier og kurs som er plassert i et fagområde, enten som hoved eller ekstra. */
+const placedInArea = (area: string) => summaryRows.filter((row) => row[6].split("; ").some((placement) => placement.startsWith(`${area} › `))).length;
+
 const renamedPairs = [
-  { from: "Finans, økonomi og styring", to: "Finans, økonomi og regnskap", why: "«Styring» var tvetydig (økonomistyring eller ledelse?). Regnskap er et eget yrkesløp med revisor og regnskapsfører, og er nå synlig i navnet." },
-  { from: "Digitalisering og Analytics", to: "KI, digitalisering og analytics", why: "Mange studier og kurs har KI som hovedtema så det bør inkluderes i tittelen til fagområde." },
-  { from: "Organisasjonsutvikling og Human Resource Management", to: "HR og organisasjonsutvikling", why: "HR er et mer vanlig begrep i Norge enn «Human Resource Management», og det folk flest søker etter. HR er også den største underkategorien, og står derfor først i navnet." },
-  { from: "Eiendom, varehandel og forretningsjus", to: "Juss, skatt og eiendom", why: "Skatt og avgift er synlig i navnet, før var det gjemt rundt på flere fagområder. Forretningsjus har blitt til kun juss siden det er mer enn kun forretningsjus i fagområdet." },
-  { from: "Ledelse", to: "Ledelse og strategi", why: "Strategi lå som et eget tema sammen med innovasjon og bærekraft, men var nesten bare ekstra fagområde og overlappet med Strategisk ledelse. Strategi er nå synlig i navnet og samlet med ledelse." },
-  { from: "Strategi, innovasjon og bærekraft", to: "Innovasjon, bærekraft og logistikk", why: "Strategi er flyttet til Ledelse og strategi, og logistikk er flyttet hit fra Finans, økonomi og regnskap. Innovasjon, bærekraft og logistikk har egne kurs, og bærekraft er også et tema som går på tvers." },
+  { from: "Finans, økonomi og styring", to: "Finans, økonomi og regnskap", why: `«Styring» var tvetydig (økonomistyring eller ledelse?). Regnskap er et stort og vanlig søkeord, med egne yrkesløp som revisor og regnskapsfører, og er nå synlig i navnet. ${placedInSub("Finans, økonomi og regnskap", "Regnskap og revisjon")} studier og kurs har underkategorien Regnskap og revisjon, av ${placedInArea("Finans, økonomi og regnskap")} i fagområdet.` },
+  { from: "Digitalisering og Analytics", to: "KI, digitalisering og analytics", why: `KI er et stort og vanlig begrep som mange studier og kurs har som hovedtema, så det bør stå i navnet. ${placedInSub("KI, digitalisering og analytics", "KI")} studier og kurs har underkategorien KI, ved siden av ${placedInSub("KI, digitalisering og analytics", "Data science og analytics")} i Data science og analytics og ${placedInSub("KI, digitalisering og analytics", "Digital transformasjon")} i Digital transformasjon.` },
+  { from: "Organisasjonsutvikling og Human Resource Management", to: "HR og organisasjonsutvikling", why: `HR er et mer vanlig begrep i Norge enn «Human Resource Management», og det folk flest søker etter. HR og personalledelse har ${placedInSub("HR og organisasjonsutvikling", "HR og personalledelse")} studier og kurs, og hele fagområdet har ${placedInArea("HR og organisasjonsutvikling")}. Derfor står HR først i navnet.` },
+  { from: "Eiendom, varehandel og forretningsjus", to: "Juss, skatt og eiendom", why: `Skatt er et stort og vanlig søkeord som før var gjemt rundt på flere fagområder, og er nå synlig i navnet. ${placedInSub("Juss, skatt og eiendom", "Skatt og avgift")} studier og kurs har underkategorien Skatt og avgift. Forretningsjus har blitt til kun juss, siden fagområdet har mer enn forretningsjus: ${placedInSub("Juss, skatt og eiendom", "Forretningsjus og rettsvitenskap")} i Forretningsjus og rettsvitenskap, og ${placedInSub("Juss, skatt og eiendom", "Eiendomsmegling")} i Eiendomsmegling. I alt har fagområdet ${placedInArea("Juss, skatt og eiendom")} studier og kurs.` },
+  { from: "Ledelse", to: "Ledelse og strategi", why: `Ledelse er det største og mest brukte begrepet, med ${placedInArea("Ledelse og strategi")} studier og kurs i fagområdet. Strategi er også et vanlig søkeord, men har mye overlapp med ledelse, noe som gjør det vanskelig å skille dem. Strategi er nå synlig i navnet og samlet med ledelse.` },
+  { from: "Strategi, innovasjon og bærekraft", to: "Innovasjon, bærekraft og logistikk", why: `Strategi er flyttet til Ledelse og strategi. Logistikk lå tidligere gjemt inne i Finans, økonomi og regnskap, og begrepet er nå løftet frem og gjort mer synlig her. Innovasjon, bærekraft og logistikk er alle vanlige begreper, og fagområdet har ${placedInArea("Innovasjon, bærekraft og logistikk")} studier og kurs: ${placedInSub("Innovasjon, bærekraft og logistikk", "Bærekraft")} i Bærekraft, ${placedInSub("Innovasjon, bærekraft og logistikk", "Innovasjon og entreprenørskap")} i Innovasjon og entreprenørskap og ${placedInSub("Innovasjon, bærekraft og logistikk", "Logistikk og forsyningskjeder")} i Logistikk og forsyningskjeder. Bærekraft er også et tema som går på tvers.` },
 ];
 
 const whyRenamed = (from: string) => renamedPairs.find((pair) => pair.from === from)?.why;
@@ -2483,9 +3552,40 @@ const whyRenamed = (from: string) => renamedPairs.find((pair) => pair.from === f
 function WhyBetter() {
   const { before, after, extras, subs, withSeveral, withoutArea } = beforeAfter;
   const { total, maxCount, percent } = beforeAfterScale();
+  const [exampleLevel, setExampleLevel] = useState("Masterkurs");
+  const [exampleArea, setExampleArea] = useState("Ledelse og strategi");
+  const [showReal, setShowReal] = useState(false);
+  const exampleLevels = levelGroups.filter(({ key }) => ["Bachelor", "Master", "Bachelorkurs", "Masterkurs", "NettAlle"].includes(key)).map(({ key, label }) => ({ key, label }));
+  const exampleAreas = [...overlapOrder].sort((x, y) => x.localeCompare(y, "nb")).map((area) => ({ key: area, label: area }));
+  const choices = (label: string, options: { key: string; label: string }[], value: string, onChange: (key: string) => void) => (
+    <div style={{ display: "flex", alignItems: "end", gap: 12 }}>
+      <div style={{ flex: "0 0 300px", maxWidth: "100%" }}>
+        <Selectfield fullwidth label={label} value={value} onChange={(event) => onChange(event.target.value)}>
+          {options.map(({ key, label: optionLabel }) => (
+            <option key={key} value={key}>
+              {optionLabel}
+            </option>
+          ))}
+        </Selectfield>
+      </div>
+      <Button size="medium" variant="outlined" aria-pressed={showReal} onClick={() => setShowReal((current) => !current)}>
+        {showReal ? "Vis skeleton" : "Vis faktiske studier og kurs"}
+      </Button>
+    </div>
+  );
+  /** Én linje i en liste: skeleton eller tittelen på studiet eller kurset. */
+  const listLine = (title: string, muted = false) =>
+    showReal ? <span style={{ color: muted ? "var(--bi-color-neutral-text-secondary)" : undefined }}>{title}</span> : <SkeletonLine seed={title} muted={muted} />;
+  /** Ekstra linjer i «Før»-listen så den blir like lang som «Nå»-listen. Usynlige når de faktiske titlene vises. */
+  const fillerLines = (groupCount: number) =>
+    fillerSeeds(groupCount, showReal).map((seed, rowIndex) => (
+      <li key={`${seed}-${rowIndex}`} aria-hidden="true">
+        {showReal ? <span style={{ visibility: "hidden" }}>&nbsp;</span> : <SkeletonLine seed={seed} />}
+      </li>
+    ));
   return (() => {
           const withOne = total - withoutArea - withSeveral;
-          const ledelseSubs = [...(subs.get("Ledelse og strategi") ?? [])].filter(([, v]) => v.main + v.extra > 0).sort((x, y) => y[1].main + y[1].extra - (x[1].main + x[1].extra));
+          const ledelseSubs = [...(subs.get(exampleArea) ?? [])].filter(([, v]) => v.main + v.extra > 0).sort((x, y) => y[1].main + y[1].extra - (x[1].main + x[1].extra));
           const ledelseNow = ledelseSubs.reduce((sum, [, v]) => sum + v.main + v.extra, 0);
           const HRNAME = "Organisasjonsutvikling og Human Resource Management";
           const HRNEW = "HR og organisasjonsutvikling";
@@ -2674,7 +3774,7 @@ function WhyBetter() {
               title: "Navnene sier mer om innholdet",
               content: (
               <div style={{ display: "grid", gap: 12, maxWidth: 820 }}>
-                <p style={{ margin: 0, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{"Fire fagområder har fått navn som beskriver innholdet bedre, «Offentlig sektor» er delt opp, og to små fagområder er blitt underkategorier."}</p>
+                <p style={{ margin: 0, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{"Fire fagområder har fått navn som beskriver innholdet bedre, «Offentlig sektor» er delt opp, og to små fagområder er blitt underkategorier. Navnene bruker store og vanlige søkeord og begreper, og tallene viser hvor mange studier og kurs som ligger i hver del."}</p>
                 <div style={{ display: "grid", gap: 12 }}>
                   {renamedPairs.map(({ from, to, why }) => (
                     <div key={from} style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 44px minmax(0, 1fr)", alignItems: "center", columnGap: 8, rowGap: 4 }}>
@@ -2737,7 +3837,8 @@ function WhyBetter() {
                 )}
                 {labelled("Nå", barWithLegend([{ key: "all", value: total, color: "#0b4db4", label: "Ett hovedfagområde", legend: "ett hovedfagområde" }]))}
                 {(() => {
-                  const masterCourses = summaryRows.filter((row) => row[3] === "Masterkurs");
+                  const levelGroup = levelGroups.find((group) => group.key === exampleLevel) ?? levelGroups[0];
+                  const masterCourses = summaryRows.filter(levelGroup.filter);
                   const byTitle = [...masterCourses].sort((x, y) => x[2].localeCompare(y[2], "nb"));
                   const groups = [...new Set(masterCourses.map((row) => row[0]))]
                     .sort((x, y) => x.localeCompare(y, "nb"))
@@ -2745,26 +3846,31 @@ function WhyBetter() {
                   const listStyle = { margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 4, fontSize: "0.9375rem", color: "var(--bi-color-neutral-text)" } as const;
                   return (
                     <div style={{ display: "grid", gap: 12, marginTop: 8 }}>
-                      <div style={{ fontWeight: 700 }}>Eksempel: masterkurs, deltid ({masterCourses.length})</div>
+                      <div style={{ fontWeight: 700 }}>Eksempel: {levelGroup.label.charAt(0).toLowerCase() + levelGroup.label.slice(1)} ({masterCourses.length})</div>
+                      {choices("Studienivå", exampleLevels, exampleLevel, setExampleLevel)}
                       <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1.3fr)", gap: 32, alignItems: "start" }}>
                         <div style={{ display: "grid", gap: 8 }}>
                           <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>Før: én lang liste</div>
                           <ul style={listStyle}>
                             {byTitle.map((row, rowIndex) => (
-                              <li key={`${row[2]}-${rowIndex}`}>{row[2]}</li>
+                              <li key={`${row[2]}-${rowIndex}`}>{listLine(row[2])}</li>
                             ))}
+                            {fillerLines(groups.length)}
                           </ul>
                         </div>
-                        <div style={{ display: "grid", gap: 14 }}>
+                        <div style={{ display: "grid", gap: 26 }}>
                           <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>Nå: samme liste, gruppert etter hovedfagområde</div>
-                          {groups.map(({ area, list }, groupIndex) => (
-                            <div key={area} style={{ borderLeft: `4px solid ${blueShades[groupIndex % blueShades.length]}`, paddingLeft: 12, display: "grid", gap: 6 }}>
-                              <div style={{ fontWeight: 700 }}>
-                                {area} <span style={{ color: "var(--bi-color-neutral-text-secondary)", fontWeight: 400 }}>({list.length})</span>
+                          {groups.map(({ area, list }) => (
+                            <div key={area} style={{ display: "grid", gap: 6 }}>
+                              <div style={{ fontWeight: 700, display: "flex", alignItems: "center", gap: 10 }}>
+                                <AreaIcon area={area} height="0.95em" />
+                                <span>
+                                  {area} <span style={{ color: "var(--bi-color-neutral-text-secondary)", fontWeight: 400 }}>({list.length})</span>
+                                </span>
                               </div>
                               <ul style={listStyle}>
                                 {list.map((row, rowIndex) => (
-                                  <li key={`${row[2]}-${rowIndex}`}>{row[2]}</li>
+                                  <li key={`${row[2]}-${rowIndex}`}>{listLine(row[2])}</li>
                                 ))}
                               </ul>
                             </div>
@@ -2787,29 +3893,28 @@ function WhyBetter() {
                   barWithLegend(ledelseSubs.map(([name, value], index) => ({ key: name, value: value.main + value.extra, color: blueShades[index % blueShades.length], label: name }))),
                 )}
                 {(() => {
-                  const exampleAreas = ["Ledelse", "Strategi, innovasjon og bærekraft"];
-                  const exampleNewArea = "Ledelse og strategi";
-                  const subOf = (row: Row) => row[6].split("; ").map((entry) => entry.split(" › ")).find(([area]) => area === exampleNewArea)?.[1];
-                  const areaRows = summaryRows.filter((row) => row[4].split("; ").some((area) => exampleAreas.includes(area)) && subOf(row));
+                  const subOf = (row: Row) => row[6].split("; ").map((entry) => entry.split(" › ")).find(([area]) => area === exampleArea)?.[1];
+                  const areaRows = summaryRows.filter((row) => subOf(row));
                   const byTitle = [...areaRows].sort((x, y) => x[2].localeCompare(y[2], "nb"));
                   const groups = [...new Set(areaRows.map(subOf).filter((sub): sub is string => Boolean(sub)))]
                     .sort((x, y) => x.localeCompare(y, "nb"))
                     .map((sub) => ({ sub, list: areaRows.filter((row) => subOf(row) === sub).sort((x, y) => x[2].localeCompare(y[2], "nb")) }));
                   const listStyle = { margin: 0, padding: 0, listStyle: "none", display: "grid", gap: 4, fontSize: "0.9375rem", color: "var(--bi-color-neutral-text)" } as const;
-                  const mainNote = (row: Row) => (row[0] === exampleNewArea ? null : <span style={{ color: "var(--bi-color-neutral-text-secondary)" }}> (ekstra fagområde)</span>);
                   return (
                     <div style={{ display: "grid", gap: 12, marginTop: 8 }}>
-                      <div style={{ fontWeight: 700 }}>Eksempel: alle som lå i {exampleAreas.join(" eller ")} før, og nå ligger i {exampleNewArea} ({areaRows.length})</div>
+                      <div style={{ fontWeight: 700 }}>Eksempel: alle studier og kurs i {exampleArea} ({areaRows.length})</div>
+                      {choices("Fagområde", exampleAreas, exampleArea, setExampleArea)}
                       <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) minmax(0, 1.3fr)", gap: 32, alignItems: "start" }}>
                         <div style={{ display: "grid", gap: 8 }}>
                           <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>Før: én lang liste</div>
                           <ul style={listStyle}>
                             {byTitle.map((row, rowIndex) => (
-                              <li key={`${row[2]}-${rowIndex}`}>{row[2]}</li>
+                              <li key={`${row[2]}-${rowIndex}`}>{listLine(row[2])}</li>
                             ))}
+                            {fillerLines(groups.length)}
                           </ul>
                         </div>
-                        <div style={{ display: "grid", gap: 14 }}>
+                        <div style={{ display: "grid", gap: 26 }}>
                           <div style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>Nå: samme studier og kurs, gruppert etter underkategori</div>
                           {groups.map(({ sub, list }, groupIndex) => (
                             <div key={sub} style={{ borderLeft: `4px solid ${blueShades[groupIndex % blueShades.length]}`, paddingLeft: 12, display: "grid", gap: 6 }}>
@@ -2818,10 +3923,7 @@ function WhyBetter() {
                               </div>
                               <ul style={listStyle}>
                                 {list.map((row, rowIndex) => (
-                                  <li key={`${row[2]}-${rowIndex}`}>
-                                    {row[2]}
-                                    {mainNote(row)}
-                                  </li>
+                                  <li key={`${row[2]}-${rowIndex}`}>{listLine(row[2], row[0] !== exampleArea)}</li>
                                 ))}
                               </ul>
                             </div>
@@ -2865,6 +3967,10 @@ function WhyBetter() {
               ),
             },
             {
+              title: "Forhindre inkonsekvent kategorisering",
+              content: <ConsistentCategorisationSlide />,
+            },
+            {
               title: "Overlapp er synlig i stedet for skjult",
               content: (
               <div style={{ display: "grid", gap: 12, maxWidth: 820 }}>
@@ -2877,6 +3983,26 @@ function WhyBetter() {
             {
               title: "Bygger videre på eksisterende struktur",
               content: <KeepAreaSlide />,
+            },
+            {
+              title: "Oppsummering",
+              content: (
+                <SectionSummary
+                  items={[
+                    { title: "Mindre grupper - Bedre navigasjon", text: "Gruppene er jevnere i størrelse, og underkategoriene gjør dem enda mindre." },
+                    { title: "Løfte frem skjulte fagområder", text: "Offentlig sektor skjulte helse, juss og sikkerhet. Nå har hvert tema sin egen inngang." },
+                    { title: "Flere innganger, færre blindveier", text: "Ekstra fagområder gir flere plasseringer, så studier og kurs også finnes i nærliggende fagområder." },
+                    { title: "Forbedret søk og SEO", text: "Flere temasider og søkbare ord gjennom fagområder og underkategorier." },
+                    { title: "Navnene sier mer om innholdet", text: "Nye navn beskriver innholdet bedre, og små fagområder er blitt underkategorier." },
+                    { title: "Prioriterte fagområder → Grupperte lister", text: "Ett hovedfagområde per studie og kurs gjør at lister kan grupperes i stedet for å vises som én lang liste." },
+                    { title: "Underkategorier → Grupperte lister", text: "Underkategorier deler lange lister i oversiktlige grupper." },
+                    { title: "Ledelse og strategi samler ledelse og strategi", text: "Strategi ligger i Ledelse og strategi, og grensen mot HR er tydeligere." },
+                    { title: "Forhindre inkonsekvent kategorisering", text: "Felles regler: ett hovedfagområde med underkategori, og ekstra fagområder for bredden." },
+                    { title: "Overlapp er synlig i stedet for skjult", text: "Ekstra fagområder viser hvor studier og kurs overlapper, og hvilket fagområde som er viktigst." },
+                    { title: "Bygger videre på eksisterende struktur", text: "De fleste beholder hovedfagområdet sitt, og få er flyttet til et annet." },
+                  ]}
+                />
+              ),
             },
               ]}
             />
@@ -2894,15 +4020,15 @@ const shuffleIndexes = (length: number) => {
 };
 
 const ROUNDS = 10;
-const POINTS_PER_ROUND = 3.5;
+const POINTS_PER_ROUND = 2.5;
 const fmtPoints = (points: number) => points.toLocaleString("nb-NO");
 
 const grades: { min: number; letter: string; emoji: string; motion: string; title: string; text: string }[] = [
-  { min: 31.5, letter: "A", emoji: "🏆", motion: "grade-bounce 1.8s ease-in-out", title: "Fagområde-guru", text: "Du finner studiene og kursene i søvne. Strukturen fungerer for deg!" },
-  { min: 25.5, letter: "B", emoji: "🧭", motion: "grade-sway 3s ease-in-out", title: "Trygg navigatør", text: "Nesten helt i mål. Du leser kartet godt." },
-  { min: 20, letter: "C", emoji: "🔍", motion: "grade-search 3.2s linear", title: "Nysgjerrig oppdager", text: "Du finner det meste, og du er godt på vei. Litt mer utforsking, så sitter strukturen." },
-  { min: 14, letter: "D", emoji: "🗺️", motion: "grade-drift 4s ease-in-out", title: "Turist i landskapet", text: "Du er på rett vei, men noen steder er litt vanskelige å finne." },
-  { min: 8, letter: "E", emoji: "🧪", motion: "grade-wiggle 1.6s ease-in-out", title: "Rask på labben", text: "Du er i gang! Her er det mye å utforske." },
+  { min: 22.5, letter: "A", emoji: "🏆", motion: "grade-bounce 1.8s ease-in-out", title: "Fagområde-guru", text: "Du finner studiene og kursene i søvne. Strukturen fungerer for deg!" },
+  { min: 18, letter: "B", emoji: "🧭", motion: "grade-sway 3s ease-in-out", title: "Trygg navigatør", text: "Nesten helt i mål. Du leser kartet godt." },
+  { min: 14.5, letter: "C", emoji: "🔍", motion: "grade-search 3.2s linear", title: "Nysgjerrig oppdager", text: "Du finner det meste, og du er godt på vei. Litt mer utforsking, så sitter strukturen." },
+  { min: 10, letter: "D", emoji: "🗺️", motion: "grade-drift 4s ease-in-out", title: "Turist i landskapet", text: "Du er på rett vei, men noen steder er litt vanskelige å finne." },
+  { min: 6, letter: "E", emoji: "🧪", motion: "grade-wiggle 1.6s ease-in-out", title: "Rask på labben", text: "Du er i gang! Her er det mye å utforske." },
   { min: 0, letter: "F", emoji: "😵‍💫", motion: "grade-spin 3s ease-in-out", title: "Villfaren, men modig", text: "Det var en tøff runde. Prøv igjen, så sitter det snart." },
 ];
 
@@ -2943,10 +4069,10 @@ function GradeScreen({ score, roundPoints, onRestart }: { score: number; roundPo
   const grade = gradeFor(score);
   const suffix = gradeSuffix(score);
   const max = ROUNDS * POINTS_PER_ROUND;
-  const celebrate = grade.min >= 20;
+  const celebrate = grade.min >= 14.5;
   const radius = 70;
   const circumference = 2 * Math.PI * radius;
-  const chipColor = (points: number) => (points >= 3 ? "var(--bi-primary-50)" : points >= 2 ? "var(--bi-primary-40)" : points >= 1 ? "var(--bi-primary-20)" : "var(--bi-neutral-20)");
+  const chipColor = (points: number) => (points >= 2.5 ? "var(--bi-primary-50)" : points >= 1.5 ? "var(--bi-primary-40)" : points >= 1 ? "var(--bi-primary-20)" : "var(--bi-neutral-20)");
   return (
     <div style={{ position: "relative", overflow: "hidden", background: "var(--bi-color-neutral-surface)", borderRadius: "var(--bi-radius-xl)", padding: "40px 28px 36px" }}>
       <style>{`
@@ -3030,7 +4156,7 @@ function GradeScreen({ score, roundPoints, onRestart }: { score: number; roundPo
               <span
                 key={index}
                 title={`Spørsmål ${index + 1}: ${fmtPoints(points)} poeng`}
-                style={{ display: "grid", placeItems: "center", minWidth: 34, height: 30, padding: "0 4px", borderRadius: 6, background: chipColor(points), color: points >= 2 ? "var(--bi-basic-white)" : "var(--bi-color-neutral-text)", fontWeight: 700, fontSize: "0.9375rem" }}
+                style={{ display: "grid", placeItems: "center", minWidth: 34, height: 30, padding: "0 4px", borderRadius: 6, background: chipColor(points), color: points >= 1.5 ? "var(--bi-basic-white)" : "var(--bi-color-neutral-text)", fontWeight: 700, fontSize: "0.9375rem" }}
               >
                 {fmtPoints(points)}
               </span>
@@ -3038,7 +4164,7 @@ function GradeScreen({ score, roundPoints, onRestart }: { score: number; roundPo
           </div>
         </div>
         <div style={{ marginTop: 12 }}>
-          <Button size="large" variant="text" onClick={onRestart}>
+          <Button size="large" variant="filled" onClick={onRestart}>
             <RedoIcon aria-hidden="true" />
             Prøv igjen
           </Button>
@@ -3050,7 +4176,7 @@ function GradeScreen({ score, roundPoints, onRestart }: { score: number; roundPo
 
 function GradePreview() {
   const [selected, setSelected] = useState(0);
-  const samples = [35, 33, 31.5, 31, 28.5, 25.5, 25, 22.5, 20, 19.5, 17, 14, 13.5, 11, 8, 4];
+  const samples = [25, 23.5, 22.5, 22, 20, 18, 17.5, 16, 14.5, 14, 12, 10, 9.5, 8, 6, 3];
   const score = samples[selected];
   const halfPoints = score * 2;
   const roundPoints = Array.from({ length: ROUNDS }, (_, index) => (Math.floor(halfPoints / ROUNDS) + (index < halfPoints % ROUNDS ? 1 : 0)) / 2);
@@ -3068,6 +4194,39 @@ function GradePreview() {
     </div>
   );
 }
+
+const optionStyle = (state: "idle" | "main" | "extra" | "bad" | "dim", selected: boolean) => {
+  const palette =
+    state === "main" || state === "extra"
+      ? { border: "var(--bi-primary-50)", text: "var(--bi-primary-90)" }
+      : state === "bad"
+        ? { border: "var(--bi-alert-60)", text: "var(--bi-alert-85)" }
+        : null;
+  return {
+    padding: "6px 14px",
+    display: "flex",
+    alignItems: "center",
+    minHeight: 40,
+    borderRadius: "var(--bi-radius-large)",
+    border: selected ? `2px solid ${palette?.border ?? "var(--bi-color-primary-stroke-accent)"}` : `1px solid ${palette?.border ?? "var(--bi-color-neutral-stroke)"}`,
+    background:
+      state === "main" || state === "extra"
+        ? "var(--bi-primary-0)"
+        : state === "bad"
+          ? "var(--bi-alert-0)"
+          : "var(--bi-color-neutral-surface-subtle)",
+    color: palette?.text ?? (state === "dim" ? "var(--bi-neutral-40)" : "var(--bi-color-neutral-text)"),
+    opacity: state === "dim" ? 0.7 : 1,
+    cursor: state === "dim" ? "default" : "pointer",
+    transition: "background 150ms ease, border-color 150ms ease, color 150ms ease, opacity 150ms ease",
+    font: "inherit",
+    fontSize: "1.125rem",
+    textAlign: "left" as const,
+  };
+};
+
+const tagStyle = { marginLeft: 12, padding: "2px 8px", border: "1px solid var(--bi-primary-50)", borderRadius: 4, background: "var(--bi-basic-white)", color: "var(--bi-primary-90)", fontSize: "0.8125rem", fontWeight: 500, lineHeight: 1.3 } as const;
+const mainTag = (label: string) => <span style={tagStyle}>{label}</span>;
 
 function SearchTest() {
   const [order, setOrder] = useState(() => shuffleIndexes(rows.length));
@@ -3118,38 +4277,6 @@ function SearchTest() {
   const roundPoints = rounds.map((index) => pointsFor(index, picks[index]));
   const score = roundPoints.reduce((sum, points) => sum + points, 0);
 
-  const optionStyle = (state: "idle" | "main" | "extra" | "bad" | "dim", selected: boolean) => {
-    const palette =
-      state === "main" || state === "extra"
-        ? { border: "var(--bi-primary-50)", text: "var(--bi-primary-90)" }
-        : state === "bad"
-          ? { border: "var(--bi-alert-60)", text: "var(--bi-alert-85)" }
-          : null;
-    return {
-      padding: "6px 14px",
-      display: "flex",
-      alignItems: "center",
-      minHeight: 40,
-      borderRadius: "var(--bi-radius-large)",
-      border: selected ? `2px solid ${palette?.border ?? "var(--bi-color-primary-stroke-accent)"}` : `1px solid ${palette?.border ?? "var(--bi-color-neutral-stroke)"}`,
-      background:
-        state === "main" || state === "extra"
-          ? "var(--bi-primary-0)"
-          : state === "bad"
-            ? "var(--bi-alert-0)"
-            : "var(--bi-color-neutral-surface-subtle)",
-      color: palette?.text ?? (state === "dim" ? "var(--bi-neutral-40)" : "var(--bi-color-neutral-text)"),
-      opacity: state === "dim" ? 0.7 : 1,
-      cursor: state === "dim" ? "default" : "pointer",
-      transition: "background 150ms ease, border-color 150ms ease, color 150ms ease, opacity 150ms ease",
-      font: "inherit",
-      fontSize: "1.125rem",
-      textAlign: "left" as const,
-    };
-  };
-  const mainTag = (label: string) => (
-    <span style={{ marginLeft: 12, padding: "2px 8px", border: "1px solid var(--bi-primary-50)", borderRadius: 4, background: "var(--bi-basic-white)", color: "var(--bi-primary-90)", fontSize: "0.8125rem", fontWeight: 500, lineHeight: 1.3 }}>{label}</span>
-  );
   const pointDots = (points: number) => {
     if (points === 0) return null;
     const wholeCount = Math.floor(Math.abs(points));
@@ -3217,7 +4344,7 @@ function SearchTest() {
         <div>
           <div style={{ display: "flex", alignItems: "baseline", color: "var(--bi-neutral-95)", fontSize: "1.5rem", fontWeight: 500 }}>
             <strong style={{ fontSize: "3.5rem", lineHeight: 1, fontWeight: 700, color: "var(--bi-primary-50)" }}>{fmtPoints(score)}</strong>
-            <span>/{fmtPoints(answeredCount * POINTS_PER_ROUND)} mulige poeng så langt</span>
+            <span>/{fmtPoints(answeredCount * POINTS_PER_ROUND)} poeng</span>
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "var(--bi-scale-3x)" }}>
@@ -3448,6 +4575,117 @@ function Feedback() {
   );
 }
 
+/** Ekstra plassholdere i «Før»-listen, slik at den blir like lang som «Nå»-listen med overskriftene og mellomrommene mellom gruppene. */
+const fillerSeeds = (groupCount: number, real = false) => Array.from({ length: Math.round(groupCount * (real ? 2.1 : 2.7)) }, (_, index) => `ekstra-${index}`);
+
+/** Plassholder som ligner innlastingsskjelettene på nettsider. Navnene på studiene og kursene er ikke viktige, bare at de sorteres i grupper. */
+function SkeletonLine({ seed, muted = false }: { seed: string; muted?: boolean }) {
+  const hash = [...seed].reduce((sum, character) => (sum * 31 + character.charCodeAt(0)) % 997, 7);
+  return <div aria-hidden="true" className="skeleton-line" style={{ width: `${45 + (hash % 46)}%`, opacity: muted ? 0.5 : 1 }} />;
+}
+
+/** Begrunnelsene fra fagområdequizen. Boksen er like høy som resten av tabellraden og toner ut nederst til «Vis mer» åpner den. */
+function PlacementReasons({ row }: { row: Row }) {
+  const [mode, setMode] = useState<"collapsed" | "expanding" | "expanded" | "collapsing">("collapsed");
+  const [spacerHeight, setSpacerHeight] = useState<number | undefined>(undefined);
+  const [canExpand, setCanExpand] = useState(false);
+  const boxRef = useRef<HTMLDivElement>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  const collapsedHeight = useRef(0);
+  const items = row[6]
+    .split("; ")
+    .map((entry, index) => ({ entry, index, reason: migratedReasons[`${row[2]}|${entry}`] }))
+    .filter((item): item is { entry: string; index: number; reason: string } => Boolean(item.reason));
+  const padding = 10;
+  const buttonSpace = 28;
+  const open = mode === "expanding" || mode === "expanded";
+
+  useEffect(() => {
+    if (mode !== "collapsed") return;
+    const box = boxRef.current;
+    const content = contentRef.current;
+    if (!box || !content) return;
+    const measure = () => setCanExpand(content.offsetHeight > box.clientHeight - padding * 2);
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(box);
+    observer.observe(content);
+    return () => observer.disconnect();
+  }, [mode]);
+
+  // Høyden animeres mellom radhøyden (lukket) og innholdets høyde (åpen). Etter animasjonen går boksen tilbake til auto eller til å ligge over cellen.
+  const finish = () => {
+    setMode((current) => (current === "expanding" ? "expanded" : current === "collapsing" ? "collapsed" : current));
+    setSpacerHeight((current) => (mode === "collapsing" ? undefined : current));
+  };
+  const toggle = () => {
+    const box = boxRef.current;
+    const content = contentRef.current;
+    if (!box || !content) return;
+    const start = box.offsetHeight;
+    const nextFrame = (callback: () => void) => requestAnimationFrame(() => requestAnimationFrame(callback));
+    setSpacerHeight(start);
+    if (!open) {
+      collapsedHeight.current = start;
+      setMode("expanding");
+      nextFrame(() => setSpacerHeight(content.offsetHeight + padding * 2 + buttonSpace));
+    } else {
+      setMode("collapsing");
+      nextFrame(() => setSpacerHeight(collapsedHeight.current));
+    }
+    window.setTimeout(() => {
+      setMode((current) => (current === "expanding" ? "expanded" : current === "collapsing" ? "collapsed" : current));
+      setSpacerHeight((current) => (open ? undefined : current));
+    }, 450);
+  };
+
+  if (items.length === 0) return <div style={{ color: "var(--bi-color-neutral-text-secondary)" }}>{row[7]}</div>;
+  const collapsed = mode === "collapsed";
+  return (
+    <>
+      {/* Boksen ligger alltid over cellen, så bredden er den samme hele tiden. Det er avstandsstykket som vokser og skyver raden ned. */}
+      <div aria-hidden="true" className="reason-spacer" onTransitionEnd={(event) => event.propertyName === "height" && finish()} style={{ minHeight: 76, minWidth: 320, height: spacerHeight }} />
+      <div
+        ref={boxRef}
+        style={{
+          background: "var(--bi-color-primary-background)",
+          borderRadius: "var(--bi-radius-large)",
+          padding,
+          color: "var(--bi-color-neutral-text)",
+          overflow: "hidden",
+          boxSizing: "border-box",
+          position: "absolute",
+          inset: "8px 12px",
+        }}
+      >
+        <div ref={contentRef} style={{ display: "grid", gap: 8 }}>
+          {items.map(({ entry, index, reason }) => (
+            <div key={entry} style={{ display: "grid", gap: 2, paddingTop: index === 0 ? 0 : 8, borderTop: index === 0 ? undefined : "1px solid var(--bi-color-neutral-stroke-subtle)" }}>
+              <div style={{ fontWeight: 600 }}>
+                {entry}
+                <span style={{ marginLeft: 6, fontWeight: 400, color: "var(--bi-color-neutral-text-secondary)" }}>{index === 0 ? "Hovedfagområde" : "Ekstra fagområde"}</span>
+              </div>
+              <p style={{ margin: 0 }}>{reason}</p>
+            </div>
+          ))}
+        </div>
+        {canExpand && (
+          <div aria-hidden="true" style={{ position: "absolute", left: 0, right: 0, bottom: 0, height: 72, background: "linear-gradient(to bottom, transparent, var(--bi-color-primary-background) 75%)", pointerEvents: "none", opacity: collapsed ? 1 : 0, transition: "opacity 0.25s ease" }} />
+        )}
+        {canExpand && (
+          <div style={{ position: "absolute", left: padding, bottom: 6 }}>
+            <Button className="reason-toggle" size="small" variant="text" aria-expanded={open} onClick={toggle} style={{ fontSize: "0.8125rem", minHeight: 0 }}>
+              {open ? "Vis mindre" : "Vis mer"}
+              <ChevronDownIcon aria-hidden="true" style={{ width: "1.5em", height: "1.5em", transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s ease" }} />
+            </Button>
+          </div>
+        )}
+        {!collapsed && <div aria-hidden="true" style={{ height: buttonSpace }} />}
+      </div>
+    </>
+  );
+}
+
 export default function Result() {
   const [query, setQuery] = useState("");
   const [showGrades, setShowGrades] = useState(false);
@@ -3543,6 +4781,10 @@ export default function Result() {
           heading={<h3 id="hva-gjores" style={{ ...summaryPartHeading, margin: 0 }}>Hva gjøres?</h3>}
           slides={[
             {
+              title: "Nye fagområder i fem steg",
+              content: <StepsSlide />,
+            },
+            {
               title: "Fagområder med nytt navn",
               content: (
         <ChangeGroup>
@@ -3603,13 +4845,17 @@ export default function Result() {
               {
                 label: "Helse, skole og barnehage",
                 count: areaCount("Helse, skole og barnehage"),
-                note: `${originNote("Helse, skole og barnehage")} «Juss for ledere» ligger her, med Juss, skatt og eiendom og Ledelse og strategi som ekstra.`,
+                note: `Offentlig sektor er ikke et fag, og de ${wasIn("Offentlig sektor")} studiene og kursene handlet om svært ulike temaer. De er nå fordelt etter faget de handler om. ${originNote("Helse, skole og barnehage")} Helse, skole og barnehage er egne og vanlige fagfelt som nå er synlige i navnet. «Juss for ledere» ligger her, med Juss, skatt og eiendom og Ledelse og strategi som ekstra.`,
               },
-              { label: "Sikkerhet og beredskap", count: areaCount("Sikkerhet og beredskap"), note: originNote("Sikkerhet og beredskap") },
+              {
+                label: "Sikkerhet og beredskap",
+                count: areaCount("Sikkerhet og beredskap"),
+                note: `${originNote("Sikkerhet og beredskap")} Sikkerhet og beredskap er et eget og vanlig fagfelt som før var skjult inne i Offentlig sektor.`,
+              },
               {
                 label: "Juss, skatt og eiendom",
                 count: areaCount("Juss, skatt og eiendom"),
-                note: `${originNote("Juss, skatt og eiendom")} Skatt- og avgiftskursene ligger her.`,
+                note: `${originNote("Juss, skatt og eiendom")} Skatt- og avgiftskursene ligger her, der skatt er et stort og vanlig søkeord som nå er synlig i navnet.`,
               },
             ]}
           />
@@ -3618,7 +4864,7 @@ export default function Result() {
             fromKind="removed"
             arrowColor="#e41100"
             to={[{ label: "Ledelse og strategi › Prosjektledelse (underkategori)" }]}
-            note="Slått sammen med Ledelse og strategi."
+            note={`Prosjektledelse hadde bare ${wasIn("Prosjektledelse")} studier og kurs, for lite til å være et eget fagområde. Prosjektledelse er en del av ledelse og overlapper mye med det, så det er nå en underkategori i Ledelse og strategi. Der finner de som søker på ledelse det lettere, og ${placedInSub("Ledelse og strategi", "Prosjektledelse")} studier og kurs har underkategorien.`}
           />
           <ChangeRow
             from="Internasjonal Business"
@@ -3629,7 +4875,7 @@ export default function Result() {
               { label: "Ledelse og strategi" },
               { label: "Finans, økonomi og regnskap" },
             ]}
-            note="De fem studiene og kursene er fordelt på tre fagområder. Internasjonal profil er en egenskap ved kurset og ikke et fagområde."
+            note={`De ${wasIn("Internasjonal Business")} studiene og kursene er fordelt på tre fagområder etter faget de handler om. Internasjonal profil er en egenskap ved studiet og ikke et fagområde, og var for lite til å være et eget fagområde. Kultur og internasjonal business er nå en underkategori i Markedsføring, kommunikasjon og kultur, med ${placedInSub("Markedsføring, kommunikasjon og kultur", "Kultur og internasjonal business")} studier og kurs.`}
           />
         </ChangeGroup>
               ),
@@ -3645,8 +4891,14 @@ export default function Result() {
               ),
             },
             {
-              title: "Tverrgående temaer har egne underkategorier",
+              title: "Tverrgående studier og kurs har egne underkategorier",
               content: <CrossCuttingSlide />,
+            },
+            {
+              title: "Status",
+              content: (
+        <StatusOverview rows={summaryRows} />
+              ),
             },
             {
               title: "Engelske navn",
@@ -3676,16 +4928,6 @@ export default function Result() {
         </>
               ),
             },
-            {
-              title: "Status",
-              content: (
-        <StatusPie rows={summaryRows} />
-              ),
-            },
-            {
-              title: "Eksempler: helseledelse og lignende",
-              content: <BeforeAfterExamples examples={sectorLeadershipExamples} />,
-            },
           ]}
         />
         </div>
@@ -3699,26 +4941,12 @@ export default function Result() {
           heading={<h3 id="oversikt-endringer" style={{ ...summaryPartHeading, margin: 0 }}>Hvordan ser dette ut?</h3>}
           slides={[
             {
-              title: "Før og etter",
-              content: (
-        <>
-        <h4 style={{ margin: "0 0 4px", color: "var(--bi-color-neutral-text)" }}>Hoved og ekstra fagområder</h4>
-        <p style={{ margin: "0 0 4px", color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>
-          Fra gamle fagområder (til venstre) til nye fagområder (i midten), og videre til bare de studiene og kursene som har fagområdet som hovedfagområde
-          (til høyre). Tallet i midten er antall studier og kurs som vises i det nye fagområdet, enten som hoved eller som ekstra, så ett studie eller kurs
-          kan telle flere ganger. Tallet til høyre er bare dem med fagområdet som hovedfagområde, derfor er det lavere. Tallet til venstre er antall
-          studier og kurs som hadde det gamle fagområdet. Bredden viser antall plasseringer, og et studie eller kurs med flere gamle fagområder deles likt
-          mellom dem. Hold musepekeren over et fagområde for å se hvor kursene kom fra eller gikk.
-        </p>
-        <BeforeAfterSankey />
-        <h4 style={{ margin: "8px 0 4px", color: "var(--bi-color-neutral-text)" }}>Kun hovedfagområder</h4>
-        <p style={{ margin: "0 0 4px", color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.8125rem" }}>
-          Fra gamle fagområder (til venstre) til nye hovedfagområder (til høyre), uten ekstra fagområder. Bredden viser antall studier og kurs. Et studie
-          eller kurs med flere gamle fagområder deles likt mellom dem. Diagrammet har samme høyde som det over.
-        </p>
-        <BeforeAfterSankey mode="main" />
-        </>
-              ),
+              title: "Migrering av fagområder",
+              content: <BeforeAfterSankey />,
+            },
+            {
+              title: "Migrering til underkategorier",
+              content: <SubcategoryMigrationSankey />,
             },
             {
               title: "Før og nå",
@@ -3799,6 +5027,14 @@ export default function Result() {
 
         </>
               ),
+            },
+            {
+              title: "Størrelse og fordeling per fagområde",
+              content: <AreaSizeBars />,
+            },
+            {
+              title: "Hoved og ekstra per fagområde",
+              content: <AreaMainExtraBars />,
             },
             {
               title: "Overlapp og koblinger",
@@ -4010,12 +5246,18 @@ export default function Result() {
           <option value="">Alle</option>
           {statusOrder.map((status) => (
             <option key={status} value={status}>
-              {status}
+              {statusLabel(status)}
             </option>
           ))}
         </Selectfield>
       </div>
 
+      <style>{`.bi-button.reason-toggle { --bic-button-size: 0; --bic-button-padding-block: 0.125rem; --bic-button-padding-inline: 0.25rem; } .reason-toggle[aria-expanded="true"]:not(:focus-visible) { box-shadow: none; }
+        .reason-spacer { transition: height 0.35s ease; }
+        @media (prefers-reduced-motion: reduce) { .reason-spacer, .reason-spacer * { transition: none !important; } }
+        @keyframes skeleton-shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+        .skeleton-line { height: 12px; margin: 1px 0; border-radius: 6px; background: linear-gradient(90deg, var(--bi-color-neutral-stroke-subtle) 25%, var(--bi-neutral-5) 50%, var(--bi-color-neutral-stroke-subtle) 75%); background-size: 200% 100%; animation: skeleton-shimmer 1.6s ease-in-out infinite; }
+        @media (prefers-reduced-motion: reduce) { .skeleton-line { animation: none; } }`}</style>
       <div style={{ width: "fit-content", minWidth: "100%" }}>
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
@@ -4044,7 +5286,7 @@ export default function Result() {
                 </td>
               </tr>
               {visibleRows.map((row, index) => {
-                const [, statuses, title, level, previous, , subcategories, reason, , industry] = row;
+                const [, statuses, title, level, previous, , subcategories, , , industry] = row;
                 return (
                   <tr key={`${title}-${index}`} style={{ borderBottom: "1px solid var(--bi-color-neutral-stroke-subtle)" }}>
                     <td style={cell}>
@@ -4093,9 +5335,9 @@ export default function Result() {
                         ))}
                       </div>
                     </td>
-                    <td style={{ ...cell, fontSize: "0.8125rem", color: "var(--bi-color-neutral-text-secondary)" }}>
-                      {reason}
-                                          </td>
+                    <td style={{ ...cell, fontSize: "0.8125rem", position: "relative" }}>
+                      <PlacementReasons row={row} />
+                    </td>
                   </tr>
                 );
               })}
