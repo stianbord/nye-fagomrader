@@ -1181,7 +1181,8 @@ const areaAnchor = (area: string) => `fagomrade-${area.toLowerCase().replace(/[^
 const summaryToc: TocItem[] = [
   { id: "soketest", label: "Fagområdequiz" },
   { id: "tilbakemelding", label: "Tilbakemelding" },
-  { id: "hva-gjores", label: "Hva gjøres?", section: "Forklaring" },
+  { id: "utfordringer", label: "Utfordringer med nåværende løsning", section: "Forklaring" },
+  { id: "hva-gjores", label: "Hva gjøres?" },
   { id: "hvorfor", label: "Hvorfor gjøres dette?" },
   { id: "oversikt-endringer", label: "Hvordan ser dette ut?" },
   ...tocAreas.map((area, index) => ({ id: areaAnchor(area), label: area, area, section: index === 0 ? "Forslag til nye fagområder" : undefined })),
@@ -1296,6 +1297,7 @@ function Carousel({ slides, heading }: { slides: Slide[]; heading: React.ReactNo
     <div style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr)", gap: 16 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
         {heading}
+        {slides.length > 1 && (
         <div style={{ display: "flex", alignItems: "center", gap: "var(--bi-scale-3x)" }}>
           <span style={{ color: "var(--bi-color-neutral-text-secondary)", fontSize: "1.25rem" }}>
             {index + 1} / {slides.length}
@@ -1307,6 +1309,7 @@ function Carousel({ slides, heading }: { slides: Slide[]; heading: React.ReactNo
             <ChevronRightIcon aria-hidden="true" />
           </Button>
         </div>
+        )}
       </div>
       <div style={{ overflow: "clip", minWidth: 0, height, transition: "height 300ms ease" }}>
         <div style={{ display: "flex", alignItems: "flex-start", transform: `translateX(-${index * 100}%)`, transition: "transform 300ms ease" }}>
@@ -2892,9 +2895,156 @@ function SectionSummary({ items }: { items: { title: string; text: string }[] })
   );
 }
 
-/** Første kort i «Hva gjøres?»: de fem stegene som er gjort for å stramme opp strukturen, med skisser uten navn. */
-function StepsSlide() {
-  type Variant = "old" | "merged" | "removed" | "new" | "main" | "extraBefore" | "extraNow" | "sub";
+/** Utfordringene med dagens fagområder på bi.no, delt i tre kort med illustrasjoner. Tallene kommer fra studiene og kursene i oppsummeringen. */
+const challengeSizes = [...beforeAfter.before]
+  .filter(([name]) => name !== noOldArea)
+  .map(([, value]) => value.count)
+  .sort((a, b) => b - a);
+
+/** Viser bare én av utfordringene som et eget kort. Tittelen står i kortoverskriften. */
+const singleStep = (kit: ReturnType<typeof createStepKit>, only: number) => (number: number, _title: string, text: string, visual: React.ReactNode, _options?: { first?: boolean; last?: boolean }) =>
+  number === only ? kit.step(number, "", text, visual, { first: true, last: true }) : null;
+
+function ChallengesStructureSlide({ only }: { only: number }) {
+  const kit = createStepKit();
+  const { sketch, stack, studyBox } = kit;
+  const step = singleStep(kit, only);
+  const largest = challengeSizes[0];
+  const smallest = challengeSizes[challengeSizes.length - 1];
+  return (
+    <div style={{ display: "grid" }}>
+      {step(
+        1,
+        "Store og ujevne grupper",
+        `Det største fagområdet har ${largest} studier og kurs, mens det minste har ${smallest}. Lange lister er tungt å lete i, og de minste fagområdene gir lite å velge mellom.`,
+        <div style={{ display: "grid", gap: 6 }}>
+          <div style={{ fontSize: "0.8125rem", lineHeight: 1.3, fontWeight: 700, color: "var(--bi-color-neutral-text-secondary)" }}>Fagområder nå, etter antall studier og kurs</div>
+          {challengeSizes.map((count, index) => (
+            <div key={index} style={{ display: "grid", gridTemplateColumns: "minmax(0, 1fr) 24px", alignItems: "center", gap: 8 }}>
+              <div style={{ width: `${(count / largest) * 100}%`, height: 14, borderRadius: 3, background: index === 0 ? "#0b4db4" : count === smallest ? "var(--bi-neutral-40)" : "var(--bi-primary-20)" }} />
+              <span style={{ fontSize: "0.75rem", color: "var(--bi-color-neutral-text-secondary)" }}>{count}</span>
+            </div>
+          ))}
+        </div>,
+        { first: true },
+      )}
+      {step(
+        2,
+        "Mange mangler fagområde",
+        `${beforeAfter.withoutArea} av ${summaryRows.length} studier og kurs har ikke noe fagområde, og blir derfor ikke funnet når man blar i fagområdene.`,
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+          {stack("", studyBox("Studie 1", sketch("old", { text: "Fagområde 1" })), 170)}
+          {stack("", studyBox("Studie 2", sketch("missing", { text: "Ingen fagområde" })), 170)}
+        </div>,
+      )}
+      {step(
+        3,
+        "Ingen underkategorier",
+        "Uten underkategorier er det vanskelig å se hva som ligger innenfor hvert fagområde, og de store fagområdene blir lange og usorterte lister.",
+        <div style={{ display: "grid", gap: 6 }}>
+          {sketch("new", { text: "Fagområde" })}
+          <div style={{ display: "grid", gap: 4, paddingLeft: 16 }}>
+            {["Studie 1", "Studie 2", "Studie 3", "Studie 4", "Studie 5", "Studie 6"].map((title) => <Fragment key={title}>{sketch("old", { text: title })}</Fragment>)}
+            <div style={{ fontSize: "0.75rem", color: "var(--bi-color-neutral-text-secondary)", paddingLeft: 8 }}>… og mange flere uten inndeling</div>
+          </div>
+        </div>,
+        { last: true },
+      )}
+    </div>
+  );
+}
+
+function ChallengesContentSlide({ only }: { only: number }) {
+  const kit = createStepKit();
+  const { sketch } = kit;
+  const step = singleStep(kit, only);
+  return (
+    <div style={{ display: "grid" }}>
+      {step(
+        4,
+        "Fagområder som ikke er fag",
+        "Offentlig sektor, Prosjektledelse og Internasjonal Business beskriver en målgruppe eller en egenskap, ikke et fag. De samler ulike temaer og gjør at lignende studier og kurs havner forskjellige steder.",
+        <div style={{ display: "grid", gap: 8 }}>
+          {sketch("merged", { tag: "Målgruppe, ikke fag", text: "Offentlig sektor" })}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 6 }}>
+            {["Helse", "Juss", "Skatt", "Sikkerhet"].map((title) => <Fragment key={title}>{sketch("sub", { text: title })}</Fragment>)}
+          </div>
+          <div style={{ fontSize: "0.75rem", color: "var(--bi-color-neutral-text-secondary)" }}>Ulike temaer med lite til felles</div>
+        </div>,
+        { first: true },
+      )}
+      {step(
+        5,
+        "Navn som er uklare eller gjemmer innhold",
+        "Navn som «Finans, økonomi og styring» kan misforstås, og viktige temaer som regnskap, skatt, logistikk og KI er enten gjemt inne i andre fagområder eller mangler i navnet.",
+        <div style={{ display: "grid", gap: 8 }}>
+          {sketch("new", { tag: "Uklart navn", text: "Finans, økonomi og styring" })}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: 6 }}>
+            {["Regnskap", "Skatt", "Logistikk", "KI"].map((title) => <Fragment key={title}>{sketch("old", { text: title })}</Fragment>)}
+          </div>
+          <div style={{ fontSize: "0.75rem", color: "var(--bi-color-neutral-text-secondary)" }}>Temaer som ikke er synlige i navnet</div>
+        </div>,
+      )}
+      {step(
+        6,
+        "Fagområder som overlapper",
+        "Ledelse og Strategi, innovasjon og bærekraft overlapper på strategi, og det er vanskelig å skille dem fra hverandre.",
+        <div style={{ position: "relative", height: 84 }}>
+          <div style={{ position: "absolute", left: 0, top: 0, width: "62%", height: 84, boxSizing: "border-box", padding: "8px 10px", background: "var(--bi-primary-5)", border: "1.5px solid var(--bi-primary-20)", borderRadius: 6, fontSize: "0.75rem", color: "var(--bi-color-neutral-text-secondary)" }}>Ledelse</div>
+          <div style={{ position: "absolute", right: 0, top: 0, width: "62%", height: 84, boxSizing: "border-box", padding: "8px 10px", background: "var(--bi-success-5)", border: "1.5px solid var(--bi-success-20)", borderRadius: 6, fontSize: "0.75rem", color: "var(--bi-color-neutral-text-secondary)", textAlign: "right" }}>Strategi, innovasjon og bærekraft</div>
+          <div style={{ position: "absolute", left: "38%", top: 24, width: "24%", height: 48, boxSizing: "border-box", display: "flex", alignItems: "center", justifyContent: "center", background: "var(--bi-warning-5)", border: "1.5px solid var(--bi-warning-40)", borderRadius: 6, fontSize: "0.75rem", fontWeight: 700, color: "var(--bi-warning-80)" }}>Strategi</div>
+        </div>,
+        { last: true },
+      )}
+    </div>
+  );
+}
+
+function ChallengesPlacementSlide({ only }: { only: number }) {
+  const kit = createStepKit();
+  const { sketch, studyBox } = kit;
+  const step = singleStep(kit, only);
+  return (
+    <div style={{ display: "grid" }}>
+      {step(
+        7,
+        "Ingen hovedplassering",
+        `${beforeAfter.withSeveral} studier og kurs har flere fagområder uten at det er tydelig hvilket som er hovedfagområdet. Det gjør det uklart hvor de hører hjemme, og gir inkonsekvent kategorisering.`,
+        <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
+          <div style={{ width: 170 }}>
+            {studyBox(
+              "Studie 1",
+              <>
+                {sketch("old", { text: "Fagområde 1" })}
+                {sketch("old", { text: "Fagområde 2" })}
+                {sketch("old", { text: "Fagområde 3" })}
+              </>,
+            )}
+          </div>
+          <div style={{ display: "grid", justifyItems: "center", gap: 8, flex: 1 }}>
+            <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: 44, height: 44, borderRadius: "50%", background: "var(--bi-warning-5)", border: "1.5px solid var(--bi-warning-40)", color: "var(--bi-warning-80)", fontSize: "1.375rem", fontWeight: 700 }}>?</span>
+            <span style={{ fontSize: "0.75rem", textAlign: "center", color: "var(--bi-color-neutral-text-secondary)" }}>Hvilket er hovedfagområdet?</span>
+          </div>
+        </div>,
+        { first: true },
+      )}
+      {step(
+        8,
+        "Lite synlig i søk",
+        "Uten egne temasider for fagområder og underkategorier blir det vanskeligere å bli funnet på de begrepene folk søker etter.",
+        <div style={{ display: "grid", gap: 8 }}>
+          <div style={{ boxSizing: "border-box", padding: "7px 12px", background: "var(--bi-basic-white)", border: "1.5px solid var(--bi-neutral-40)", borderRadius: 6, fontSize: "0.8125rem", color: "var(--bi-color-neutral-text)" }}>Søk: skatt</div>
+          {sketch("missing", { text: "Ingen egen temaside for skatt" })}
+        </div>,
+        { last: true },
+      )}
+    </div>
+  );
+}
+
+/** Byggeklosser til trinnvisning med skisser uten navn: vertikal trinnlinje med tekst til venstre og illustrasjon til høyre. */
+function createStepKit() {
+  type Variant = "old" | "missing" | "merged" | "removed" | "new" | "main" | "extraBefore" | "extraNow" | "sub";
   const labelStyles = {
     main: { background: "var(--bi-primary-5)", border: "1px solid var(--bi-primary-20)", color: "var(--bi-color-primary-text-accent)" },
     neutral: { background: "var(--bi-basic-white)", border: "1px solid var(--bi-neutral-40)", color: "var(--bi-color-neutral-text-secondary)" },
@@ -2910,6 +3060,7 @@ function StepsSlide() {
     const hasLabel = Boolean(label || tag);
     const styles = {
       old: { background: "var(--bi-basic-white)", border: "1.5px dashed var(--bi-neutral-40)" },
+      missing: { background: "var(--bi-alert-5)", border: "1.5px dashed var(--bi-alert-60)" },
       merged: { background: "var(--bi-warning-5)", border: "1.5px solid var(--bi-warning-40)" },
       removed: { background: "var(--bi-alert-5)", border: "1.5px solid var(--bi-alert-20)" },
       new: { background: "var(--bi-primary-5)", border: "1.5px solid var(--bi-primary-20)" },
@@ -2929,7 +3080,7 @@ function StepsSlide() {
         <div style={{ position: "relative", boxSizing: "border-box", width: "100%", height: hasLabel && text ? 34 : 26, borderRadius: 5, ...styles }}>
           {variant === "removed" && <span style={{ position: "absolute", left: 6, right: 6, top: hasLabel ? "calc(50% + 4px)" : "50%", height: 2, background: "var(--bi-alert-60)" }} />}
           {text && (
-            <span style={{ position: "absolute", left: 8, right: 6, top: hasLabel ? "calc(50% + 4px)" : "50%", transform: "translateY(-50%)", fontSize: "0.75rem", lineHeight: 1.35, color: variant === "removed" ? "var(--bi-alert-80)" : variant === "main" ? "var(--bi-basic-white)" : "var(--bi-color-neutral-text-secondary)", whiteSpace: "nowrap", overflow: "hidden" }}>{text}</span>
+            <span style={{ position: "absolute", left: 8, right: 6, top: hasLabel ? "calc(50% + 4px)" : "50%", transform: "translateY(-50%)", fontSize: "0.75rem", lineHeight: 1.35, color: variant === "removed" || variant === "missing" ? "var(--bi-alert-80)" : variant === "main" ? "var(--bi-basic-white)" : "var(--bi-color-neutral-text-secondary)", whiteSpace: "nowrap", overflow: "hidden" }}>{text}</span>
           )}
         </div>
       </div>
@@ -2978,13 +3129,19 @@ function StepsSlide() {
       </div>
       <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "12px 32px", padding: "16px 0", minWidth: 0 }}>
         <div style={{ flex: "1 1 340px", maxWidth: 520, display: "grid", gap: 8 }}>
-          <div style={{ fontWeight: 700, fontSize: "1.0625rem" }}>{title}</div>
+          {title && <div style={{ fontWeight: 700, fontSize: "1.0625rem" }}>{title}</div>}
           <p style={{ margin: 0, color: "var(--bi-color-neutral-text-secondary)", fontSize: "0.9375rem" }}>{text}</p>
         </div>
         <div style={{ flex: "0 0 402px", display: "grid", gap: 8, padding: 16, maxWidth: "100%", boxSizing: "border-box", background: "var(--bi-color-neutral-surface)", border: "1px solid var(--bi-color-neutral-stroke-subtle)", borderRadius: "var(--bi-radius-large)" }}>{visual}</div>
       </div>
     </div>
   );
+  return { sketch, stack, arrow, studyBox, subBoxes, step };
+}
+
+/** Første kort i «Hva gjøres?»: de fem stegene som er gjort for å stramme opp strukturen, med skisser uten navn. */
+function StepsSlide() {
+  const { sketch, stack, arrow, studyBox, subBoxes, step } = createStepKit();
   return (
     <div style={{ display: "grid" }}>
       {step(
@@ -3625,9 +3782,11 @@ function WhyBetter() {
           };
           const statsBefore = describeSizes(sizesBefore);
           const statsAfter = describeSizes(sizesAfter);
+          const sizesFull = [...after].map(([name, value]) => [name, value.count + areaExtra(name)] as [string, number]);
+          const statsFull = describeSizes(sizesFull);
           const sizesSubs: [string, number][] = [...subs.entries()].flatMap(([area, map]) => [...map].map(([name, value]) => [`${area} › ${name}`, value.main + value.extra] as [string, number]));
           const statsSubs = describeSizes(sizesSubs);
-          const dotValues = { before: sizesBefore.map(([, value]) => value), after: sizesAfter.map(([, value]) => value), subs: sizesSubs.map(([, value]) => value) };
+          const dotValues = { full: sizesFull.map(([, value]) => value), before: sizesBefore.map(([, value]) => value), after: sizesAfter.map(([, value]) => value), subs: sizesSubs.map(([, value]) => value) };
           const oneDecimal = (value: number) => (Math.round(value * 10) / 10).toString().replace(".", ",");
           return (
             <Carousel
@@ -3641,13 +3800,14 @@ function WhyBetter() {
                 <div style={{ display: "grid", gap: 14, padding: "4px 0 2px" }}>
                   {(
                     [
-                      ["Før: fagområder", statsBefore, "#c8d1db", dotValues.before],
-                      ["Nå: fagområder", statsAfter, "#0b4db4", dotValues.after],
-                      ["Nå: underkategorier", statsSubs, "#6196f4", dotValues.subs],
+                      ["Fagområder nå", statsBefore, "#c8d1db", dotValues.before],
+                      ["Reell størrelse på fagområder nå", statsFull, "#042f5b", dotValues.full],
+                      ["Fagområder forslag", statsAfter, "#0b4db4", dotValues.after],
+                      ["Underkategorier forslag", statsSubs, "#6196f4", dotValues.subs],
                     ] as [string, ReturnType<typeof describeSizes>, string, number[]][]
                   ).map(([label, stats, color, dots]) => (
-                    <div key={label} style={{ display: "grid", gridTemplateColumns: "120px minmax(0, 1fr)", gap: 8, alignItems: "center", fontSize: "0.8125rem" }}>
-                      <span style={{ color: "var(--bi-color-neutral-text-secondary)" }}>{label}</span>
+                    <div key={label} style={{ display: "grid", gridTemplateColumns: "220px minmax(0, 1fr)", gap: 8, alignItems: "center", fontSize: "0.8125rem" }}>
+                      <span style={{ color: "var(--bi-color-neutral-text-secondary)", whiteSpace: "nowrap" }}>{label}</span>
                       <div style={{ position: "relative", height: 34 }}>
                         <div style={{ position: "absolute", left: 0, right: 0, top: 14, height: 1, background: "var(--bi-color-neutral-stroke)" }} />
                         {dots.map((value, dotIndex) => (
@@ -3657,7 +3817,8 @@ function WhyBetter() {
                         <div title={`Minste: ${stats.min}`} style={{ position: "absolute", left: `${(stats.min / maxCount) * 100}%`, top: 6, width: 3, height: 18, background: color }} />
                         <div title={`Største: ${stats.max}`} style={{ position: "absolute", left: `calc(${(stats.max / maxCount) * 100}% - 3px)`, top: 6, width: 3, height: 18, background: color }} />
                         <div title={`Median: ${oneDecimal(stats.median)}`} style={{ position: "absolute", left: `calc(${(stats.median / maxCount) * 100}% - 6px)`, top: 9, width: 12, height: 12, borderRadius: "50%", background: "var(--bi-basic-white)", border: `3px solid ${color}` }} />
-                        <div title={`Gjennomsnitt: ${oneDecimal(stats.mean)}`} style={{ position: "absolute", left: `calc(${(stats.mean / maxCount) * 100}% - 1px)`, top: 2, width: 2, height: 26, background: "#042f5b" }} />
+                        <div title={`Gjennomsnitt: ${oneDecimal(stats.mean)}`} style={{ position: "absolute", left: `calc(${(stats.mean / maxCount) * 100}% - 1px)`, top: 2, width: 2, height: 22, background: "#042f5b" }} />
+                        <span style={{ position: "absolute", left: `${(stats.mean / maxCount) * 100}%`, top: 24, fontSize: "0.6875rem", fontWeight: 700, color: "#042f5b", transform: "translateX(-50%)", whiteSpace: "nowrap" }}>{oneDecimal(stats.mean)}</span>
                         <span style={{ position: "absolute", left: `${(stats.min / maxCount) * 100}%`, top: 24, fontSize: "0.6875rem", color: "var(--bi-color-neutral-text-secondary)", transform: "translateX(-50%)" }}>{stats.min}</span>
                         <span style={{ position: "absolute", left: `${(stats.max / maxCount) * 100}%`, top: 24, fontSize: "0.6875rem", color: "var(--bi-color-neutral-text-secondary)", transform: "translateX(-50%)" }}>{stats.max}</span>
                       </div>
@@ -3667,7 +3828,7 @@ function WhyBetter() {
                     <span>● Hver gruppe</span>
                     <span>▬ Fra minste til største</span>
                     <span>◯ Median</span>
-                    <span style={{ color: "#042f5b" }}>| Gjennomsnitt</span>
+                    <span style={{ color: "#042f5b" }}>| Gjennomsnitt (tallet i fet skrift)</span>
                   </div>
                 </div>
               </div>
@@ -4775,6 +4936,22 @@ export default function Result() {
 
       <section style={{ margin: "48px 0 0" }}>
         <h2 style={{ margin: "0 0 8px", fontFamily: "var(--bi-font-family-brand)", fontSize: "2rem", lineHeight: 1.2, color: "var(--bi-color-primary-text)" }}>Forklaring</h2>
+
+        <div style={summaryBox}>
+        <Carousel
+          heading={<h3 id="utfordringer" style={{ ...summaryPartHeading, margin: 0 }}>Utfordringer med nåværende løsning</h3>}
+          slides={[
+            { title: "Store og ujevne grupper", content: <ChallengesStructureSlide only={1} /> },
+            { title: "Mange mangler fagområde", content: <ChallengesStructureSlide only={2} /> },
+            { title: "Ingen underkategorier", content: <ChallengesStructureSlide only={3} /> },
+            { title: "Fagområder som ikke er fag", content: <ChallengesContentSlide only={4} /> },
+            { title: "Navn som er uklare eller gjemmer innhold", content: <ChallengesContentSlide only={5} /> },
+            { title: "Fagområder som overlapper", content: <ChallengesContentSlide only={6} /> },
+            { title: "Ingen hovedplassering", content: <ChallengesPlacementSlide only={7} /> },
+            { title: "Lite synlig i søk", content: <ChallengesPlacementSlide only={8} /> },
+          ]}
+        />
+        </div>
 
         <div style={summaryBox}>
         <Carousel
